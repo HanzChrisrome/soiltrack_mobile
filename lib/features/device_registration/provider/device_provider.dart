@@ -41,6 +41,20 @@ class DeviceNotifier extends Notifier<DeviceState> {
 
   Future<void> scanForDevices() async {
     state = state.copyWith(isScanning: true);
+
+    await Future.delayed(const Duration(seconds: 5));
+
     final accessPoints = await WiFiScan.instance.getScannedResults();
+    final esp32Devices =
+        accessPoints.where((ap) => ap.ssid.startsWith("")).toList();
+
+    state = state.copyWith(availableDevices: esp32Devices, isScanning: false);
+  }
+
+  void selectDevice(String ssid) {
+    state = state.copyWith(selectedDeviceSSID: ssid);
   }
 }
+
+final deviceProvider =
+    NotifierProvider<DeviceNotifier, DeviceState>(() => DeviceNotifier());
