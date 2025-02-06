@@ -17,7 +17,8 @@ class RegisterScreen extends ConsumerStatefulWidget {
 
 class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
-  final TextEditingController userName = TextEditingController();
+  final TextEditingController userFname = TextEditingController();
+  final TextEditingController userLname = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
@@ -25,7 +26,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
   @override
   void dispose() {
-    userName.dispose();
+    userFname.dispose();
+    userLname.dispose();
     emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
@@ -96,8 +98,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                         ),
                         const SizedBox(height: 25.0),
                         TextFieldWidget(
-                          label: 'Username',
-                          controller: userName,
+                          label: 'Name',
+                          controller: userFname,
+                          validator: Validators.validateUsername,
+                          prefixIcon: Icons.person,
+                        ),
+                        TextFieldWidget(
+                          label: 'Last Name',
+                          controller: userLname,
                           validator: Validators.validateUsername,
                           prefixIcon: Icons.person,
                         ),
@@ -139,7 +147,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                   ? null
                                   : () {
                                       registerController.signUp(
-                                        userName.text,
+                                        userFname.text,
+                                        userLname.text,
                                         emailController.text,
                                         passwordController.text,
                                         confirmPasswordController.text,

@@ -2,9 +2,14 @@ import 'package:soiltrack_mobile/core/utils/page_transition.dart';
 import 'package:soiltrack_mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:soiltrack_mobile/features/auth/presentation/screens/register_screen.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
+import 'package:soiltrack_mobile/features/crops_registration/presentation/crops_adding.dart';
+import 'package:soiltrack_mobile/features/crops_registration/presentation/crops_assigning.dart';
+import 'package:soiltrack_mobile/features/crops_registration/presentation/crops_screen.dart';
+import 'package:soiltrack_mobile/features/crops_registration/presentation/custom_add.dart';
 import 'package:soiltrack_mobile/features/device_registration/presentation/screens/setup_screen.dart';
 import 'package:soiltrack_mobile/features/device_registration/presentation/screens/wifi_scan.dart';
 import 'package:soiltrack_mobile/features/home/presentation/home_screen.dart';
+import 'package:soiltrack_mobile/features/home/presentation/soil_dashboard.dart';
 import 'package:soiltrack_mobile/screens/splash_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,7 +37,7 @@ class RouterNotifier extends ChangeNotifier {
     final isRegistering = state.matchedLocation == '/login/register';
 
     if (!isAuth && !isLoggingIn && !isRegistering) return '/login';
-    if (isAuth && (isLoggingIn || isRegistering)) return '/setup';
+    if (isAuth && (isLoggingIn || isRegistering)) return '/home';
 
     return null;
   }
@@ -47,6 +52,33 @@ class RouterNotifier extends ChangeNotifier {
           path: '/home',
           name: 'home',
           builder: (context, state) => const HomeScreen(),
+          routes: [
+            GoRoute(
+              path: 'crops',
+              name: 'crops',
+              builder: (context, state) => const CropsScreen(),
+            ),
+            GoRoute(
+              path: 'add-crops',
+              name: 'add-crops',
+              builder: (context, state) => const AddingCropsScreen(),
+            ),
+            GoRoute(
+              path: 'assign-crops',
+              name: 'assign-crops',
+              builder: (context, state) => const AssignCrops(),
+            ),
+            GoRoute(
+              path: 'add-custom-crops',
+              name: 'add-custom-crops',
+              builder: (context, state) => const AddCustomCrop(),
+            ),
+            GoRoute(
+              path: 'soil-dashboard',
+              name: 'soil-dashboard',
+              builder: (context, state) => const SoilDashboard(),
+            ),
+          ],
         ),
         GoRoute(
           path: '/setup',

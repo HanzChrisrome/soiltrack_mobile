@@ -53,8 +53,8 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final userRecord = await supabase
           .from('users')
-          .select('userName')
-          .eq('userId', userId)
+          .select('user_name')
+          .eq('user_id', userId)
           .single();
 
       state = state.copyWith(
@@ -74,6 +74,7 @@ class AuthNotifier extends Notifier<AuthState> {
 
       if (response.user != null) {
         _fetchUserName(response.user!.id);
+        print('User: ${response.user}');
         state = state.copyWith(user: response.user, isAuthenticated: true);
       }
     } catch (e) {
@@ -87,17 +88,17 @@ class AuthNotifier extends Notifier<AuthState> {
     }
   }
 
-  Future<void> signUp(String email, String password, String username) async {
+  Future<void> signUp(
+      String email, String password, String firstName, String lastName) async {
     state = state.copyWith(isRegistering: true);
     try {
       final existingUser = await supabase
           .from('users')
           .select()
-          .eq('userEmail', email)
+          .eq('user_email', email)
           .maybeSingle();
 
       if (existingUser != null) {
-        print('User already exists');
         return;
       }
 
@@ -106,13 +107,18 @@ class AuthNotifier extends Notifier<AuthState> {
 
       if (response.user != null) {
         await supabase.from('users').insert({
-          'userId': response.user!.id,
-          'userEmail': email,
-          'userName': username
+          'user_id': response.user!.id,
+          'user_email': email,
+          'user_fname': firstName,
+          'user_lname': lastName,
         });
       }
     } catch (e) {
-      print('Error signing up: $e');
+      String errorMessage = e.toString();
+      if (e is AuthException) {
+        errorMessage = e.message;
+      }
+      throw (errorMessage);
     } finally {
       state = state.copyWith(isRegistering: false);
     }
@@ -121,7 +127,7 @@ class AuthNotifier extends Notifier<AuthState> {
   Future<void> signOut() async {
     try {
       await supabase.auth.signOut();
-      state = state.copyWith(isAuthenticated: false);
+      state = state.copyWith(isAuthenticated: false, user: null, userName: '');
     } catch (e) {
       print('Error signing out: $e');
     }

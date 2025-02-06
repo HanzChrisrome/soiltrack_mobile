@@ -35,14 +35,18 @@ class AuthController {
   }
 
   Future<void> signUp(
-    String userName,
+    String userFname,
+    String userLname,
     String email,
     String password,
     String confirmPassword,
   ) async {
     final authNotifier = ref.read(authProvider.notifier);
 
-    if (email.isEmpty || password.isEmpty || userName.isEmpty) {
+    if (email.isEmpty ||
+        password.isEmpty ||
+        userFname.isEmpty ||
+        userLname.isEmpty) {
       ToastService.showToast(
           context: context,
           message: 'Incomplete input fields!',
@@ -76,7 +80,7 @@ class AuthController {
     }
 
     try {
-      await authNotifier.signUp(email, password, userName);
+      await authNotifier.signUp(email, password, userFname, userLname);
       ToastService.showToast(
           context: context,
           message: 'Account created successfully!',
