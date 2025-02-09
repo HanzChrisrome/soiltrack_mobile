@@ -7,7 +7,9 @@ import 'package:soiltrack_mobile/features/crops_registration/presentation/crops_
 import 'package:soiltrack_mobile/features/crops_registration/presentation/crops_screen.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/custom_add.dart';
 import 'package:soiltrack_mobile/features/device_registration/presentation/screens/setup_screen.dart';
+import 'package:soiltrack_mobile/features/device_registration/presentation/screens/wifi_password.dart';
 import 'package:soiltrack_mobile/features/device_registration/presentation/screens/wifi_scan.dart';
+import 'package:soiltrack_mobile/features/device_registration/presentation/screens/wifi_setup.dart';
 import 'package:soiltrack_mobile/features/home/presentation/home_screen.dart';
 import 'package:soiltrack_mobile/features/home/presentation/soil_dashboard.dart';
 import 'package:soiltrack_mobile/screens/splash_screen.dart';
@@ -37,7 +39,7 @@ class RouterNotifier extends ChangeNotifier {
     final isRegistering = state.matchedLocation == '/login/register';
 
     if (!isAuth && !isLoggingIn && !isRegistering) return '/login';
-    if (isAuth && (isLoggingIn || isRegistering)) return '/home';
+    if (isAuth && (isLoggingIn || isRegistering)) return '/setup';
 
     return null;
   }
@@ -92,7 +94,7 @@ class RouterNotifier extends ChangeNotifier {
           },
           routes: [
             GoRoute(
-              path: '/wifi-scan',
+              path: 'wifi-scan',
               name: 'wifi-scan',
               builder: (context, state) => const WifiScanScreen(),
               pageBuilder: (context, state) {
@@ -103,16 +105,21 @@ class RouterNotifier extends ChangeNotifier {
               },
             ),
             GoRoute(
-              path: '/wifi-setup',
+              path: 'wifi-setup',
               name: 'wifi-setup',
               builder: (context, state) => const WifiScanScreen(),
               pageBuilder: (context, state) {
                 return customPageTransition(
                   context,
-                  const WifiScanScreen(),
+                  const WifiSetupScreen(),
                 );
               },
-            )
+            ),
+            GoRoute(
+              path: 'wifi-password',
+              name: 'wifi-password',
+              builder: (context, state) => const WiFiPasswordScreen(),
+            ),
           ],
         ),
         GoRoute(

@@ -9,7 +9,7 @@ class SetupScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final deviceController = DeviceController(context);
+    final deviceController = DeviceController(context, ref);
     final authState = ref.watch(authProvider.notifier);
 
     return Scaffold(
@@ -73,7 +73,7 @@ class SetupScreen extends ConsumerWidget {
                   step: '1',
                   title: 'Scan available SoilTracker Device.',
                   description:
-                      'If there are list, connect to it with a passcode of 12345678'),
+                      'Make sure your internet connection is turned on to connect to the device.'),
               const SizedBox(height: 20.0),
               const StepsWidget(
                   step: '2',

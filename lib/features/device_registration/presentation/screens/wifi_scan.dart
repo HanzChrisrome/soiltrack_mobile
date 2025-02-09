@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:go_router/go_router.dart';
+import 'package:soiltrack_mobile/features/device_registration/controller/device_controller.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 
 class WifiScanScreen extends ConsumerStatefulWidget {
@@ -14,23 +14,19 @@ class WifiScanScreen extends ConsumerStatefulWidget {
 }
 
 class _WifiScanScreenState extends ConsumerState<WifiScanScreen> {
+  late DeviceController deviceController;
+
   @override
   void initState() {
     super.initState();
+    deviceController = DeviceController(context, ref);
 
-    final deviceState = ref.read(deviceProvider);
-    if (deviceState.availableDevices.isEmpty) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final deviceNotifier = ref.read(deviceProvider.notifier);
-        deviceNotifier.scanForDevices();
-      });
-    }
+    Future.microtask(() => deviceController.scanForDevice());
   }
 
   @override
   Widget build(BuildContext context) {
     final deviceState = ref.watch(deviceProvider);
-    final deviceNotifier = ref.read(deviceProvider.notifier);
 
     return Scaffold(
       appBar: AppBar(
@@ -51,10 +47,9 @@ class _WifiScanScreenState extends ConsumerState<WifiScanScreen> {
             children: [
               Column(
                 children: [
-                  Icon(
-                    Icons.wifi,
-                    size: 50.0,
-                    color: Theme.of(context).colorScheme.onPrimary,
+                  Image.asset(
+                    'assets/elements/handphone.png',
+                    height: 350,
                   ),
                   const SizedBox(height: 20.0),
                   ShaderMask(
@@ -69,7 +64,7 @@ class _WifiScanScreenState extends ConsumerState<WifiScanScreen> {
                     child: SizedBox(
                       width: double.infinity,
                       child: Text(
-                        'Scanning for SoilTracker',
+                        'Connect to SoilTracker',
                         textAlign: TextAlign.center,
                         style: Theme.of(context)
                             .textTheme
@@ -96,90 +91,38 @@ class _WifiScanScreenState extends ConsumerState<WifiScanScreen> {
                 ],
               ),
               const SizedBox(height: 20.0),
-              Container(
-                height: 300, // Set the desired height
-                padding: const EdgeInsets.all(10.0),
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: BorderRadius.circular(10.0), // Rounded corners
-                ),
-                child: deviceState.isScanning
-                    ? Center(
-                        child: SpinKitWave(
-                          color: Theme.of(context).colorScheme.onPrimary,
-                          size: 50.0,
-                        ),
-                      )
-                    : deviceState.availableDevices.isEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Text(
-                              'No device found',
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(
-                                    color:
-                                        Theme.of(context).colorScheme.onPrimary,
-                                    letterSpacing: -0.4,
-                                  ),
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: deviceState.availableDevices.length,
-                            itemBuilder: (context, index) {
-                              final ap = deviceState.availableDevices[index];
-                              return ListTile(
-                                title: Text(ap.ssid),
-                                subtitle: Text(
-                                  "Signal Strength: ${ap.level} dBm",
-                                ),
-                                onTap: () {
-                                  deviceNotifier.selectDevice(ap.ssid);
-                                  Navigator.pushNamed(context, "/connect");
-                                },
-                              );
-                            },
-                          ),
-              ),
-              const SizedBox(height: 30.0),
-              deviceState.isScanning
-                  ? SizedBox(
-                      width: 300,
-                      child: Text(
-                        'Scanning for devices...',
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onPrimary,
-                              letterSpacing: -0.4,
-                            ),
-                      ),
-                    )
-                  : SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton.icon(
-                        onPressed: () {
-                          deviceNotifier.scanForDevices();
+              SizedBox(
+                child: OutlinedButton.icon(
+                  onPressed: deviceState.isScanning
+                      ? null
+                      : () {
+                          deviceController.scanForDevice();
                         },
-                        icon: Icon(
-                          Icons.play_arrow,
-                          color: Theme.of(context).colorScheme.onPrimary,
-                        ),
-                        label: Text(
-                          'Rescan for Devices',
-                          style: TextStyle(
+                  icon: deviceState.isScanning
+                      ? SizedBox(
+                          width: 15,
+                          height: 15,
+                          child: CircularProgressIndicator(
                             color: Theme.of(context).colorScheme.onPrimary,
+                            strokeWidth: 2,
                           ),
-                        ),
-                        style: OutlinedButton.styleFrom(
-                          side: BorderSide(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                          ),
-                        ),
-                      ),
+                        )
+                      : Icon(Icons.play_arrow,
+                          color: Theme.of(context).colorScheme.onPrimary),
+                  label: Text(
+                    deviceState.isScanning
+                        ? 'Scanning for Devices'
+                        : 'Rescan for Devices',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onPrimary,
                     ),
-              const SizedBox(height: 30.0),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(
+                        color: Theme.of(context).colorScheme.onPrimary),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

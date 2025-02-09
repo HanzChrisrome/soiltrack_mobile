@@ -4,6 +4,7 @@ class TextFieldWidget extends StatefulWidget {
   final String label;
   final TextEditingController controller;
   final bool isPasswordField;
+  final bool isEnabled;
   final String? Function(String?)? validator;
   final IconData? prefixIcon;
 
@@ -12,6 +13,7 @@ class TextFieldWidget extends StatefulWidget {
     required this.label,
     required this.controller,
     this.isPasswordField = false,
+    this.isEnabled = true,
     this.validator,
     this.prefixIcon,
   });

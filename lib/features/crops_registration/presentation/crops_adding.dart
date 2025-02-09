@@ -5,6 +5,7 @@ import 'package:soiltrack_mobile/features/crops_registration/provider/crops_prov
 import 'package:soiltrack_mobile/widgets/outline_button.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shimmer/shimmer.dart';
 
 class AddingCropsScreen extends ConsumerWidget {
   const AddingCropsScreen({super.key});
@@ -16,6 +17,27 @@ class AddingCropsScreen extends ConsumerWidget {
 
     void addCustomCrop() {
       context.pushNamed('add-custom-crops');
+    }
+
+    Widget buildShimmerSkeleton() {
+      return Column(
+        children: List.generate(4, (index) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Shimmer.fromColors(
+              baseColor: Colors.grey[300]!,
+              highlightColor: Colors.grey[100]!,
+              child: Container(
+                height: 120,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          );
+        }),
+      );
     }
 
     return Scaffold(
@@ -65,27 +87,30 @@ class AddingCropsScreen extends ConsumerWidget {
               sliver: SliverList(
                 delegate: SliverChildListDelegate(
                   [
-                    Column(
-                      children: cropState.cropsList.map((crop) {
-                        return GestureDetector(
-                          onTap: () {
-                            cropNotifier.selectCropName(crop.cropName);
-                            context.pushNamed('assign-crops');
-                          },
-                          child: CropsCard(
-                            cropName: crop.cropName,
-                            minMoisture: crop.minMoisture.toString(),
-                            maxMoisture: crop.maxMoisture.toString(),
-                            minNitrogen: crop.minNitrogen.toString(),
-                            maxNitrogen: crop.maxNitrogen.toString(),
-                            minPotassium: crop.minPotassium.toString(),
-                            maxPotassium: crop.maxPotassium.toString(),
-                            minPhosphorus: crop.minPhosphorus.toString(),
-                            maxPhosphorus: crop.maxPhosphorus.toString(),
-                          ),
-                        );
-                      }).toList(),
-                    ),
+                    if (cropState.isLoading)
+                      buildShimmerSkeleton()
+                    else
+                      Column(
+                        children: cropState.cropsList.map((crop) {
+                          return GestureDetector(
+                            onTap: () {
+                              cropNotifier.selectCropName(crop.cropName);
+                              context.pushNamed('assign-crops');
+                            },
+                            child: CropsCard(
+                              cropName: crop.cropName,
+                              minMoisture: crop.minMoisture.toString(),
+                              maxMoisture: crop.maxMoisture.toString(),
+                              minNitrogen: crop.minNitrogen.toString(),
+                              maxNitrogen: crop.maxNitrogen.toString(),
+                              minPotassium: crop.minPotassium.toString(),
+                              maxPotassium: crop.maxPotassium.toString(),
+                              minPhosphorus: crop.minPhosphorus.toString(),
+                              maxPhosphorus: crop.maxPhosphorus.toString(),
+                            ),
+                          );
+                        }).toList(),
+                      ),
                     const SizedBox(height: 5),
                     OutlineCustomButton(
                         buttonText: 'Crops not listed?',
