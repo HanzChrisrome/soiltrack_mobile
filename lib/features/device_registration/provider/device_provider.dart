@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soiltrack_mobile/core/config/supabase_config.dart';
+import 'package:soiltrack_mobile/core/utils/generate_api.dart';
 import 'package:wifi_iot/wifi_iot.dart';
 import 'package:wifi_scan/wifi_scan.dart';
 import 'package:http/http.dart' as http;
@@ -9,18 +11,22 @@ class DeviceState {
   final List<WiFiAccessPoint> availableNetworks;
   final String? selectedDeviceSSID;
   final String? selectedWifiSSID;
+  final String? macAddress;
   final bool isScanning;
   final bool isConnecting;
-  final bool isConnected;
+  final bool isSaving;
+  final String? savingError;
 
   DeviceState({
     this.availableDevices = const [],
     this.availableNetworks = const [],
     this.selectedDeviceSSID,
     this.selectedWifiSSID,
+    this.macAddress,
     this.isScanning = false,
     this.isConnecting = false,
-    this.isConnected = false,
+    this.isSaving = false,
+    this.savingError,
   });
 
   DeviceState copyWith({
@@ -28,18 +34,22 @@ class DeviceState {
     List<WiFiAccessPoint>? availableNetworks,
     String? selectedDeviceSSID,
     String? selectedWifiSSID,
+    String? macAddress,
     bool? isScanning,
     bool? isConnecting,
-    bool? isConnected,
+    bool? isSaving,
+    String? savingError,
   }) {
     return DeviceState(
       availableDevices: availableDevices ?? this.availableDevices,
       availableNetworks: availableNetworks ?? this.availableNetworks,
       selectedDeviceSSID: selectedDeviceSSID ?? this.selectedDeviceSSID,
       selectedWifiSSID: selectedWifiSSID ?? this.selectedWifiSSID,
+      macAddress: macAddress ?? this.macAddress,
       isScanning: isScanning ?? this.isScanning,
       isConnecting: isConnecting ?? this.isConnecting,
-      isConnected: isConnected ?? this.isConnected,
+      isSaving: isSaving ?? this.isSaving,
+      savingError: savingError ?? this.savingError,
     );
   }
 }
@@ -54,7 +64,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
     state = state.copyWith(isScanning: true);
 
     await WiFiScan.instance.startScan();
-    await Future.delayed(const Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 10));
     final accessPoints = await WiFiScan.instance.getScannedResults();
     final esp32Devices =
         accessPoints.where((ap) => ap.ssid.startsWith("ESP32")).toList();
@@ -78,17 +88,12 @@ class DeviceNotifier extends Notifier<DeviceState> {
       );
 
       if (isConnected) {
-        print('Successfully connected to $ssid!');
-
         WiFiForIoTPlugin.forceWifiUsage(true);
-        state = state.copyWith(
-            selectedDeviceSSID: ssid, isConnected: true, isConnecting: false);
+        state = state.copyWith(selectedDeviceSSID: ssid, isConnecting: false);
       } else {
-        print('Failed to connect to $ssid.');
         state = state.copyWith(isConnecting: false);
       }
     } catch (e) {
-      print('Error connecting to $ssid: $e');
       state = state.copyWith(isConnecting: false);
     }
   }
@@ -121,7 +126,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
     }
 
     try {
-      // Send WiFi credentials to ESP32
       final response = await http.post(
         Uri.parse("$esp32IP/connect"),
         body: {"ssid": ssid, "password": password},
@@ -133,7 +137,13 @@ class DeviceNotifier extends Notifier<DeviceState> {
         String status = responseData["status"];
         String message = responseData["message"];
 
-        if (status == "FAILED") throw (message);
+        if (status == "SUCCESS") {
+          String macAddress = responseData["mac"];
+          WiFiForIoTPlugin.forceWifiUsage(false);
+          state = state.copyWith(macAddress: macAddress);
+        } else {
+          throw (message);
+        }
       } else {
         throw Exception("Failed to connect to ESP32.");
       }
@@ -141,6 +151,68 @@ class DeviceNotifier extends Notifier<DeviceState> {
       throw e.toString();
     } finally {
       state = state.copyWith(isConnecting: false);
+    }
+  }
+
+  Future<void> saveToDatabase() async {
+    state = state.copyWith(isSaving: true, savingError: null);
+
+    final macAddress = state.macAddress;
+    final userId = supabase.auth.currentUser?.id;
+
+    if (macAddress == null) {
+      state =
+          state.copyWith(isSaving: false, savingError: 'No device connected.');
+      return;
+    }
+
+    await Future.delayed(const Duration(minutes: 1));
+    final apiKey = await ApiKeyGenerator().generate();
+
+    try {
+      const String apiUrl =
+          "https://soiltrack-server.onrender.com/device/send-api-key";
+
+      final checkIfMacIsExisting = await supabase
+          .from('iot_device')
+          .select()
+          .eq('mac_address', macAddress)
+          .maybeSingle();
+
+      if (checkIfMacIsExisting != null) {
+        throw Exception('Device already exists in the database.');
+      }
+
+      final responseFromServer = await http.post(
+        Uri.parse(apiUrl),
+        headers: {"Content-Type": "application/json"},
+        body: jsonEncode({
+          "mac_address": macAddress,
+          "api_key": apiKey,
+        }),
+      );
+
+      if (responseFromServer.statusCode == 200) {
+        final responseSaving = await supabase.from('iot_device').insert({
+          'mac_address': macAddress,
+          'api_key': apiKey,
+          "user_id": userId,
+          "activation_date": DateTime.now().toIso8601String(),
+        });
+
+        if (responseSaving != null && responseSaving.error != null) {
+          throw Exception(responseSaving.error!.message);
+        }
+
+        print('Device saved to database.');
+      } else {
+        throw Exception('Failed to send data to server.');
+      }
+    } catch (e) {
+      print(e.toString());
+      state = state.copyWith(isSaving: false, savingError: e.toString());
+    } finally {
+      state = state.copyWith(isSaving: false);
     }
   }
 }

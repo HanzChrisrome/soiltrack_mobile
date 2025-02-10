@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/crops_type.dart';
-import 'package:soiltrack_mobile/widgets/filled_button.dart';
-import 'package:soiltrack_mobile/widgets/outline_button.dart';
+
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
-import 'package:go_router/go_router.dart';
 
 class CropsScreen extends ConsumerWidget {
   const CropsScreen({super.key});

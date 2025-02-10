@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soiltrack_mobile/core/utils/toast_service.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:toastification/toastification.dart';
@@ -89,8 +90,8 @@ class DeviceController {
         );
         return;
       }
-
       await ref.read(deviceProvider.notifier).connectESPToWiFi(password);
+      context.pushNamed('setup-config');
     } catch (e) {
       ToastService.showToast(
         context: context,
@@ -98,5 +99,22 @@ class DeviceController {
         type: ToastificationType.error,
       );
     }
+  }
+
+  Future<void> saveToDatabase() async {
+    final deviceState = ref.watch(deviceProvider);
+    final deviceNotifier = ref.read(deviceProvider.notifier);
+
+    Future.microtask(() async {
+      if (!deviceState.isSaving && deviceState.savingError == null) {
+        await deviceNotifier.saveToDatabase();
+        if (!ref.read(deviceProvider).isSaving &&
+            ref.read(deviceProvider).savingError == null) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('device_setup_completed', true);
+          context.pushNamed('home');
+        }
+      }
+    });
   }
 }
