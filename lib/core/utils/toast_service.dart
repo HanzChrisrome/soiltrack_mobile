@@ -27,10 +27,10 @@ class ToastService {
       description: description == null
           ? null
           : Text(
-              description, // Display the description here
+              description,
               style: Theme.of(context).textTheme.bodySmall!.copyWith(
                     fontWeight: FontWeight.w400,
-                    color: Colors.black54, // Optional color for the description
+                    color: Colors.black54,
                   ),
             ),
       style: style,

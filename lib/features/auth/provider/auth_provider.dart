@@ -1,15 +1,19 @@
+// ignore_for_file: avoid_print
+
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthState {
   final User? user;
+  final String? userName;
   final bool isAuthenticated;
   final bool isLoggingIn;
   final bool isRegistering;
 
   AuthState({
     this.user,
+    this.userName,
     this.isAuthenticated = false,
     this.isLoggingIn = false,
     this.isRegistering = false,
@@ -24,6 +28,7 @@ class AuthState {
   }) {
     return AuthState(
       user: user ?? this.user,
+      userName: userName ?? this.userName,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       isLoggingIn: isLoggingIn ?? this.isLoggingIn,
       isRegistering: isRegistering ?? this.isRegistering,
@@ -55,7 +60,9 @@ class AuthNotifier extends Notifier<AuthState> {
           .single();
 
       state = state.copyWith(
-          userName: userRecord['userName'], isAuthenticated: true);
+          userName: userRecord['user_fname'], isAuthenticated: true);
+
+      print('User name: ${state.userName}');
     } catch (e) {
       print('Error fetching user name: $e');
     }

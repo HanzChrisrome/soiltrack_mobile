@@ -7,16 +7,17 @@ import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 
 class RouterNotifier extends ChangeNotifier {
   final Ref ref;
-  bool? isSetupCompleted; // Cached flag for setup completion
+  bool? isSetupCompleted;
 
   RouterNotifier(this.ref) {
     ref.listen(authProvider, (_, __) => notifyListeners());
-    _loadSetupStatus(); // Load setup status from cache
+    _loadSetupStatus();
   }
 
   Future<void> _loadSetupStatus() async {
     final prefs = await SharedPreferences.getInstance();
     isSetupCompleted = prefs.getBool('device_setup_completed') ?? false;
+    print('Setup status: $isSetupCompleted');
     notifyListeners();
   }
 
@@ -24,9 +25,9 @@ class RouterNotifier extends ChangeNotifier {
     final authState = ref.read(authProvider);
     final isAuth = authState.isAuthenticated;
     final isLoggingIn = state.matchedLocation == '/login';
-    final isRegistering = state.matchedLocation == '/register';
+    final isRegistering = state.matchedLocation == '/login/register';
 
-    if (isSetupCompleted == null) return null; // Wait for cache to load
+    if (isSetupCompleted == null) return null;
 
     if (!isAuth && !isLoggingIn && !isRegistering) return '/login';
 

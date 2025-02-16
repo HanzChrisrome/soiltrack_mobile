@@ -48,11 +48,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               children: [
                 // Show logo only when the keyboard is not visible
                 if (keyboardHeight == 0)
-                  Positioned(
-                    child: Image.asset(
-                      'assets/logo/DARK HORIZONTAL.png',
-                      width: 150,
-                    ),
+                  Image.asset(
+                    'assets/logo/DARK HORIZONTAL.png',
+                    width: 150,
                   ),
                 const Spacer(),
                 Padding(
@@ -172,7 +170,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       style: Theme.of(context).textTheme.bodyMedium),
                   GestureDetector(
                     onTap: () {
-                      context.go('/login/register');
+                      context.pushNamed('register');
                     },
                     child: Text(
                       "Create an Account",

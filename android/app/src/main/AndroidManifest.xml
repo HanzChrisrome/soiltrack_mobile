@@ -25,7 +25,8 @@
     <application
         android:label="soiltrack_mobile"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:enableOnBackInvokedCallback="true">
         
         <activity
             android:name=".MainActivity"

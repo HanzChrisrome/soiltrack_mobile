@@ -1,37 +1,26 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:soiltrack_mobile/features/home/presentation/widgets/plot_card.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
+import 'package:soiltrack_mobile/features/home/presentation/widgets/sensors_card.dart';
+import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
-import 'package:http/http.dart' as http;
 
-class SoilDashboard extends StatelessWidget {
+class SoilDashboard extends ConsumerWidget {
   const SoilDashboard({super.key});
 
-  Future<void> togglePump(String status) async {
-    const String apiUrl = "https://soiltrack-server.onrender.com/toggle-pump";
-    print("Toggling pump to $status");
-
-    try {
-      final response = await http.post(
-        Uri.parse(apiUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"pumpStatus": status}),
-      );
-
-      if (response.statusCode == 200) {
-        print("Pump toggled successfully");
-      } else {
-        print(response.body);
-        print("Failed to toggle pump");
-      }
-    } catch (e) {
-      print("Failed to toggle pump: $e");
-    }
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final authState = ref.watch(authProvider);
+    final soilState = ref.watch(sensorsProvider);
+    final soilNotifier = ref.read(sensorsProvider.notifier);
+
+    if (authState.isAuthenticated &&
+        soilState.sensors.isEmpty &&
+        !soilState.isFetchingSensors) {
+      Future.microtask(() => soilNotifier.fetchSensors());
+    }
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Stack(
@@ -46,36 +35,30 @@ class SoilDashboard extends StatelessWidget {
                   children: [
                     const TextGradient(text: 'Registered Plots', fontSize: 32),
                     const SizedBox(height: 20),
-                    const PlotCard(),
-                    const SizedBox(height: 20),
-                    const SizedBox(height: 20),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: () => togglePump("ON"), // Toggle Pump ON
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.green),
-                        ),
-                        child: const Text(
-                          'Turn Pump ON',
-                          style: TextStyle(color: Colors.green),
+                    if (soilState.isFetchingSensors)
+                      Center(
+                        child: LoadingAnimationWidget.beat(
+                          color: Colors.green,
+                          size: 20,
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 10),
-                    SizedBox(
-                      width: double.infinity,
-                      child: OutlinedButton(
-                        onPressed: () => togglePump("OFF"), // Toggle Pump OFF
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.green),
-                        ),
-                        child: const Text(
-                          'Turn Pump OFF',
-                          style: TextStyle(color: Colors.green),
+                    if (soilState.sensors.isNotEmpty)
+                      ...soilState.sensors.map((sensor) => SensorCard(
+                          sensorName: sensor['soil_moisture_name'],
+                          sensorStatus: sensor['soil_moisture_status'])),
+                    if (!soilState.isFetchingSensors &&
+                        soilState.sensors.isEmpty)
+                      Center(
+                        child: Text(
+                          soilState.error ?? 'No registered plots',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodyMedium!
+                              .copyWith(
+                                color: Theme.of(context).colorScheme.onSurface,
+                              ),
                         ),
                       ),
-                    ),
                   ],
                 ),
               ),

@@ -12,7 +12,7 @@ class DividerWidget extends StatelessWidget {
       child: const Divider(
         height: 20,
         thickness: 1,
-        color: Color.fromARGB(255, 200, 200, 200),
+        color: Color.fromARGB(255, 219, 219, 219),
       ),
     );
   }

@@ -3,14 +3,19 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
-class PlotCard extends ConsumerWidget {
-  const PlotCard({super.key});
+class SensorCard extends ConsumerWidget {
+  const SensorCard(
+      {super.key, required this.sensorName, required this.sensorStatus});
+
+  final String sensorName;
+  final String sensorStatus;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
+      margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12.0),
@@ -21,7 +26,7 @@ class PlotCard extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const TextGradient(text: 'Plot 1', fontSize: 25),
+              TextGradient(text: sensorName, fontSize: 20),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 5),

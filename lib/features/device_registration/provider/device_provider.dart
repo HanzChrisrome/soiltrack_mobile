@@ -1,7 +1,15 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
-import 'package:soiltrack_mobile/core/utils/generate_api.dart';
+import 'package:soiltrack_mobile/core/service/mqtt_service.dart';
+import 'package:soiltrack_mobile/core/utils/loading_toast.dart';
+import 'package:soiltrack_mobile/core/utils/toast_service.dart';
+import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
+import 'package:toastification/toastification.dart';
 import 'package:wifi_iot/wifi_iot.dart';
 import 'package:wifi_scan/wifi_scan.dart';
 import 'package:http/http.dart' as http;
@@ -15,6 +23,8 @@ class DeviceState {
   final bool isScanning;
   final bool isConnecting;
   final bool isSaving;
+  final bool isResetting;
+  final bool isPumpOpen;
   final String? savingError;
 
   DeviceState({
@@ -26,6 +36,8 @@ class DeviceState {
     this.isScanning = false,
     this.isConnecting = false,
     this.isSaving = false,
+    this.isResetting = false,
+    this.isPumpOpen = false,
     this.savingError,
   });
 
@@ -38,6 +50,8 @@ class DeviceState {
     bool? isScanning,
     bool? isConnecting,
     bool? isSaving,
+    bool? isResetting,
+    bool? isPumpOpen,
     String? savingError,
   }) {
     return DeviceState(
@@ -49,6 +63,8 @@ class DeviceState {
       isScanning: isScanning ?? this.isScanning,
       isConnecting: isConnecting ?? this.isConnecting,
       isSaving: isSaving ?? this.isSaving,
+      isResetting: isResetting ?? this.isResetting,
+      isPumpOpen: isPumpOpen ?? this.isPumpOpen,
       savingError: savingError ?? this.savingError,
     );
   }
@@ -142,6 +158,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
           WiFiForIoTPlugin.forceWifiUsage(false);
           state = state.copyWith(macAddress: macAddress);
         } else {
+          await Future.delayed(const Duration(seconds: 5));
           throw (message);
         }
       } else {
@@ -166,13 +183,9 @@ class DeviceNotifier extends Notifier<DeviceState> {
       return;
     }
 
-    await Future.delayed(const Duration(minutes: 1));
-    final apiKey = await ApiKeyGenerator().generate();
+    await Future.delayed(const Duration(seconds: 30));
 
     try {
-      const String apiUrl =
-          "https://soiltrack-server.onrender.com/device/send-api-key";
-
       final checkIfMacIsExisting = await supabase
           .from('iot_device')
           .select()
@@ -180,39 +193,247 @@ class DeviceNotifier extends Notifier<DeviceState> {
           .maybeSingle();
 
       if (checkIfMacIsExisting != null) {
-        throw Exception('Device already exists in the database.');
-      }
-
-      final responseFromServer = await http.post(
-        Uri.parse(apiUrl),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "mac_address": macAddress,
-          "api_key": apiKey,
-        }),
-      );
-
-      if (responseFromServer.statusCode == 200) {
-        final responseSaving = await supabase.from('iot_device').insert({
-          'mac_address': macAddress,
-          'api_key': apiKey,
-          "user_id": userId,
-          "activation_date": DateTime.now().toIso8601String(),
-        });
-
-        if (responseSaving != null && responseSaving.error != null) {
-          throw Exception(responseSaving.error!.message);
+        if (checkIfMacIsExisting['user_id'] == userId) {
+          final prefs = await SharedPreferences.getInstance();
+          await prefs.setBool('device_setup_completed', true);
+          await prefs.setString('mac_address', macAddress);
+          print('ESP32 Connected Successfully without saving to database.');
+          return;
         }
-
-        print('Device saved to database.');
-      } else {
-        throw Exception('Failed to send data to server.');
       }
+
+      final responseSaving = await supabase.from('iot_device').insert({
+        'mac_address': macAddress,
+        "user_id": userId,
+        "activation_date": DateTime.now().toIso8601String(),
+      });
+
+      if (responseSaving != null && responseSaving.error != null) {
+        throw Exception(responseSaving.error!.message);
+      }
+
+      await getSensorCount();
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('device_setup_completed', true);
+      await prefs.setString('mac_address', macAddress);
+      print('Device saved to database.');
     } catch (e) {
       print(e.toString());
       state = state.copyWith(isSaving: false, savingError: e.toString());
     } finally {
       state = state.copyWith(isSaving: false);
+    }
+  }
+
+  Future<void> getSensorCount() async {
+    final authState = ref.read(authProvider);
+    final firstName = authState.userName;
+    final String? macAddress = state.macAddress;
+
+    final mqttService = MQTTService();
+    await mqttService.connect();
+
+    final responseTopic = "soiltrack/device/$macAddress/get-sensors/response";
+    final publishTopic = "soiltrack/device/$macAddress/get-sensors";
+
+    print('📡 Subscribing to response topic: $responseTopic');
+    mqttService.subscribe(responseTopic);
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    print('📤 Sending GET SENSORS request to device...');
+    mqttService.publish(publishTopic, "GET SENSORS");
+
+    try {
+      final response = await mqttService.waitForResponse(responseTopic);
+      final parsedResponse = jsonDecode(response);
+
+      final activeSensors = parsedResponse['active_sensors'] as int?;
+
+      if (activeSensors == null) {
+        print("❌ No active sensors found.");
+        return;
+      }
+
+      for (int i = 1; i <= activeSensors; i++) {
+        final sensorName = "$firstName Sensor $i";
+
+        await supabase.from('soil_moisture_sensors').insert({
+          'mac_address': macAddress,
+          'soil_moisture_name': sensorName,
+          'soil_moisture_status': 'ACTIVE'
+        });
+      }
+
+      print("✅ Successfully saved $activeSensors sensors to the database.");
+    } catch (e) {
+      throw e.toString();
+    }
+  }
+
+  Future<void> checkDeviceStatus() async {
+    final mqttService = MQTTService();
+    await mqttService.connect();
+
+    final prefs = await SharedPreferences.getInstance();
+    final macAddress = prefs.getString('mac_address');
+
+    if (macAddress == null) {
+      print("❌ No MAC address found in storage.");
+      return;
+    }
+
+    final String pingTopic = "soiltrack/device/$macAddress/ping";
+    final String responseTopic = "$pingTopic/status";
+
+    print(
+        "📡 Subscribing to response topic before sending PING: $responseTopic");
+    mqttService.subscribe(responseTopic);
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    print('📤 Sending PING to device...');
+    mqttService.publish(pingTopic, "PING");
+
+    try {
+      String response = await mqttService.waitForResponse(responseTopic,
+          expectedMessage: "PONG");
+
+      if (response != "PONG") {
+        print("❌ Device did not respond.");
+        return;
+      }
+
+      print("✅ Device is ONLINE.");
+    } catch (e) {
+      print("❌ Device did not respond. It might be OFFLINE.");
+    }
+  }
+
+  Future<void> changeWifiConnection(BuildContext context) async {
+    ToastLoadingService.showLoadingToast(context, message: 'Changing WiFi...');
+
+    final mqttService = MQTTService();
+    await mqttService.connect();
+
+    final prefs = await SharedPreferences.getInstance();
+    final macAddress = prefs.getString('mac_address');
+
+    if (macAddress == null) {
+      print("❌ No MAC address found in storage.");
+      return;
+    }
+
+    final String pingTopic = "soiltrack/device/$macAddress/reset";
+    final String responseTopic = "$pingTopic/status";
+    mqttService.subscribe(responseTopic);
+
+    await Future.delayed(const Duration(seconds: 1));
+
+    print('📤 Sending RESET WIFI to device...');
+    mqttService.publish(pingTopic, "RESET WIFI");
+
+    try {
+      String response = await mqttService.waitForResponse(responseTopic,
+          expectedMessage: "RESET_SUCCESS");
+
+      if (response != "RESET_SUCCESS") {
+        ToastLoadingService.dismissLoadingToast();
+        ToastService.showToast(
+            context: context,
+            message: 'Device did not respond.',
+            type: ToastificationType.error);
+        return;
+      }
+
+      // final prefs = await SharedPreferences.getInstance();
+      // await prefs.setBool('device_setup_completed', false);
+      // await prefs.remove('api_key');
+      // await prefs.remove('mac_address');
+
+      ToastLoadingService.dismissLoadingToast();
+      ToastService.showToast(
+          context: context,
+          message: 'Device is reset successfully.',
+          type: ToastificationType.info);
+    } catch (e) {
+      print("❌ Device did not respond. It might be OFFLINE.");
+      ToastLoadingService.dismissLoadingToast();
+      ToastService.showToast(
+          context: context,
+          message: 'Device did not respond.',
+          type: ToastificationType.error);
+    }
+  }
+
+  Future<void> clearPreferences() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('device_setup_completed');
+    await prefs.remove('api_key');
+    await prefs.remove('mac_address');
+  }
+
+  Future<void> openPump(BuildContext context, String action) async {
+    final newPumpState = !state.isPumpOpen;
+    final action = newPumpState ? 'PUMP ON' : 'PUMP OFF';
+
+    state = state.copyWith(isPumpOpen: newPumpState);
+    print('Pump is open: ${state.isPumpOpen}');
+    // Show loading
+    ToastLoadingService.showLoadingToast(
+      context,
+      message: action == 'PUMP ON' ? 'Opening pump...' : 'Closing pump...',
+    );
+
+    final mqttService = MQTTService();
+    await mqttService.connect();
+
+    final prefs = await SharedPreferences.getInstance();
+    final macAddress = prefs.getString('mac_address');
+
+    if (macAddress == null) {
+      ToastLoadingService.dismissLoadingToast();
+      ToastService.showToast(
+        context: context,
+        message: 'No MAC address found.',
+        type: ToastificationType.error,
+      );
+      return;
+    }
+
+    final pumpControlTopic = "soiltrack/device/$macAddress/pump";
+    final responseTopic = "$pumpControlTopic/status";
+    final expectedResponse =
+        action == 'PUMP ON' ? "PUMP_OPENED" : "PUMP_CLOSED";
+
+    mqttService.subscribe(responseTopic);
+
+    await Future.delayed(const Duration(seconds: 1));
+    mqttService.publish(pumpControlTopic, action);
+
+    try {
+      String response = await mqttService.waitForResponse(responseTopic,
+          expectedMessage: expectedResponse);
+
+      if (response == expectedResponse) {
+        ToastService.showToast(
+          context: context,
+          message:
+              'Pump ${action == 'PUMP ON' ? 'opened' : 'closed'} successfully.',
+          type: ToastificationType.info,
+        );
+      } else {
+        throw Exception('Unexpected device response.');
+      }
+    } catch (e) {
+      ToastService.showToast(
+        context: context,
+        message: 'Failed to ${action == 'PUMP ON' ? 'open' : 'close'} pump.',
+        type: ToastificationType.error,
+      );
+    } finally {
+      ToastLoadingService.dismissLoadingToast();
     }
   }
 }

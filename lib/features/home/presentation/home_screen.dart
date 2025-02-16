@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/features/home/presentation/landing_dashboard.dart';
+import 'package:soiltrack_mobile/features/home/presentation/settings_screen.dart';
 import 'package:soiltrack_mobile/features/home/presentation/soil_dashboard.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -35,6 +36,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       decoration: BoxDecoration(
         color: const Color.fromARGB(255, 32, 32, 32),
         borderRadius: BorderRadius.circular(30),
+        border: Border.all(
+          color: const Color.fromARGB(255, 117, 117, 117), // Add border color
+          width: 2,
+        ),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -75,6 +80,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   return const LandingDashboard();
                 case 1:
                   return const SoilDashboard();
+                case 3:
+                  return const SettingsScreen();
                 default:
                   return const LandingDashboard();
               }

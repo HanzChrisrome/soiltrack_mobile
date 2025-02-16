@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/sensor_tile.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/specific_details.dart';
+import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
+import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/filled_button.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
@@ -15,10 +17,8 @@ class AssignCrops extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cropState = ref.watch(cropProvider);
     final cropNotifier = ref.watch(cropProvider.notifier);
-
-    void proceed() {
-      cropNotifier.assignCrop();
-    }
+    final sensorState = ref.watch(sensorsProvider);
+    final sensorNotifier = ref.watch(sensorsProvider.notifier);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -166,13 +166,31 @@ class AssignCrops extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    const SensorTile(sensorName: 'Sensor 1'),
-                    const SensorTile(sensorName: 'Sensor 2'),
-                    const SensorTile(sensorName: 'Sensor 3'),
+                    if (sensorState.sensors.isNotEmpty)
+                      ...sensorState.sensors.map(
+                        (sensor) => SensorTile(
+                          sensorName: sensor['soil_moisture_name'],
+                          sensorId: sensor['soil_moisture_sensor_id'],
+                        ),
+                      ),
                     FilledCustomButton(
                       icon: Icons.verified_outlined,
                       buttonText: 'Proceed',
-                      onPressed: proceed,
+                      onPressed: cropState.isSaving
+                          ? null
+                          : () {
+                              showCustomBottomSheet(
+                                  context: context,
+                                  title: 'Assign Crop',
+                                  description:
+                                      'Are you sure you want to assign this crop?',
+                                  icon: Icons.chevron_right,
+                                  buttonText: 'Continue',
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    cropNotifier.assignCrop(context);
+                                  });
+                            },
                     ),
                   ],
                 ),

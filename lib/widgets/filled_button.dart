@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class FilledCustomButton extends StatelessWidget {
   const FilledCustomButton({
@@ -36,12 +37,12 @@ class FilledCustomButton extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: isLoading
                 ? [
-                    const SizedBox(
+                    SizedBox(
                       width: 18,
                       height: 18,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2.5,
-                        color: Colors.white, // Adjust color as needed
+                      child: LoadingAnimationWidget.beat(
+                        color: Theme.of(context).colorScheme.primary,
+                        size: 18,
                       ),
                     ),
                     const SizedBox(width: 8.0),
@@ -53,16 +54,16 @@ class FilledCustomButton extends StatelessWidget {
                     ),
                   ]
                 : [
-                    if (icon != null) ...[
-                      Icon(icon, color: Theme.of(context).colorScheme.primary),
-                      const SizedBox(width: 8.0),
-                    ],
                     Text(
                       buttonText,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                             color: Theme.of(context).colorScheme.primary,
                           ),
                     ),
+                    const SizedBox(width: 8.0),
+                    if (icon != null) ...[
+                      Icon(icon, color: Theme.of(context).colorScheme.primary),
+                    ],
                   ],
           ),
         ),

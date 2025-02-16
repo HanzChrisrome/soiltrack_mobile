@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soiltrack_mobile/core/utils/toast_service.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:toastification/toastification.dart';
@@ -18,7 +17,6 @@ class DeviceController {
   DeviceController(this.context, this.ref);
 
   Future<void> requestPermissionAndNavigate() async {
-    // Request location permission
     PermissionStatus locationStatus = await Permission.location.request();
 
     if (!locationStatus.isGranted) {
@@ -110,8 +108,6 @@ class DeviceController {
         await deviceNotifier.saveToDatabase();
         if (!ref.read(deviceProvider).isSaving &&
             ref.read(deviceProvider).savingError == null) {
-          final prefs = await SharedPreferences.getInstance();
-          await prefs.setBool('device_setup_completed', true);
           context.pushNamed('home');
         }
       }

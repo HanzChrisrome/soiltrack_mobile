@@ -1,6 +1,12 @@
+// ignore_for_file: avoid_print, use_build_context_synchronously
+
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
+import 'package:soiltrack_mobile/core/utils/loading_toast.dart';
+import 'package:soiltrack_mobile/core/utils/toast_service.dart';
 import 'package:soiltrack_mobile/features/crops_registration/models/crop_model.dart';
+import 'package:toastification/toastification.dart';
 
 class CropState {
   final List<Crop> cropsList;
@@ -9,7 +15,7 @@ class CropState {
   final List<dynamic> specificCropDetails;
   final bool isSaving;
   final bool isLoading;
-  final String? selectedSensor;
+  final int? selectedSensor;
 
   CropState({
     this.cropsList = const [],
@@ -28,7 +34,7 @@ class CropState {
     List<dynamic>? specificCropDetails,
     bool? isSaving,
     bool? isLoading,
-    String? selectedSensor,
+    int? selectedSensor,
   }) {
     return CropState(
       cropsList: cropsList ?? this.cropsList,
@@ -96,30 +102,50 @@ class CropNotifer extends Notifier<CropState> {
     }
   }
 
-  void selectSensor(String sensorName) {
-    state = state.copyWith(selectedSensor: sensorName);
+  void selectSensor(int sensorId) {
+    state = state.copyWith(selectedSensor: sensorId);
   }
 
-  Future<void> assignCrop() async {
+  Future<void> assignCrop(BuildContext context) async {
     try {
       state = state.copyWith(isSaving: true);
+      ToastLoadingService.showLoadingToast(context, message: 'Assigning Crop');
 
-      final response = await supabase.from('user_plots').insert([
-        {
-          'user_id': supabase.auth.currentUser!.id,
-          'crop_name': state.selectedCrop,
-          'sensor_name': state.selectedSensor,
-        }
-      ]);
+      final getCropId = await supabase
+          .from('crops')
+          .select('crop_id')
+          .eq('crop_name', state.selectedCrop!)
+          .single();
 
-      if (response.error != null) {
-        state = state.copyWith(isSaving: false);
-        return;
-      }
+      final insertedPlot = await supabase
+          .from('user_plots')
+          .insert({
+            'crop_id': getCropId['crop_id'],
+          })
+          .select()
+          .single();
 
+      final plotId = insertedPlot['plot_id'];
+      print('Plot ID: $plotId');
+
+      await supabase.from('soil_moisture_sensors').update({
+        'is_assigned': true,
+        'plot_id': plotId,
+      }).eq('soil_moisture_sensor_id', state.selectedSensor!);
+
+      ToastLoadingService.dismissLoadingToast();
       state = state.copyWith(isSaving: false);
+      ToastService.showToast(
+          context: context,
+          message: 'Crop assigned successfully',
+          type: ToastificationType.success);
     } catch (e) {
       print('Error assigning crop: $e');
+      ToastLoadingService.dismissLoadingToast();
+      ToastService.showToast(
+          context: context,
+          message: 'Error assigning crop',
+          type: ToastificationType.error);
       state = state.copyWith(isSaving: false);
     }
   }
