@@ -1,7 +1,7 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:soiltrack_mobile/features/auth/controller/auth_controller.dart';
-import 'package:soiltrack_mobile/features/auth/presentation/widgets/text_field.dart';
+import 'package:soiltrack_mobile/widgets/text_field.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';

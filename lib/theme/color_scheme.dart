@@ -8,14 +8,14 @@ var lColorScheme = ColorScheme.fromSeed(
   secondary: const Color.fromARGB(255, 31, 31, 31),
   onSecondary: const Color.fromARGB(255, 13, 70, 14),
   surface: const Color.fromARGB(255, 241, 241, 241),
-  onSurface: const Color(0xFF000000),
+  onSurface: const Color.fromARGB(255, 100, 100, 100),
 );
 
 // Dark Mode ColorScheme
 var dColorScheme = ColorScheme.fromSeed(
   brightness: Brightness.dark,
   seedColor: const Color(0xFF134F14),
-  primary: const Color.fromARGB(255, 50, 50, 50),
+  primary: const Color.fromARGB(255, 90, 90, 90),
   onPrimary: const Color(0xFF134F14),
   secondary: const Color.fromARGB(255, 30, 30, 30),
   onSecondary: const Color(0xFFBBDEFB),

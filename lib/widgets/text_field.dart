@@ -7,6 +7,7 @@ class TextFieldWidget extends StatefulWidget {
   final bool isEnabled;
   final String? Function(String?)? validator;
   final IconData? prefixIcon;
+  final FocusNode? focusNode;
 
   const TextFieldWidget({
     super.key,
@@ -16,6 +17,7 @@ class TextFieldWidget extends StatefulWidget {
     this.isEnabled = true,
     this.validator,
     this.prefixIcon,
+    this.focusNode,
   });
 
   @override
@@ -31,6 +33,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
         controller: widget.controller,
+        focusNode: widget.focusNode,
         obscureText: widget.isPasswordField ? _isObscured : false,
         decoration: InputDecoration(
           labelText: widget.label,

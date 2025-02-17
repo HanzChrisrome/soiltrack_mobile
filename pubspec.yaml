@@ -53,3 +53,8 @@ flutter:
     #ELEMENTS
     - assets/elements/microchip.png
     - assets/elements/handphone.png
+
+    #SOIL PICTURES
+    - assets/soil_images/clay_soil.png
+    - assets/soil_images/loam_soil.png
+    - assets/soil_images/sandy_soil.png

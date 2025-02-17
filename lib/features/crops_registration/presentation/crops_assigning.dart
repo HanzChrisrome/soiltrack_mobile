@@ -18,7 +18,6 @@ class AssignCrops extends ConsumerWidget {
     final cropState = ref.watch(cropProvider);
     final cropNotifier = ref.watch(cropProvider.notifier);
     final sensorState = ref.watch(sensorsProvider);
-    final sensorNotifier = ref.watch(sensorsProvider.notifier);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -28,7 +27,7 @@ class AssignCrops extends ConsumerWidget {
             SliverAppBar(
               backgroundColor: Theme.of(context).colorScheme.surface,
               surfaceTintColor: Colors.transparent,
-              expandedHeight: 280,
+              expandedHeight: 300,
               pinned: true,
               leading: IconButton(
                 icon: Icon(
@@ -45,7 +44,9 @@ class AssignCrops extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 25),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const SizedBox(height: 30),
                       Icon(
                         Icons.sensors_rounded,
                         size: 50,
@@ -54,8 +55,8 @@ class AssignCrops extends ConsumerWidget {
                       const SizedBox(height: 10),
                       const TextGradient(
                         text: 'Assigning crop to your plot sensor',
-                        textAlign: TextAlign.center,
-                        fontSize: 35,
+                        textAlign: TextAlign.start,
+                        fontSize: 40,
                       ),
                     ],
                   ),
@@ -181,9 +182,9 @@ class AssignCrops extends ConsumerWidget {
                           : () {
                               showCustomBottomSheet(
                                   context: context,
-                                  title: 'Assign Crop',
+                                  title: 'Save Configurations?',
                                   description:
-                                      'Are you sure you want to assign this crop?',
+                                      'Are you sure you want to save the configurations?',
                                   icon: Icons.chevron_right,
                                   buttonText: 'Continue',
                                   onPressed: () {

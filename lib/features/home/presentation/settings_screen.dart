@@ -4,6 +4,7 @@ import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/settings/settings_card.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/settings/settings_item.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/outline_button.dart';
@@ -18,6 +19,7 @@ class SettingsScreen extends ConsumerWidget {
     final authNotifier = ref.watch(authProvider.notifier);
     final deviceState = ref.watch(deviceProvider);
     final deviceNotifier = ref.watch(deviceProvider.notifier);
+    final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -125,9 +127,13 @@ class SettingsScreen extends ConsumerWidget {
                 SettingsCard(
                   child: Column(
                     children: [
-                      const SettingsItem(
-                          settingsText: 'Device Information',
-                          settingsIcon: Icons.device_unknown_outlined),
+                      SettingsItem(
+                        settingsText: 'Device Information',
+                        settingsIcon: Icons.device_unknown_outlined,
+                        onTap: () {
+                          soilDashboardNotifier.fetchUserPlots();
+                        },
+                      ),
                       const DividerWidget(verticalHeight: 0),
                       SettingsItem(
                         settingsText: 'Reset Device',

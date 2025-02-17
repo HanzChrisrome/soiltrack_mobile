@@ -83,8 +83,6 @@ class SensorTile extends ConsumerWidget {
                   ),
                 ),
               ),
-            const Spacer(),
-            if (isSelected) const Icon(Icons.check_circle, color: Colors.green),
           ],
         ),
       ),

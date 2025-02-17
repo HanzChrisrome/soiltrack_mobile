@@ -2,16 +2,21 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:soiltrack_mobile/core/utils/loading_toast.dart';
 import 'package:soiltrack_mobile/core/utils/toast_service.dart';
 import 'package:soiltrack_mobile/features/crops_registration/models/crop_model.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:toastification/toastification.dart';
 
 class CropState {
   final List<Crop> cropsList;
   final String? selectedCategory;
   final String? selectedCrop;
+  final String? plotName;
+  final String? soilType;
   final List<dynamic> specificCropDetails;
   final bool isSaving;
   final bool isLoading;
@@ -21,6 +26,8 @@ class CropState {
     this.cropsList = const [],
     this.selectedCategory,
     this.selectedCrop,
+    this.plotName,
+    this.soilType,
     this.specificCropDetails = const [],
     this.isSaving = false,
     this.isLoading = false,
@@ -31,6 +38,8 @@ class CropState {
     List<Crop>? cropsList,
     String? selectedCategory,
     String? selectedCrop,
+    String? plotName,
+    String? soilType,
     List<dynamic>? specificCropDetails,
     bool? isSaving,
     bool? isLoading,
@@ -40,6 +49,8 @@ class CropState {
       cropsList: cropsList ?? this.cropsList,
       selectedCategory: selectedCategory ?? this.selectedCategory,
       selectedCrop: selectedCrop ?? this.selectedCrop,
+      plotName: plotName ?? this.plotName,
+      soilType: soilType ?? this.soilType,
       specificCropDetails: specificCropDetails ?? this.specificCropDetails,
       isSaving: isSaving ?? this.isSaving,
       isLoading: isLoading ?? this.isLoading,
@@ -78,13 +89,6 @@ class CropNotifer extends Notifier<CropState> {
     }
   }
 
-  void selectCropName(String cropName) {
-    if (state.selectedCrop == cropName) return;
-
-    state = state.copyWith(selectedCrop: cropName);
-    getSelectedCropDetails();
-  }
-
   Future<void> getSelectedCropDetails() async {
     try {
       state = state.copyWith(isLoading: true);
@@ -107,9 +111,14 @@ class CropNotifer extends Notifier<CropState> {
   }
 
   Future<void> assignCrop(BuildContext context) async {
+    final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
+    final sensorNotifier = ref.read(sensorsProvider.notifier);
+
     try {
       state = state.copyWith(isSaving: true);
       ToastLoadingService.showLoadingToast(context, message: 'Assigning Crop');
+
+      final String userId = supabase.auth.currentUser!.id;
 
       final getCropId = await supabase
           .from('crops')
@@ -121,6 +130,11 @@ class CropNotifer extends Notifier<CropState> {
           .from('user_plots')
           .insert({
             'crop_id': getCropId['crop_id'],
+            'user_id': userId,
+            'plot_name': state.plotName,
+            'soil_type': state.soilType,
+            'soil_moisture_sensor_id': state.selectedSensor,
+            'soil_nutrient_sensor_id': null,
           })
           .select()
           .single();
@@ -130,8 +144,10 @@ class CropNotifer extends Notifier<CropState> {
 
       await supabase.from('soil_moisture_sensors').update({
         'is_assigned': true,
-        'plot_id': plotId,
       }).eq('soil_moisture_sensor_id', state.selectedSensor!);
+
+      soilDashboardNotifier.fetchUserPlots();
+      sensorNotifier.fetchSensors();
 
       ToastLoadingService.dismissLoadingToast();
       state = state.copyWith(isSaving: false);
@@ -148,6 +164,25 @@ class CropNotifer extends Notifier<CropState> {
           type: ToastificationType.error);
       state = state.copyWith(isSaving: false);
     }
+  }
+
+  void selectCropName(String cropName) {
+    if (state.selectedCrop == cropName) return;
+
+    state = state.copyWith(selectedCrop: cropName);
+    getSelectedCropDetails();
+  }
+
+  void setPlotName(String plotName, BuildContext context) {
+    print('Plot Name: $plotName');
+    state = state.copyWith(plotName: plotName);
+    context.pushNamed('soil-assigning');
+  }
+
+  void setSoilType(String soilType, BuildContext context) {
+    print('Soil Type: $soilType');
+    state = state.copyWith(soilType: soilType);
+    context.pushNamed('select-category');
   }
 }
 

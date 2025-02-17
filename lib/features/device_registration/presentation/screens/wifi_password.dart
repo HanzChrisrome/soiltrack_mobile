@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:soiltrack_mobile/features/auth/presentation/widgets/text_field.dart';
+import 'package:soiltrack_mobile/widgets/text_field.dart';
 import 'package:soiltrack_mobile/features/device_registration/controller/device_controller.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/widgets/filled_button.dart';

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/crops_card.dart';
 import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
+import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/widgets/outline_button.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:go_router/go_router.dart';
@@ -14,6 +15,12 @@ class AddingCropsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final cropState = ref.watch(cropProvider);
     final cropNotifier = ref.watch(cropProvider.notifier);
+    final sensorState = ref.watch(sensorsProvider);
+    final sensorNotifier = ref.read(sensorsProvider.notifier);
+
+    if (sensorState.sensors.isEmpty && !sensorState.isFetchingSensors) {
+      Future.microtask(() => sensorNotifier.fetchSensors());
+    }
 
     void addCustomCrop() {
       context.pushNamed('add-custom-crops');
@@ -48,7 +55,7 @@ class AddingCropsScreen extends ConsumerWidget {
             SliverAppBar(
               backgroundColor: Theme.of(context).colorScheme.surface,
               surfaceTintColor: Colors.transparent,
-              expandedHeight: 250,
+              expandedHeight: 300,
               pinned: true,
               leading: IconButton(
                 icon: Icon(
@@ -65,7 +72,9 @@ class AddingCropsScreen extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 25),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const SizedBox(height: 30),
                       Icon(
                         Icons.eco_outlined,
                         size: 50,
@@ -74,8 +83,8 @@ class AddingCropsScreen extends ConsumerWidget {
                       const SizedBox(height: 10),
                       TextGradient(
                         text: cropState.selectedCategory ?? '',
-                        textAlign: TextAlign.center,
-                        fontSize: 35,
+                        textAlign: TextAlign.start,
+                        fontSize: 40,
                       ),
                     ],
                   ),
@@ -83,7 +92,7 @@ class AddingCropsScreen extends ConsumerWidget {
               ),
             ),
             SliverPadding(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
               sliver: SliverList(
                 delegate: SliverChildListDelegate(
                   [

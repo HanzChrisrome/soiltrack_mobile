@@ -40,12 +40,66 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     try {
       final prefs = await SharedPreferences.getInstance();
       final macAddress = prefs.getString('mac_address') ?? '';
+      final String userId = supabase.auth.currentUser!.id;
 
       if (macAddress.isEmpty) {
         print('No device registered');
         state = state.copyWith(error: 'No device registered');
         return;
       }
-    } catch (e) {}
+
+      // Fetch user plots from Supabase
+      final userPlots = await supabase.from('user_plots').select('''
+        plot_id,
+        plot_name,
+        soil_type,
+        crop_id,
+        crops (
+            crop_name,
+            category,
+            moisture_min,
+            moisture_max,
+            nitrogen_min,
+            nitrogen_max,
+            phosphorus_min,
+            phosphorus_max,
+            potassium_min,
+            potassium_max
+        ),
+        soil_moisture_sensor_id,
+        soil_moisture_sensors (
+            soil_moisture_sensor_id,
+            soil_moisture_name,
+            soil_moisture_status,
+            is_assigned
+        ),
+        soil_nutrient_sensor_id,
+        soil_nutrient_sensors (
+            soil_nutrient_sensor_id,
+            soil_nutrient_name,
+            soil_nutrient_status,
+            is_assigned
+        )
+    ''').eq('user_id', userId);
+
+      if (userPlots.isEmpty) {
+        print('No user plots found');
+        state = state.copyWith(
+          error: 'No user plots found',
+          userPlots: [],
+        );
+      } else {
+        state = state.copyWith(userPlots: userPlots);
+      }
+    } catch (e) {
+      print(e);
+      state = state.copyWith(error: e.toString(), isFetchingUserPlots: false);
+    } finally {
+      state = state.copyWith(isFetchingUserPlots: false);
+    }
   }
 }
+
+final soilDashboardProvider =
+    NotifierProvider<SoilDashboardNotifier, SoilDashboardState>(
+        () => SoilDashboardNotifier());

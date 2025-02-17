@@ -4,11 +4,20 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
 class SensorCard extends ConsumerWidget {
-  const SensorCard(
-      {super.key, required this.sensorName, required this.sensorStatus});
+  const SensorCard({
+    super.key,
+    required this.soilMoistureSensorId,
+    required this.sensorName,
+    required this.sensorStatus,
+    required this.assignedCrop,
+    this.nutrientSensors,
+  });
 
+  final int soilMoistureSensorId;
   final String sensorName;
   final String sensorStatus;
+  final String assignedCrop;
+  final List<dynamic>? nutrientSensors;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -34,9 +43,9 @@ class SensorCard extends ConsumerWidget {
                   color: Theme.of(context).colorScheme.primary,
                   borderRadius: BorderRadius.circular(10),
                 ),
-                child: const Text(
-                  'Selected Crop',
-                  style: TextStyle(
+                child: Text(
+                  assignedCrop,
+                  style: const TextStyle(
                     color: Color.fromARGB(255, 126, 126, 126),
                     fontSize: 12.0,
                     fontWeight: FontWeight.w500,
@@ -116,6 +125,18 @@ class SensorCard extends ConsumerWidget {
               ],
             ),
           ),
+          const SizedBox(height: 10),
+          if (nutrientSensors == null || nutrientSensors!.isEmpty)
+            const Padding(
+              padding: EdgeInsets.only(top: 5),
+              child: Text(
+                'No soil nutrients sensor assigned',
+                style: TextStyle(
+                  color: Color.fromARGB(255, 146, 20, 20),
+                  fontSize: 14.0,
+                ),
+              ),
+            ),
         ],
       ),
     );

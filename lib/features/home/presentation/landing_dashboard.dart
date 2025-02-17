@@ -95,7 +95,7 @@ class LandingDashboard extends ConsumerWidget {
                       const Spacer(),
                       GestureDetector(
                         onTap: () {
-                          context.push('/home/crops');
+                          context.push('/home/user-plots');
                         },
                         child: const Icon(
                           Icons.arrow_forward_ios,
