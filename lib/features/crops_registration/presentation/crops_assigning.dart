@@ -169,10 +169,24 @@ class AssignCrops extends ConsumerWidget {
                     const SizedBox(height: 10),
                     if (sensorState.sensors.isNotEmpty)
                       ...sensorState.sensors.map(
-                        (sensor) => SensorTile(
-                          sensorName: sensor['soil_moisture_name'],
-                          sensorId: sensor['soil_moisture_sensor_id'],
-                        ),
+                        (sensor) {
+                          final bool isAssigned = sensor['is_assigned'] == true;
+                          final String? plotName =
+                              sensor['user_plots']?['plot_name'];
+
+                          return SensorTile(
+                            sensorName: sensor['soil_moisture_name'],
+                            sensorId: sensor['soil_moisture_sensor_id'],
+                            isAssigned: isAssigned,
+                            plotName: plotName,
+                            isSelected: cropState.selectedSensor ==
+                                sensor['soil_moisture_sensor_id'],
+                            onTap: () {
+                              cropNotifier.selectSensor(
+                                  sensor['soil_moisture_sensor_id']);
+                            },
+                          );
+                        },
                       ),
                     FilledCustomButton(
                       icon: Icons.verified_outlined,
@@ -180,17 +194,36 @@ class AssignCrops extends ConsumerWidget {
                       onPressed: cropState.isSaving
                           ? null
                           : () {
+                              // Find the selected sensor
+                              final selectedSensor =
+                                  sensorState.sensors.firstWhere(
+                                (sensor) =>
+                                    sensor['soil_moisture_sensor_id'] ==
+                                    cropState.selectedSensor,
+                                orElse: () => {},
+                              );
+
+                              final bool isAssigned =
+                                  selectedSensor['is_assigned'] == true;
+
+                              final String title = isAssigned
+                                  ? 'This sensor is currently assigned.'
+                                  : 'Save Configurations?';
+                              final String description = isAssigned
+                                  ? 'Are you sure you want to reassign this sensor?'
+                                  : 'Are you sure you want to save the configurations?';
+
                               showCustomBottomSheet(
-                                  context: context,
-                                  title: 'Save Configurations?',
-                                  description:
-                                      'Are you sure you want to save the configurations?',
-                                  icon: Icons.chevron_right,
-                                  buttonText: 'Continue',
-                                  onPressed: () {
-                                    Navigator.of(context).pop();
-                                    cropNotifier.assignCrop(context);
-                                  });
+                                context: context,
+                                title: title,
+                                description: description,
+                                icon: Icons.chevron_right,
+                                buttonText: 'Continue',
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                  cropNotifier.assignCrop(context);
+                                },
+                              );
                             },
                     ),
                   ],

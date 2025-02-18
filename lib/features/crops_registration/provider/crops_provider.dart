@@ -114,17 +114,31 @@ class CropNotifer extends Notifier<CropState> {
     final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
     final sensorNotifier = ref.read(sensorsProvider.notifier);
 
-    try {
-      state = state.copyWith(isSaving: true);
-      ToastLoadingService.showLoadingToast(context, message: 'Assigning Crop');
+    state = state.copyWith(isSaving: true);
+    ToastLoadingService.showLoadingToast(context, message: 'Assigning Crop');
 
+    try {
       final String userId = supabase.auth.currentUser!.id;
 
+      print('Selected Crop: ${state.selectedCrop}');
       final getCropId = await supabase
           .from('crops')
           .select('crop_id')
           .eq('crop_name', state.selectedCrop!)
           .single();
+
+      final existingPlot = await supabase
+          .from('user_plots')
+          .select('plot_id')
+          .eq('soil_moisture_sensor_id', state.selectedSensor!)
+          .maybeSingle();
+
+      if (existingPlot != null) {
+        print('Existing Plot: $existingPlot');
+        await supabase.from('user_plots').update({
+          'soil_moisture_sensor_id': null,
+        }).eq('plot_id', existingPlot['plot_id']);
+      }
 
       final insertedPlot = await supabase
           .from('user_plots')

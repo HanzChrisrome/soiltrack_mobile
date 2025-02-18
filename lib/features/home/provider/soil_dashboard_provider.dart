@@ -35,6 +35,7 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
   }
 
   Future<void> fetchUserPlots() async {
+    if (state.isFetchingUserPlots) return;
     state = state.copyWith(isFetchingUserPlots: true);
 
     try {
@@ -79,23 +80,26 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
             soil_nutrient_name,
             soil_nutrient_status,
             is_assigned
+        ),
+        soil_moisture_readings (
+            soil_moisture_id,
+            soil_moisture,
+            read_time
         )
     ''').eq('user_id', userId);
 
       if (userPlots.isEmpty) {
-        print('No user plots found');
+        print('No plots available');
         state = state.copyWith(
-          error: 'No user plots found',
-          userPlots: [],
-        );
-      } else {
-        state = state.copyWith(userPlots: userPlots);
+            error: 'No plots available', isFetchingUserPlots: false);
       }
+
+      print('User plots: $userPlots');
+
+      state = state.copyWith(userPlots: userPlots, isFetchingUserPlots: false);
     } catch (e) {
       print(e);
       state = state.copyWith(error: e.toString(), isFetchingUserPlots: false);
-    } finally {
-      state = state.copyWith(isFetchingUserPlots: false);
     }
   }
 }

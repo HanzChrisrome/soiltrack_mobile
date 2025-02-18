@@ -74,19 +74,14 @@ class UserPlotsScreen extends ConsumerWidget {
                         Column(
                           children: userPlot.userPlots.map<Widget>((plot) {
                             final plotName = plot['plot_name'];
-                            final soilMoistureSensors =
-                                plot['soil_moisture_sensors'] as List<dynamic>?;
-                            final soilNutrientSensors =
-                                plot['soil_nutrient_sensors'] as List<dynamic>?;
                             final soilMoistureSensorName =
-                                (plot['soil_moisture_sensors']
-                                                as List<dynamic>?)
-                                            ?.isNotEmpty ==
-                                        true
-                                    ? plot['soil_moisture_sensors'][0]
-                                            ['soil_moisture_name'] as String? ??
-                                        'No sensor assigned'
-                                    : 'No sensor assigned';
+                                plot['soil_moisture_sensors']
+                                        ?['soil_moisture_name'] as String? ??
+                                    'No sensor assigned';
+                            final soilNutrientSensorName =
+                                plot['soil_nutrient_sensors']
+                                        ?['soil_nutrient_name'] as String? ??
+                                    'No sensor assigned';
                             final cropName =
                                 plot['crops']?['crop_name'] as String? ??
                                     'No crop assigned';
@@ -99,14 +94,7 @@ class UserPlotsScreen extends ConsumerWidget {
                               cropName: cropName,
                               assignedCategory: assignedCategory,
                               soilMoistureSensorName: soilMoistureSensorName,
-                              isSoilMoistureSensorAssigned:
-                                  (soilMoistureSensors?.length ?? 0) > 0
-                                      ? true
-                                      : false,
-                              isSoilNutrientSensorAssigned:
-                                  (soilNutrientSensors?.length ?? 0) > 0
-                                      ? true
-                                      : false,
+                              soilNutrientSensorName: soilNutrientSensorName,
                             );
                           }).toList(),
                         ),

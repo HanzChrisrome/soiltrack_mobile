@@ -1,43 +1,27 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
-import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 
-class SensorTile extends ConsumerWidget {
+class SensorTile extends StatelessWidget {
   const SensorTile({
     super.key,
     required this.sensorName,
     required this.sensorId,
+    required this.isAssigned,
+    this.plotName,
+    required this.isSelected,
+    required this.onTap,
   });
 
   final String sensorName;
   final int sensorId;
+  final bool isAssigned;
+  final String? plotName;
+  final bool isSelected;
+  final VoidCallback onTap;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final cropState = ref.watch(cropProvider);
-    final cropNotifier = ref.watch(cropProvider.notifier);
-    final sensorState = ref.watch(sensorsProvider);
-
-    final bool isSelected = cropState.selectedSensor == sensorId;
-
-    // Find the sensor by sensorId
-    final sensor = sensorState.sensors.firstWhere(
-      (s) => s['soil_moisture_sensor_id'] == sensorId,
-      orElse: () => {},
-    );
-
-    final bool isAssigned = sensor['is_assigned'] == true;
-
-    final String? cropName =
-        (isAssigned && sensor['plot_id'] != null && sensor['plot_id'] is int)
-            ? (sensor['user_plots']?['crops']?['crop_name'] as String?)
-            : null;
-
+  Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        cropNotifier.selectSensor(sensorId);
-      },
+      onTap: onTap,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
@@ -66,7 +50,7 @@ class SensorTile extends ConsumerWidget {
               ),
             ),
             const SizedBox(width: 15),
-            if (isAssigned && cropName != null)
+            if (isAssigned && plotName != null)
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
@@ -75,7 +59,7 @@ class SensorTile extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Text(
-                  'Assigned to: $cropName',
+                  'Assigned to: $plotName',
                   style: const TextStyle(
                     color: Color.fromARGB(255, 173, 173, 173),
                     fontSize: 12.0,

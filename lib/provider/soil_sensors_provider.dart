@@ -52,9 +52,9 @@ class SensorsNotifier extends Notifier<SensorsState> {
         soil_moisture_name,
         soil_moisture_status,
         is_assigned,
-        plot_id,
         user_plots (
           crop_id,
+          plot_name,
           crops (
             crop_name
           )

@@ -13,16 +13,14 @@ class RegisteredPlots extends ConsumerWidget {
       required this.plotName,
       required this.cropName,
       required this.assignedCategory,
-      required this.isSoilMoistureSensorAssigned,
-      required this.isSoilNutrientSensorAssigned,
-      required this.soilMoistureSensorName});
+      required this.soilMoistureSensorName,
+      required this.soilNutrientSensorName});
 
   final String plotName;
   final String cropName;
   final String assignedCategory;
-  final bool isSoilMoistureSensorAssigned;
-  final bool isSoilNutrientSensorAssigned;
   final String soilMoistureSensorName;
+  final String soilNutrientSensorName;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -78,9 +76,7 @@ class RegisteredPlots extends ConsumerWidget {
               ),
               const SizedBox(width: 5),
               Text(
-                isSoilMoistureSensorAssigned
-                    ? soilMoistureSensorName
-                    : 'No Soil Moisture Sensor Assigned',
+                soilMoistureSensorName,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -98,9 +94,7 @@ class RegisteredPlots extends ConsumerWidget {
               ),
               const SizedBox(width: 5),
               Text(
-                isSoilNutrientSensorAssigned
-                    ? 'Soil Nutrient Sensor Assigned'
-                    : 'No Soil Nutrient Sensor Assigned',
+                soilNutrientSensorName,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w500,
@@ -116,7 +110,7 @@ class RegisteredPlots extends ConsumerWidget {
             onPressed: () {
               showCustomizableBottomSheet(
                   context: context,
-                  height: 600,
+                  height: 500,
                   centerContent: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -132,7 +126,11 @@ class RegisteredPlots extends ConsumerWidget {
                       const SizedBox(height: 10),
                       EditCard(
                           subText: 'Soil Moisture Sensor Assigned:',
-                          mainText: assignedCategory),
+                          mainText: soilMoistureSensorName),
+                      const SizedBox(height: 10),
+                      EditCard(
+                          subText: 'Soil Nutrient Sensor Assigned:',
+                          mainText: soilNutrientSensorName),
                     ],
                   ),
                   buttonText: 'Continue',

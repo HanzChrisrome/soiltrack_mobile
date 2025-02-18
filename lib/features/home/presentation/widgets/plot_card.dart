@@ -3,14 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
-class SensorCard extends ConsumerWidget {
-  const SensorCard({
+class PlotCard extends ConsumerWidget {
+  const PlotCard({
     super.key,
     required this.soilMoistureSensorId,
     required this.sensorName,
     required this.sensorStatus,
     required this.assignedCrop,
     this.nutrientSensors,
+    required this.moistureReadings,
   });
 
   final int soilMoistureSensorId;
@@ -18,9 +19,22 @@ class SensorCard extends ConsumerWidget {
   final String sensorStatus;
   final String assignedCrop;
   final List<dynamic>? nutrientSensors;
+  final List<dynamic> moistureReadings;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final moistureSpots = moistureReadings.map((reading) {
+      final timeStamp = DateTime.parse(reading['read_time']);
+
+      final firstTimestamp =
+          DateTime.parse(moistureReadings.first['read_time']);
+      final minutesDifference = timeStamp.difference(firstTimestamp).inMinutes;
+
+      final moistureValue = reading['soil_moisture'];
+
+      return FlSpot(minutesDifference.toDouble(), moistureValue.toDouble());
+    }).toList();
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 30),
@@ -70,19 +84,60 @@ class SensorCard extends ConsumerWidget {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: SizedBox(
-              height: 200,
+              height: 250, // Increased height to make space for labels
               child: LineChart(
                 LineChartData(
                   gridData: const FlGridData(show: true),
-                  titlesData: const FlTitlesData(show: false),
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          if (value % 20 == 0) {
+                            return Text(
+                              value.toString(),
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 10,
+                              ),
+                            );
+                          }
+                          return const Text('');
+                        },
+                        reservedSize: 35,
+                      ),
+                    ),
+                    topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                    bottomTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false),
+                    ),
+                  ),
+                  minX: moistureSpots.isNotEmpty ? moistureSpots.first.x : 0.0,
+                  maxX: moistureSpots.isNotEmpty ? moistureSpots.last.x : 1.0,
+
+                  // Calculate minY and maxY with a small buffer
+                  minY: moistureSpots.isNotEmpty
+                      ? moistureSpots
+                              .map((spot) => spot.y)
+                              .reduce((a, b) => a < b ? a : b) -
+                          10 // Buffer added to minY
+                      : 0.0,
+                  maxY: moistureSpots.isNotEmpty
+                      ? moistureSpots
+                              .map((spot) => spot.y)
+                              .reduce((a, b) => a > b ? a : b) +
+                          0 // Buffer added to maxY
+                      : 100.0,
+
                   borderData: FlBorderData(show: false),
                   lineBarsData: [
                     LineChartBarData(
-                      spots: const [
-                        FlSpot(0, 20),
-                        FlSpot(1, 30),
-                        FlSpot(2, 35),
-                      ],
+                      spots: moistureSpots,
                       isCurved: true,
                       color: Theme.of(context).colorScheme.onPrimary,
                       dotData: const FlDotData(show: true),
