@@ -9,10 +9,10 @@ class DividerWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: verticalHeight!),
-      child: const Divider(
+      child: Divider(
         height: 20,
         thickness: 1,
-        color: Color.fromARGB(255, 219, 219, 219),
+        color: Colors.grey[200]!,
       ),
     );
   }

@@ -110,12 +110,17 @@ class CropNotifer extends Notifier<CropState> {
     state = state.copyWith(selectedSensor: sensorId);
   }
 
+  void unselectSensor() {
+    state = state.copyWith(selectedSensor: null);
+  }
+
   Future<void> assignCrop(BuildContext context) async {
     final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
     final sensorNotifier = ref.read(sensorsProvider.notifier);
 
     state = state.copyWith(isSaving: true);
     ToastLoadingService.showLoadingToast(context, message: 'Assigning Crop');
+    print('Selected Sensor: ${state.selectedSensor}');
 
     try {
       final String userId = supabase.auth.currentUser!.id;
@@ -123,27 +128,47 @@ class CropNotifer extends Notifier<CropState> {
       print('Selected Crop: ${state.selectedCrop}');
       final getCropId = await supabase
           .from('crops')
-          .select('crop_id')
+          .select('*')
           .eq('crop_name', state.selectedCrop!)
           .single();
 
-      final existingPlot = await supabase
-          .from('user_plots')
-          .select('plot_id')
-          .eq('soil_moisture_sensor_id', state.selectedSensor!)
-          .maybeSingle();
+      if (state.selectedSensor != null) {
+        final existingPlot = await supabase
+            .from('user_plots')
+            .select('plot_id')
+            .eq('soil_moisture_sensor_id', state.selectedSensor!)
+            .maybeSingle();
 
-      if (existingPlot != null) {
-        print('Existing Plot: $existingPlot');
-        await supabase.from('user_plots').update({
-          'soil_moisture_sensor_id': null,
-        }).eq('plot_id', existingPlot['plot_id']);
+        if (existingPlot != null) {
+          print('Existing Plot: $existingPlot');
+          await supabase.from('user_plots').update({
+            'soil_moisture_sensor_id': null,
+          }).eq('plot_id', existingPlot['plot_id']);
+        }
       }
+
+      final insertUserCrop = await supabase
+          .from('user_crops')
+          .insert({
+            'crop_name': getCropId['crop_name'],
+            'category': getCropId['category'],
+            'moisture_min': getCropId['moisture_min'],
+            'moisture_max': getCropId['moisture_max'],
+            'nitrogen_min': getCropId['nitrogen_min'],
+            'nitrogen_max': getCropId['nitrogen_max'],
+            'phosphorus_min': getCropId['phosphorus_min'],
+            'phosphorus_max': getCropId['phosphorus_max'],
+            'potassium_min': getCropId['potassium_min'],
+            'potassium_max': getCropId['potassium_max'],
+            'user_id': userId,
+          })
+          .select()
+          .single();
 
       final insertedPlot = await supabase
           .from('user_plots')
           .insert({
-            'crop_id': getCropId['crop_id'],
+            'user_crop_id': insertUserCrop['user_crop_id'],
             'user_id': userId,
             'plot_name': state.plotName,
             'soil_type': state.soilType,
@@ -156,9 +181,11 @@ class CropNotifer extends Notifier<CropState> {
       final plotId = insertedPlot['plot_id'];
       print('Plot ID: $plotId');
 
-      await supabase.from('soil_moisture_sensors').update({
-        'is_assigned': true,
-      }).eq('soil_moisture_sensor_id', state.selectedSensor!);
+      if (state.selectedSensor != null) {
+        await supabase.from('soil_moisture_sensors').update({
+          'is_assigned': true,
+        }).eq('soil_moisture_sensor_id', state.selectedSensor!);
+      }
 
       soilDashboardNotifier.fetchUserPlots();
       sensorNotifier.fetchSensors();
@@ -181,10 +208,14 @@ class CropNotifer extends Notifier<CropState> {
   }
 
   void selectCropName(String cropName) {
+    final userPlot = ref.read(soilDashboardProvider);
     if (state.selectedCrop == cropName) return;
 
     state = state.copyWith(selectedCrop: cropName);
-    getSelectedCropDetails();
+
+    if (userPlot.isEditingUserPlot != true) {
+      getSelectedCropDetails();
+    }
   }
 
   void setPlotName(String plotName, BuildContext context) {
@@ -197,6 +228,85 @@ class CropNotifer extends Notifier<CropState> {
     print('Soil Type: $soilType');
     state = state.copyWith(soilType: soilType);
     context.pushNamed('select-category');
+  }
+
+  Future<void> saveNewCrop(
+    BuildContext context,
+    String cropName,
+    int minMoisture,
+    int maxMoisture,
+    int minNitrogen,
+    int maxNitrogen,
+    int minPhosphorus,
+    int maxPhosphorus,
+    int minPotassium,
+    int maxPotassium,
+  ) async {
+    ToastLoadingService.showLoadingToast(context, message: 'Saving Crop');
+
+    try {
+      final saveNewCropResponse = await supabase
+          .from('user_crops')
+          .insert({
+            'crop_name': cropName,
+            'category': state.selectedCategory,
+            'moisture_min': minMoisture,
+            'moisture_max': maxMoisture,
+            'nitrogen_min': minNitrogen,
+            'nitrogen_max': maxNitrogen,
+            'phosphorus_min': minPhosphorus,
+            'phosphorus_max': maxPhosphorus,
+            'potassium_min': minPotassium,
+            'potassium_max': maxPotassium,
+            'user_id': supabase.auth.currentUser!.id,
+          })
+          .select()
+          .single();
+
+      if (saveNewCropResponse.isEmpty) {
+        ToastLoadingService.dismissLoadingToast();
+        ToastService.showToast(
+            context: context,
+            message: 'Error saving crop',
+            type: ToastificationType.error);
+        return;
+      }
+
+      final insertedPlot = await supabase
+          .from('user_plots')
+          .insert({
+            'user_crop_id': saveNewCropResponse['user_crop_id'],
+            'user_id': supabase.auth.currentUser!.id,
+            'plot_name': state.plotName,
+            'soil_type': state.soilType,
+            'soil_moisture_sensor_id': state.selectedSensor,
+            'soil_nutrient_sensor_id': null,
+          })
+          .select()
+          .single();
+
+      final plotId = insertedPlot['plot_id'];
+      print('Plot ID: $plotId');
+
+      if (state.selectedSensor != null) {
+        await supabase.from('soil_moisture_sensors').update({
+          'is_assigned': true,
+        }).eq('soil_moisture_sensor_id', state.selectedSensor!);
+      }
+
+      ToastLoadingService.dismissLoadingToast();
+      ToastService.showToast(
+          context: context,
+          message: 'Crop saved successfully',
+          type: ToastificationType.success);
+    } catch (e) {
+      print('Error saving crop: $e');
+      ToastLoadingService.dismissLoadingToast();
+      ToastService.showToast(
+          context: context,
+          message: 'Error saving crop',
+          type: ToastificationType.error);
+    }
   }
 }
 

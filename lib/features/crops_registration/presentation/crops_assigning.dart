@@ -9,6 +9,7 @@ import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/filled_button.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
+import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
 class AssignCrops extends ConsumerWidget {
   const AssignCrops({super.key});
@@ -19,13 +20,15 @@ class AssignCrops extends ConsumerWidget {
     final cropNotifier = ref.watch(cropProvider.notifier);
     final sensorState = ref.watch(sensorsProvider);
 
+    Future.microtask(() => cropNotifier.unselectSensor());
+
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
-              backgroundColor: Theme.of(context).colorScheme.surface,
+              backgroundColor: Colors.white,
               surfaceTintColor: Colors.transparent,
               expandedHeight: 300,
               pinned: true,
@@ -44,7 +47,7 @@ class AssignCrops extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 25),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const SizedBox(height: 30),
                       Icon(
@@ -55,8 +58,9 @@ class AssignCrops extends ConsumerWidget {
                       const SizedBox(height: 10),
                       const TextGradient(
                         text: 'Assigning crop to your plot sensor',
-                        textAlign: TextAlign.start,
+                        textAlign: TextAlign.center,
                         fontSize: 40,
+                        letterSpacing: -2.5,
                       ),
                     ],
                   ),
@@ -74,10 +78,10 @@ class AssignCrops extends ConsumerWidget {
                           horizontal: 25, vertical: 20),
                       margin: const EdgeInsets.symmetric(vertical: 5),
                       decoration: BoxDecoration(
-                        color: Colors.white,
+                        color: Theme.of(context).colorScheme.surface,
                         borderRadius: BorderRadius.circular(15),
                         border: Border.all(
-                          color: const Color.fromARGB(255, 236, 236, 236),
+                          color: Colors.grey[100]!,
                           width: 1,
                         ),
                       ),
@@ -91,27 +95,14 @@ class AssignCrops extends ConsumerWidget {
                                 text: cropState.selectedCrop as String,
                                 fontSize: 25,
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 5),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.primary,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Text(
-                                  'Selected Crop',
-                                  style: TextStyle(
-                                    color: Color.fromARGB(255, 126, 126, 126),
-                                    fontSize: 12.0,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
+                              const TextRoundedEnclose(
+                                text: 'Selected Crop',
+                                color: Colors.white,
+                                textColor: Colors.black,
                               ),
                             ],
                           ),
-                          const DividerWidget(
-                            verticalHeight: 5,
-                          ),
+                          const DividerWidget(verticalHeight: 5),
                           if (cropState.isLoading)
                             Column(
                               children: List.generate(

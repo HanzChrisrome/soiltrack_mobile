@@ -7,20 +7,8 @@ class ActionsCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          child: Icon(
-            Icons.warning_amber_rounded,
-            color: Theme.of(context).colorScheme.onPrimary,
-          ),
-        ),
-        const SizedBox(width: 20),
         SizedBox(
-          width: 250,
+          width: 300,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

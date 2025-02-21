@@ -24,17 +24,17 @@ class SensorTile extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
         margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
           color: isSelected
               ? const Color.fromARGB(255, 226, 238, 227)
-              : Colors.white,
+              : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(15),
           border: Border.all(
             color: isSelected
                 ? const Color.fromARGB(255, 33, 156, 17)
-                : const Color.fromARGB(255, 200, 200, 200),
+                : Colors.grey[100]!,
             width: 1,
           ),
         ),
@@ -43,13 +43,13 @@ class SensorTile extends StatelessWidget {
             Text(
               sensorName,
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 16,
                 color: isSelected
                     ? Theme.of(context).colorScheme.onSurface
                     : const Color.fromARGB(255, 126, 126, 126),
               ),
             ),
-            const SizedBox(width: 15),
+            const Spacer(),
             if (isAssigned && plotName != null)
               Container(
                 padding:
@@ -62,7 +62,7 @@ class SensorTile extends StatelessWidget {
                   'Assigned to: $plotName',
                   style: const TextStyle(
                     color: Color.fromARGB(255, 173, 173, 173),
-                    fontSize: 12.0,
+                    fontSize: 10.0,
                     fontWeight: FontWeight.w500,
                   ),
                 ),

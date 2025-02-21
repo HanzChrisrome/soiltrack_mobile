@@ -35,6 +35,7 @@ class SensorsNotifier extends Notifier<SensorsState> {
   }
 
   Future<void> fetchSensors() async {
+    if (state.isFetchingSensors) return;
     state = state.copyWith(isFetchingSensors: true);
 
     try {
@@ -53,9 +54,9 @@ class SensorsNotifier extends Notifier<SensorsState> {
         soil_moisture_status,
         is_assigned,
         user_plots (
-          crop_id,
+          user_crop_id,
           plot_name,
-          crops (
+          user_crops (
             crop_name
           )
         )

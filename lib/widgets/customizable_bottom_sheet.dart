@@ -7,93 +7,102 @@ void showCustomizableBottomSheet({
   required Widget centerContent,
   required String buttonText,
   required VoidCallback onPressed,
-  double height = 400,
+  double height = 400, // Base height of the bottom sheet
   VoidCallback? onSheetCreated,
-  bool showCancelButton = true, // Flag to show/hide Cancel button
-  bool showActionButton = true, // Flag to show/hide action button
+  VoidCallback? onCancelPressed,
+  bool showCancelButton = true,
+  bool showActionButton = true,
 }) {
   showModalBottomSheet(
     context: context,
-    isScrollControlled: true,
+    isScrollControlled: true, // Allows the bottom sheet to move with keyboard
     backgroundColor: Colors.transparent,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(50)),
     ),
     builder: (context) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (onSheetCreated != null) {
-          onSheetCreated(); // Call the callback after the sheet is created
-        }
-      });
-
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-        child: Container(
-          height: height, // Height is now customizable
-          padding: const EdgeInsets.only(left: 30, right: 30, top: 15),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1),
-                blurRadius: 10,
-                spreadRadius: 2,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Column(
-            children: [
-              // Drag handle
-              Center(
-                child: Container(
-                  width: 80,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: const Color.fromARGB(255, 202, 202, 202),
-                    borderRadius: BorderRadius.circular(2.5),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 40),
-
-              Expanded(
-                child: Column(
-                  children: [
-                    Center(
-                      child: centerContent,
+      return StatefulBuilder(
+        builder: (context, setState) {
+          return AnimatedPadding(
+            duration: const Duration(milliseconds: 1), // No animation lag
+            padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              child: Container(
+                height:
+                    height, // Keeps base height but moves up when keyboard opens
+                padding: const EdgeInsets.only(left: 30, right: 30, top: 15),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                      offset: const Offset(0, 4),
                     ),
-                    const SizedBox(height: 20),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Drag handle
+                    Center(
+                      child: Container(
+                        width: 80,
+                        height: 5,
+                        decoration: BoxDecoration(
+                          color: const Color.fromARGB(255, 202, 202, 202),
+                          borderRadius: BorderRadius.circular(2.5),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 30),
 
-                    // Conditionally show buttons based on the flags
-                    if (showCancelButton || showActionButton)
-                      Row(
+                    Expanded(
+                      child: Column(
                         children: [
-                          if (showCancelButton)
-                            Expanded(
-                              child: OutlineCustomButton(
-                                buttonText: 'Cancel',
-                                onPressed: () => Navigator.of(context).pop(),
-                              ),
-                            ),
-                          if (showCancelButton && showActionButton)
-                            const SizedBox(width: 10),
-                          if (showActionButton)
-                            Expanded(
-                              child: FilledCustomButton(
-                                buttonText: buttonText,
-                                onPressed: onPressed,
-                              ),
+                          Center(child: centerContent),
+                          const SizedBox(height: 20),
+
+                          // Conditionally show buttons
+                          if (showCancelButton || showActionButton)
+                            Row(
+                              children: [
+                                if (showCancelButton)
+                                  Expanded(
+                                    child: OutlineCustomButton(
+                                      buttonText: 'Cancel',
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        if (onCancelPressed != null) {
+                                          onCancelPressed();
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                if (showCancelButton && showActionButton)
+                                  const SizedBox(width: 10),
+                                if (showActionButton)
+                                  Expanded(
+                                    child: FilledCustomButton(
+                                      buttonText: buttonText,
+                                      onPressed: onPressed,
+                                    ),
+                                  ),
+                              ],
                             ),
                         ],
                       ),
+                    ),
                   ],
                 ),
               ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       );
     },
   );

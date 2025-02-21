@@ -13,7 +13,7 @@ class SoilAssigningScreen extends ConsumerWidget {
     final cropsNotifier = ref.read(cropProvider.notifier);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Stack(
@@ -21,13 +21,13 @@ class SoilAssigningScreen extends ConsumerWidget {
             CustomScrollView(
               slivers: [
                 SliverAppBar(
-                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  backgroundColor: Colors.white,
                   surfaceTintColor: Colors.transparent,
-                  expandedHeight: 300,
+                  expandedHeight: 250,
                   pinned: true,
                   leading: IconButton(
                     icon: Icon(
-                      Icons.arrow_back,
+                      Icons.arrow_back_ios,
                       color: Theme.of(context).colorScheme.onPrimary,
                     ),
                     onPressed: () {
@@ -40,19 +40,21 @@ class SoilAssigningScreen extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 25),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 20),
+                          const SizedBox(height: 30),
                           Icon(
-                            Icons.eco_outlined,
+                            Icons.layers_rounded,
                             size: 50,
                             color: Theme.of(context).colorScheme.onPrimary,
                           ),
                           const SizedBox(height: 10),
                           const TextGradient(
                             text: 'Assign a soil type for your plot',
-                            textAlign: TextAlign.start,
+                            textAlign: TextAlign.center,
                             fontSize: 40,
+                            letterSpacing: -2.5,
+                            heightSpacing: 1.1,
                           ),
                         ],
                       ),
@@ -78,7 +80,7 @@ class SoilAssigningScreen extends ConsumerWidget {
                                   title: 'Pick this kind of soil?',
                                   description:
                                       'Proceed to assign a crop after confirming.',
-                                  icon: Icons.forward_outlined,
+                                  icon: Icons.arrow_forward_ios_outlined,
                                   buttonText: 'Proceed',
                                   onPressed: () {
                                     Navigator.of(context).pop();
@@ -98,7 +100,7 @@ class SoilAssigningScreen extends ConsumerWidget {
                                   title: 'Pick this kind of soil?',
                                   description:
                                       'Proceed to assign a crop after confirming.',
-                                  icon: Icons.forward_outlined,
+                                  icon: Icons.arrow_forward_ios_outlined,
                                   buttonText: 'Proceed',
                                   onPressed: () {
                                     Navigator.of(context).pop();
@@ -118,7 +120,7 @@ class SoilAssigningScreen extends ConsumerWidget {
                                   title: 'Pick this kind of soil?',
                                   description:
                                       'Proceed to assign a crop after confirming.',
-                                  icon: Icons.forward_outlined,
+                                  icon: Icons.arrow_forward_ios_outlined,
                                   buttonText: 'Proceed',
                                   onPressed: () {
                                     Navigator.of(context).pop();

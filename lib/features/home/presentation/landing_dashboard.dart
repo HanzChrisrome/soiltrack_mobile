@@ -14,7 +14,7 @@ class LandingDashboard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authNotifier = ref.watch(authProvider.notifier);
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -62,8 +62,12 @@ class LandingDashboard extends ConsumerWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(25),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.grey[100]!,
+                      width: 1.0,
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -86,8 +90,12 @@ class LandingDashboard extends ConsumerWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(25),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.grey[100]!,
+                      width: 1.0,
+                    ),
                   ),
                   child: Row(
                     children: [
@@ -110,8 +118,12 @@ class LandingDashboard extends ConsumerWidget {
                   width: double.infinity,
                   padding: const EdgeInsets.all(25),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.grey[100]!,
+                      width: 1.0,
+                    ),
                   ),
                   child: const Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,6 +147,7 @@ class LandingDashboard extends ConsumerWidget {
                     ],
                   ),
                 ),
+                const SizedBox(height: 80),
               ],
             ),
           ),

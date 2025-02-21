@@ -49,6 +49,7 @@ flutter:
     - assets/logo/DARK VERTICAL.png
     - assets/logo/LIGHT HORIZONTAL.png
     - assets/logo/LIGHT VERTICAL.png
+    - assets/logo/GREEN OUTLINE.png
 
     #ELEMENTS
     - assets/elements/microchip.png
@@ -58,3 +59,7 @@ flutter:
     - assets/soil_images/clay_soil.png
     - assets/soil_images/loam_soil.png
     - assets/soil_images/sandy_soil.png
+
+    #BACKGROUND
+    - assets/background/first_container.png
+    - assets/background/projectBg.png

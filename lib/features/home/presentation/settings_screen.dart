@@ -22,7 +22,7 @@ class SettingsScreen extends ConsumerWidget {
     final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
@@ -65,7 +65,7 @@ class SettingsScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const DividerWidget(),
+                const SizedBox(height: 20),
                 Text(
                   'Account',
                   style: Theme.of(context).textTheme.titleSmall!.copyWith(
@@ -75,7 +75,7 @@ class SettingsScreen extends ConsumerWidget {
                         fontWeight: FontWeight.w500,
                       ),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 10),
                 const SettingsCard(
                   child: Column(
                     children: [
@@ -99,7 +99,7 @@ class SettingsScreen extends ConsumerWidget {
                         fontWeight: FontWeight.w500,
                       ),
                 ),
-                const SizedBox(height: 5),
+                const SizedBox(height: 10),
                 const SettingsCard(
                   child: Column(
                     children: [

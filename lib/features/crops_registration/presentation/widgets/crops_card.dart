@@ -32,10 +32,10 @@ class CropsCard extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
       margin: const EdgeInsets.symmetric(vertical: 5),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(15),
         border: Border.all(
-          color: const Color.fromARGB(255, 236, 236, 236),
+          color: Colors.grey[100]!,
           width: 1,
         ),
       ),

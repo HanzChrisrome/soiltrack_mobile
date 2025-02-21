@@ -1,6 +1,7 @@
 // app_router.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:soiltrack_mobile/core/router/plot_routes.dart';
 import 'router_notifier.dart';
 import 'auth_routes.dart';
 import 'setup_routes.dart';
@@ -21,6 +22,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ...authRoutes,
       ...setupRoutes,
       ...homeRoutes,
+      ...plotRoutes,
     ],
   );
 });

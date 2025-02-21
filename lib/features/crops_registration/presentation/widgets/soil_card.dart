@@ -23,10 +23,10 @@ class SoilCard extends StatelessWidget {
         margin: const EdgeInsets.symmetric(vertical: 10),
         padding: const EdgeInsets.all(25),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
-            color: const Color.fromARGB(255, 236, 236, 236),
+            color: Colors.grey[100]!,
             width: 1,
           ),
         ),
@@ -38,7 +38,7 @@ class SoilCard extends StatelessWidget {
               height: 100,
               decoration: BoxDecoration(
                 color: Colors.grey[300],
-                borderRadius: BorderRadius.circular(15),
+                borderRadius: BorderRadius.circular(10),
                 image: DecorationImage(
                   image: AssetImage(soilImage),
                   fit: BoxFit.cover,
@@ -55,8 +55,7 @@ class SoilCard extends StatelessWidget {
               soilDescription,
               style: const TextStyle(
                 fontSize: 15,
-                color: Colors.grey,
-                letterSpacing: -0.2,
+                letterSpacing: -0.4,
               ),
             ),
           ],

@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/crops_card.dart';
 import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
+import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
 import 'package:soiltrack_mobile/widgets/outline_button.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:go_router/go_router.dart';
@@ -17,6 +19,8 @@ class AddingCropsScreen extends ConsumerWidget {
     final cropNotifier = ref.watch(cropProvider.notifier);
     final sensorState = ref.watch(sensorsProvider);
     final sensorNotifier = ref.read(sensorsProvider.notifier);
+    final userPlot = ref.watch(soilDashboardProvider);
+    final userPlotNotifier = ref.read(soilDashboardProvider.notifier);
 
     if (sensorState.sensors.isEmpty && !sensorState.isFetchingSensors) {
       Future.microtask(() => sensorNotifier.fetchSensors());
@@ -48,18 +52,18 @@ class AddingCropsScreen extends ConsumerWidget {
     }
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Colors.white,
       body: SafeArea(
         child: CustomScrollView(
           slivers: [
             SliverAppBar(
-              backgroundColor: Theme.of(context).colorScheme.surface,
+              backgroundColor: Colors.white,
               surfaceTintColor: Colors.transparent,
               expandedHeight: 300,
               pinned: true,
               leading: IconButton(
                 icon: Icon(
-                  Icons.arrow_back,
+                  Icons.arrow_back_ios,
                   color: Theme.of(context).colorScheme.onPrimary,
                 ),
                 onPressed: () {
@@ -72,7 +76,7 @@ class AddingCropsScreen extends ConsumerWidget {
                   padding: const EdgeInsets.symmetric(horizontal: 25),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       const SizedBox(height: 30),
                       Icon(
@@ -83,8 +87,8 @@ class AddingCropsScreen extends ConsumerWidget {
                       const SizedBox(height: 10),
                       TextGradient(
                         text: cropState.selectedCategory ?? '',
-                        textAlign: TextAlign.start,
-                        fontSize: 40,
+                        textAlign: TextAlign.center,
+                        fontSize: 35,
                       ),
                     ],
                   ),
@@ -103,8 +107,24 @@ class AddingCropsScreen extends ConsumerWidget {
                         children: cropState.cropsList.map((crop) {
                           return GestureDetector(
                             onTap: () {
-                              cropNotifier.selectCropName(crop.cropName);
-                              context.pushNamed('assign-crops');
+                              if (userPlot.isEditingUserPlot) {
+                                cropNotifier.selectCropName(crop.cropName);
+                                showCustomBottomSheet(
+                                  context: context,
+                                  title: 'Change Crop Assignment',
+                                  description:
+                                      'Are you sure you want to change the crop assigned to this plot? This action cannot be undone.',
+                                  icon: Icons.warning_amber_rounded,
+                                  buttonText: 'Confirm',
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    userPlotNotifier.saveNewCrop(context);
+                                  },
+                                );
+                              } else {
+                                cropNotifier.selectCropName(crop.cropName);
+                                context.pushNamed('assign-crops');
+                              }
                             },
                             child: CropsCard(
                               cropName: crop.cropName,

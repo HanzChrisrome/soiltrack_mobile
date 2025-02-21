@@ -7,7 +7,7 @@ var lColorScheme = ColorScheme.fromSeed(
   onPrimary: const Color(0xFF134F14),
   secondary: const Color.fromARGB(255, 31, 31, 31),
   onSecondary: const Color.fromARGB(255, 13, 70, 14),
-  surface: const Color.fromARGB(255, 241, 241, 241),
+  surface: const Color.fromARGB(255, 248, 248, 248),
   onSurface: const Color.fromARGB(255, 100, 100, 100),
 );
 

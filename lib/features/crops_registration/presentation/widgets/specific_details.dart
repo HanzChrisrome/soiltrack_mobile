@@ -6,11 +6,13 @@ class SpecificDetails extends ConsumerWidget {
       {super.key,
       required this.icon,
       required this.title,
-      required this.details});
+      required this.details,
+      this.onPressed});
 
   final IconData icon;
   final String title;
   final String details;
+  final VoidCallback? onPressed;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,6 +41,19 @@ class SpecificDetails extends ConsumerWidget {
                   fontSize: 14,
                 ),
           ),
+          if (onPressed != null) ...[
+            const SizedBox(width: 10),
+            GestureDetector(
+              onTap: onPressed,
+              child: Container(
+                  padding: const EdgeInsets.all(5),
+                  decoration: BoxDecoration(
+                    color: Colors.green,
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                  child: const Icon(Icons.edit, color: Colors.white, size: 15)),
+            ),
+          ],
         ],
       ),
     );

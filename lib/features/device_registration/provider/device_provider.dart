@@ -377,9 +377,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
   Future<void> openPump(BuildContext context, String action) async {
     final newPumpState = !state.isPumpOpen;
     final action = newPumpState ? 'PUMP ON' : 'PUMP OFF';
-
-    state = state.copyWith(isPumpOpen: newPumpState);
-    print('Pump is open: ${state.isPumpOpen}');
     // Show loading
     ToastLoadingService.showLoadingToast(
       context,
@@ -423,6 +420,8 @@ class DeviceNotifier extends Notifier<DeviceState> {
               'Pump ${action == 'PUMP ON' ? 'opened' : 'closed'} successfully.',
           type: ToastificationType.info,
         );
+        state = state.copyWith(isPumpOpen: newPumpState);
+        print('Pump is open: ${state.isPumpOpen}');
       } else {
         throw Exception('Unexpected device response.');
       }

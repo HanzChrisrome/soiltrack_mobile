@@ -27,6 +27,7 @@ class MyApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.read(routerProvider);
     return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
       title: 'SoilTrack',
       theme: lightTheme,
       routerConfig: router,

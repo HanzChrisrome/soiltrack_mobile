@@ -19,7 +19,7 @@ class UserPlotsScreen extends ConsumerWidget {
     final FocusNode plotNameFocusNode = FocusNode();
 
     return Scaffold(
-      backgroundColor: Theme.of(context).colorScheme.surface,
+      backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,
       body: SafeArea(
         child: Stack(
@@ -27,13 +27,12 @@ class UserPlotsScreen extends ConsumerWidget {
             CustomScrollView(
               slivers: [
                 SliverAppBar(
-                  backgroundColor: Theme.of(context).colorScheme.surface,
+                  backgroundColor: Colors.white,
                   surfaceTintColor: Colors.transparent,
-                  expandedHeight: 300,
-                  pinned: true,
+                  expandedHeight: 250,
                   leading: IconButton(
                     icon: Icon(
-                      Icons.arrow_back,
+                      Icons.arrow_back_ios,
                       color: Theme.of(context).colorScheme.onPrimary,
                     ),
                     onPressed: () {
@@ -46,7 +45,7 @@ class UserPlotsScreen extends ConsumerWidget {
                       padding: const EdgeInsets.symmetric(horizontal: 25),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           const SizedBox(height: 20),
                           Icon(
@@ -57,8 +56,9 @@ class UserPlotsScreen extends ConsumerWidget {
                           const SizedBox(height: 10),
                           const TextGradient(
                             text: 'View your Registered Plots',
-                            textAlign: TextAlign.start,
+                            textAlign: TextAlign.center,
                             fontSize: 40,
+                            letterSpacing: -2.5,
                           ),
                         ],
                       ),
@@ -74,6 +74,7 @@ class UserPlotsScreen extends ConsumerWidget {
                         Column(
                           children: userPlot.userPlots.map<Widget>((plot) {
                             final plotName = plot['plot_name'];
+                            final plotId = plot['plot_id'] as int;
                             final soilMoistureSensorName =
                                 plot['soil_moisture_sensors']
                                         ?['soil_moisture_name'] as String? ??
@@ -83,13 +84,14 @@ class UserPlotsScreen extends ConsumerWidget {
                                         ?['soil_nutrient_name'] as String? ??
                                     'No sensor assigned';
                             final cropName =
-                                plot['crops']?['crop_name'] as String? ??
+                                plot['user_crops']?['crop_name'] as String? ??
                                     'No crop assigned';
                             final assignedCategory =
-                                plot['crops']?['category'] as String? ??
+                                plot['user_crops']?['category'] as String? ??
                                     'No category assigned';
 
                             return RegisteredPlots(
+                              plotId: plotId,
                               plotName: plotName,
                               cropName: cropName,
                               assignedCategory: assignedCategory,
@@ -114,30 +116,31 @@ class UserPlotsScreen extends ConsumerWidget {
                 buttonText: 'Add Plot',
                 onPressed: () {
                   showCustomizableBottomSheet(
-                      context: context,
-                      height: 590,
-                      centerContent: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const TextGradient(
-                              text: 'Name your plot', fontSize: 40),
-                          const SizedBox(height: 20),
-                          TextFieldWidget(
-                            label: 'Plot Name',
-                            controller: plotNameController,
-                            focusNode: plotNameFocusNode,
-                          ),
-                        ],
-                      ),
-                      buttonText: 'Proceed',
-                      onPressed: () {
-                        Navigator.pop(context);
-                        cropsNotifier.setPlotName(
-                            plotNameController.text, context);
-                      },
-                      onSheetCreated: () {
-                        plotNameFocusNode.requestFocus();
-                      });
+                    context: context,
+                    height: 590,
+                    centerContent: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const TextGradient(
+                            text: 'Name your plot', fontSize: 40),
+                        const SizedBox(height: 20),
+                        TextFieldWidget(
+                          label: 'Plot Name',
+                          controller: plotNameController,
+                          focusNode: plotNameFocusNode,
+                        ),
+                      ],
+                    ),
+                    buttonText: 'Proceed',
+                    onPressed: () {
+                      Navigator.pop(context);
+                      cropsNotifier.setPlotName(
+                          plotNameController.text, context);
+                    },
+                    onSheetCreated: () {
+                      plotNameFocusNode.requestFocus();
+                    },
+                  );
                 },
               ),
             ),
