@@ -12,8 +12,4 @@ class SettingsController {
     ToastLoadingService.showLoadingToast(context,
         message: 'Resetting device...');
   }
-
-  Future<void> stopToast() async {
-    ToastLoadingService.dismissLoadingToast();
-  }
 }

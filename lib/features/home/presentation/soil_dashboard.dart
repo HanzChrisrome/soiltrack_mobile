@@ -6,7 +6,7 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/registered_plots.dart';
 import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
-import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
+import 'package:soiltrack_mobile/provider/weather_provider.dart';
 import 'package:soiltrack_mobile/widgets/customizable_bottom_sheet.dart';
 import 'package:soiltrack_mobile/widgets/outline_button.dart';
 import 'package:soiltrack_mobile/widgets/text_field.dart';
@@ -32,20 +32,17 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
   }
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(weatherProvider.notifier).fetchWeather('Baliuag');
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cropsNotifier = ref.read(cropProvider.notifier);
     final userPlot = ref.watch(soilDashboardProvider);
-    final soilNotifier = ref.read(soilDashboardProvider.notifier);
-    final soilSensorNotifier = ref.read(sensorsProvider.notifier);
-
-    if (userPlot.userPlots.isEmpty &&
-        !userPlot.isFetchingUserPlots &&
-        userPlot.error == null) {
-      Future.microtask(() {
-        soilNotifier.fetchUserPlots();
-        soilSensorNotifier.fetchSensors();
-      });
-    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -159,10 +156,11 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                               onPressed: () {
                                 showCustomizableBottomSheet(
                                   context: context,
-                                  height: 590,
+                                  height: 350,
                                   centerContent: Column(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
+                                      const SizedBox(height: 20),
                                       const TextGradient(
                                           text: 'Name your plot', fontSize: 40),
                                       const SizedBox(height: 20),

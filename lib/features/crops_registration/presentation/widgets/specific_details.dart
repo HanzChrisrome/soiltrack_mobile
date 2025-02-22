@@ -48,7 +48,7 @@ class SpecificDetails extends ConsumerWidget {
               child: Container(
                   padding: const EdgeInsets.all(5),
                   decoration: BoxDecoration(
-                    color: Colors.green,
+                    color: Theme.of(context).colorScheme.onPrimary,
                     borderRadius: BorderRadius.circular(5),
                   ),
                   child: const Icon(Icons.edit, color: Colors.white, size: 15)),

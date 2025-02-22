@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:soiltrack_mobile/core/utils/toast_service.dart';
 import 'package:toastification/toastification.dart';
 
 class ToastLoadingService {
@@ -8,7 +9,7 @@ class ToastLoadingService {
   static void showLoadingToast(BuildContext context,
       {required String message}) {
     if (_loadingToast != null) {
-      dismissLoadingToast();
+      dismissLoadingToastOnly();
     }
 
     _loadingToast = toastification.show(
@@ -40,10 +41,19 @@ class ToastLoadingService {
     );
   }
 
-  static void dismissLoadingToast() {
+  static void dismissLoadingToastOnly() {
     if (_loadingToast != null) {
       toastification.dismiss(_loadingToast!);
       _loadingToast = null;
+    }
+  }
+
+  static void dismissLoadingToast(
+      BuildContext context, String message, ToastificationType type) {
+    if (_loadingToast != null) {
+      toastification.dismiss(_loadingToast!);
+      _loadingToast = null;
+      ToastService.showToast(context: context, message: message, type: type);
     }
   }
 }

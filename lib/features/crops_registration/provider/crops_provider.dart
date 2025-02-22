@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:soiltrack_mobile/core/utils/loading_toast.dart';
-import 'package:soiltrack_mobile/core/utils/toast_service.dart';
 import 'package:soiltrack_mobile/features/crops_registration/models/crop_model.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
@@ -190,20 +189,13 @@ class CropNotifer extends Notifier<CropState> {
       soilDashboardNotifier.fetchUserPlots();
       sensorNotifier.fetchSensors();
 
-      ToastLoadingService.dismissLoadingToast();
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Crop assigned successfully', ToastificationType.success);
       state = state.copyWith(isSaving: false);
-      ToastService.showToast(
-          context: context,
-          message: 'Crop assigned successfully',
-          type: ToastificationType.success);
     } catch (e) {
       print('Error assigning crop: $e');
-      ToastLoadingService.dismissLoadingToast();
-      ToastService.showToast(
-          context: context,
-          message: 'Error assigning crop',
-          type: ToastificationType.error);
-      state = state.copyWith(isSaving: false);
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Error assigning crop', ToastificationType.error);
     }
   }
 
@@ -242,6 +234,7 @@ class CropNotifer extends Notifier<CropState> {
     int minPotassium,
     int maxPotassium,
   ) async {
+    final userPlotNotifier = ref.read(soilDashboardProvider.notifier);
     ToastLoadingService.showLoadingToast(context, message: 'Saving Crop');
 
     try {
@@ -249,7 +242,7 @@ class CropNotifer extends Notifier<CropState> {
           .from('user_crops')
           .insert({
             'crop_name': cropName,
-            'category': state.selectedCategory,
+            'category': 'Custom Crop',
             'moisture_min': minMoisture,
             'moisture_max': maxMoisture,
             'nitrogen_min': minNitrogen,
@@ -264,11 +257,8 @@ class CropNotifer extends Notifier<CropState> {
           .single();
 
       if (saveNewCropResponse.isEmpty) {
-        ToastLoadingService.dismissLoadingToast();
-        ToastService.showToast(
-            context: context,
-            message: 'Error saving crop',
-            type: ToastificationType.error);
+        ToastLoadingService.dismissLoadingToast(
+            context, 'Error saving crop', ToastificationType.error);
         return;
       }
 
@@ -294,18 +284,13 @@ class CropNotifer extends Notifier<CropState> {
         }).eq('soil_moisture_sensor_id', state.selectedSensor!);
       }
 
-      ToastLoadingService.dismissLoadingToast();
-      ToastService.showToast(
-          context: context,
-          message: 'Crop saved successfully',
-          type: ToastificationType.success);
+      userPlotNotifier.fetchUserPlots();
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Crop saved successfully', ToastificationType.success);
     } catch (e) {
       print('Error saving crop: $e');
-      ToastLoadingService.dismissLoadingToast();
-      ToastService.showToast(
-          context: context,
-          message: 'Error saving crop',
-          type: ToastificationType.error);
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Error saving crop', ToastificationType.error);
     }
   }
 }

@@ -46,13 +46,10 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
               ] // Restrict input to digits
             : [],
         decoration: InputDecoration(
-          labelText: widget.label,
-          labelStyle: TextStyle(
-            color: Colors.grey[400],
-          ),
-          floatingLabelStyle: const TextStyle(
-            color: Colors.green,
-          ),
+          hintText: widget.label,
+          hintStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                color: Colors.grey,
+              ),
           contentPadding:
               const EdgeInsets.symmetric(vertical: 13.0, horizontal: 12.0),
           enabledBorder: const OutlineInputBorder(

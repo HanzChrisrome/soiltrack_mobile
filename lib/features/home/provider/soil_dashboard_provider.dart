@@ -6,8 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:soiltrack_mobile/core/utils/loading_toast.dart';
-import 'package:soiltrack_mobile/core/utils/toast_service.dart';
 import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
+import 'package:soiltrack_mobile/features/home/service/soil_dashboard_service.dart';
 import 'package:toastification/toastification.dart';
 
 class SoilDashboardState {
@@ -86,6 +86,8 @@ class SoilDashboardState {
 }
 
 class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
+  final SoilDashboardService soilDashboardService = SoilDashboardService();
+
   @override
   SoilDashboardState build() {
     return SoilDashboardState();
@@ -100,46 +102,13 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       final macAddress = prefs.getString('mac_address') ?? '';
       final String userId = supabase.auth.currentUser!.id;
 
+      final userPlots = await soilDashboardService.userPlots(userId);
+
       if (macAddress.isEmpty) {
         print('No device registered');
         state = state.copyWith(error: 'No device registered');
         return;
       }
-
-      // Fetch user plots from Supabase
-      final userPlots = await supabase.from('user_plots').select('''
-        plot_id,
-        plot_name,
-        soil_type,
-        user_crop_id,
-        date_added,
-        user_crops (
-            crop_name,
-            category,
-            moisture_min,
-            moisture_max,
-            nitrogen_min,
-            nitrogen_max,
-            phosphorus_min,
-            phosphorus_max,
-            potassium_min,
-            potassium_max
-        ),
-        soil_moisture_sensor_id,
-        soil_moisture_sensors (
-            soil_moisture_sensor_id,
-            soil_moisture_name,
-            soil_moisture_status,
-            is_assigned
-        ),
-        soil_nutrient_sensor_id,
-        soil_nutrient_sensors (
-            soil_nutrient_sensor_id,
-            soil_nutrient_name,
-            soil_nutrient_status,
-            is_assigned
-        )
-    ''').eq('user_id', userId).order('date_added', ascending: true);
 
       if (userPlots.isEmpty) {
         print('No plots available');
@@ -166,16 +135,10 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     await Future.delayed(const Duration(seconds: 1));
 
     try {
-      final userPlotsData = await supabase
-          .from('soil_moisture_readings')
-          .select('''
-            plot_id,
-            soil_moisture_sensor_id,
-            soil_moisture,
-            read_time
-        ''')
-          .eq('plot_id', state.selectedPlotId)
-          .order('read_time', ascending: false);
+      final List<String> plotIds =
+          state.userPlots.map((plot) => plot['plot_id'].toString()).toList();
+
+      final userPlotsData = await soilDashboardService.userPlotData(plotIds);
 
       if (userPlotsData.isEmpty) {
         state = state.copyWith(
@@ -220,11 +183,8 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         'crop_id': getCropId['crop_id'],
       }).eq('plot_id', state.selectedPlotId);
 
-      ToastLoadingService.dismissLoadingToast();
-      ToastService.showToast(
-          context: context,
-          message: 'Crop assigned successfully',
-          type: ToastificationType.success);
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Crop assigned successfully', ToastificationType.success);
 
       state = state.copyWith(isEditingUserPlot: false);
       fetchUserPlots();
@@ -232,11 +192,8 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       context.pushNamed('user-plot');
     } catch (e) {
       print('Error assigning crop: $e');
-      ToastLoadingService.dismissLoadingToast();
-      ToastService.showToast(
-          context: context,
-          message: 'Error updating crop',
-          type: ToastificationType.error);
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Error assigning crop', ToastificationType.error);
       state = state.copyWith(isSavingNewCrop: false);
     }
   }
@@ -250,18 +207,12 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
           'plot_id', state.selectedPlotId);
 
       fetchUserPlots();
-      ToastLoadingService.dismissLoadingToast();
-      ToastService.showToast(
-          context: context,
-          message: 'Plot name updated successfully',
-          type: ToastificationType.success);
+      ToastLoadingService.dismissLoadingToast(context,
+          'Plot name updated successfully', ToastificationType.success);
     } catch (e) {
       print('Error updating plot name: $e');
-      ToastLoadingService.dismissLoadingToast();
-      ToastService.showToast(
-          context: context,
-          message: 'Error updating crop',
-          type: ToastificationType.error);
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Error updating plot name', ToastificationType.error);
     }
   }
 
@@ -284,19 +235,17 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
 
       await fetchUserPlots();
 
-      ToastLoadingService.dismissLoadingToast();
-      ToastService.showToast(
-          context: context,
-          message: 'Threshold updated successfully',
-          type: ToastificationType.success);
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Threshold updated', ToastificationType.success);
     } catch (e) {
       print('Error updating threshold: $e');
-      ToastLoadingService.dismissLoadingToast();
-      ToastService.showToast(
-          context: context,
-          message: 'Error updating threshold',
-          type: ToastificationType.error);
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Error updating threshold', ToastificationType.error);
     }
+  }
+
+  Future<void> deletePlot(BuildContext context) async {
+    //If no sensor assigned and data
   }
 }
 

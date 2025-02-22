@@ -1,14 +1,14 @@
 // ignore_for_file: avoid_print
 
 import 'dart:async';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 
 class Config {
-  static const String mqttBroker =
-      "492fff856e4e41edb7fdca124aca8f56.s1.eu.hivemq.cloud";
-  static const String mqttUsername = "Chroime";
-  static const String mqttPassword = "Secret12";
+  static String get mqttBroker => dotenv.env['MQTT_BROKER'] ?? "";
+  static String get mqttUsername => dotenv.env['MQTT_USERNAME'] ?? "";
+  static String get mqttPassword => dotenv.env['MQTT_PASSWORD'] ?? "";
 }
 
 class MQTTService {

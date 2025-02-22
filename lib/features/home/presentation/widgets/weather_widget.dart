@@ -1,86 +1,101 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soiltrack_mobile/provider/weather_provider.dart';
 
-class WeatherWidget extends StatelessWidget {
+class WeatherWidget extends ConsumerWidget {
   const WeatherWidget({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: Colors.white, // Light background
-        borderRadius: BorderRadius.circular(20), // Rounded corners
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            crossAxisAlignment: CrossAxisAlignment.center,
+  Widget build(BuildContext context, WidgetRef ref) {
+    final weatherState = ref.watch(weatherProvider);
+
+    return Column(
+      children: [
+        Container(
+          width: double.infinity,
+          decoration: BoxDecoration(
+            image: const DecorationImage(
+              image: AssetImage('assets/weather/normal_night.png'),
+              fit: BoxFit.cover,
+            ),
+            borderRadius: BorderRadius.circular(25),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text("+26°",
-                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                          fontWeight: FontWeight.w800,
-                          fontSize: 60,
-                          letterSpacing: -2.5)),
-                  Text(
-                    "Feels like: 28°",
-                    style: TextStyle(fontSize: 16, color: Colors.grey[700]),
-                  ),
-                ],
+              Text('Baliuag, Bulacan',
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall!
+                      .copyWith(color: Colors.white)),
+              Text(
+                "${weatherState.weatherData!["main"]["temp"].toInt()}°",
+                style: Theme.of(context).textTheme.titleSmall!.copyWith(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 70,
+                    letterSpacing: -2.5,
+                    height: 1,
+                    color: Colors.white),
               ),
-              const Icon(
-                Icons.wb_sunny_rounded,
-                size: 80,
-                color: Colors.orange,
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                decoration: BoxDecoration(
+                  border: Border.all(color: Colors.white.withOpacity(0.2)),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      "${weatherState.weatherData!["weather"][0]["description"][0].toUpperCase()}${weatherState.weatherData!["weather"][0]["description"].substring(1)}",
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall!
+                          .copyWith(color: Colors.white),
+                    ),
+                    const SizedBox(width: 15),
+                    const Icon(
+                      Icons.water_drop_outlined,
+                      color: Colors.white,
+                      size: 15,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      "${weatherState.weatherData!["main"]["humidity"]}%",
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall!
+                          .copyWith(color: Colors.white),
+                    ),
+                    const SizedBox(width: 15),
+                    const Icon(
+                      Icons.air_outlined,
+                      color: Colors.white,
+                      size: 15,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      "${weatherState.weatherData!["wind"]["speed"]} m/s",
+                      style: Theme.of(context)
+                          .textTheme
+                          .bodySmall!
+                          .copyWith(color: Colors.white),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          Container(
-            padding: const EdgeInsets.all(10),
-            width: double.infinity,
-            decoration: BoxDecoration(
-              border: Border.all(color: Colors.grey),
-              borderRadius: BorderRadius.circular(15),
-            ),
-            child: const Text(
-              "Weather data provided by OpenWeatherMap",
-              style: TextStyle(fontSize: 12, color: Colors.grey),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class HourlyForecast extends StatelessWidget {
-  final String time;
-  final String temp;
-  final IconData icon;
-
-  const HourlyForecast({
-    required this.time,
-    required this.temp,
-    required this.icon,
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(time, style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500)),
-        const SizedBox(height: 5),
-        Icon(icon, size: 30, color: Colors.grey[700]),
-        const SizedBox(height: 5),
-        Text(temp, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        ),
       ],
     );
   }
 }
+
+// String _formatTime(int timestamp) {
+//   final DateTime time = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+//   return DateFormat.jm().format(time);
+// }

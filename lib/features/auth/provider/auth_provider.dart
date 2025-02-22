@@ -2,11 +2,15 @@
 
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthState {
   final User? user;
   final String? userName;
+  final String? userLastName;
+  final String? userEmail;
   final bool isAuthenticated;
   final bool isLoggingIn;
   final bool isRegistering;
@@ -14,6 +18,8 @@ class AuthState {
   AuthState({
     this.user,
     this.userName,
+    this.userLastName,
+    this.userEmail,
     this.isAuthenticated = false,
     this.isLoggingIn = false,
     this.isRegistering = false,
@@ -22,6 +28,8 @@ class AuthState {
   AuthState copyWith({
     User? user,
     String? userName,
+    String? userLastName,
+    String? userEmail,
     bool? isAuthenticated,
     bool? isLoggingIn,
     bool? isRegistering,
@@ -29,6 +37,8 @@ class AuthState {
     return AuthState(
       user: user ?? this.user,
       userName: userName ?? this.userName,
+      userLastName: userLastName ?? this.userLastName,
+      userEmail: userEmail ?? this.userEmail,
       isAuthenticated: isAuthenticated ?? this.isAuthenticated,
       isLoggingIn: isLoggingIn ?? this.isLoggingIn,
       isRegistering: isRegistering ?? this.isRegistering,
@@ -55,12 +65,15 @@ class AuthNotifier extends Notifier<AuthState> {
     try {
       final userRecord = await supabase
           .from('users')
-          .select('user_fname, user_lname')
+          .select('user_fname, user_lname, user_email')
           .eq('user_id', userId)
           .single();
 
       state = state.copyWith(
-          userName: userRecord['user_fname'], isAuthenticated: true);
+          userName: userRecord['user_fname'],
+          userLastName: userRecord['user_lname'],
+          userEmail: userRecord['user_email'],
+          isAuthenticated: true);
 
       print('User name: ${state.userName}');
     } catch (e) {
@@ -69,6 +82,9 @@ class AuthNotifier extends Notifier<AuthState> {
   }
 
   Future<void> signIn(String email, String password) async {
+    final dashboardNotifier = ref.read(soilDashboardProvider.notifier);
+    final sensorNotifier = ref.read(sensorsProvider.notifier);
+
     state = state.copyWith(isLoggingIn: true);
     try {
       final response = await supabase.auth.signInWithPassword(
@@ -79,6 +95,11 @@ class AuthNotifier extends Notifier<AuthState> {
       if (response.user != null) {
         _fetchUserName(response.user!.id);
         print('User: ${response.user}');
+
+        dashboardNotifier.fetchUserPlots();
+        dashboardNotifier.fetchUserPlotData();
+        sensorNotifier.fetchSensors();
+
         state = state.copyWith(user: response.user, isAuthenticated: true);
       }
     } catch (e) {

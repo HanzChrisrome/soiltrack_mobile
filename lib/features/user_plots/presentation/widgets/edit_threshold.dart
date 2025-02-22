@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:soiltrack_mobile/core/utils/toast_service.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/widgets/customizable_bottom_sheet.dart';
 import 'package:soiltrack_mobile/widgets/text_field.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
+import 'package:toastification/toastification.dart';
 
 void editThreshold({
   required BuildContext context,
   required String title,
-  required String minLabel,
-  required String maxLabel,
+  required int minLabel,
+  required int maxLabel,
   required TextEditingController minController,
   required TextEditingController maxController,
   required int currentMin,
@@ -30,12 +32,12 @@ void editThreshold({
         ),
         const SizedBox(height: 20),
         TextFieldWidget(
-          label: minLabel,
+          label: '$thresholdType Min $minLabel%',
           controller: minController,
           isNumberOnly: true,
         ),
         TextFieldWidget(
-          label: maxLabel,
+          label: '$thresholdType Max $maxLabel%',
           controller: maxController,
           isNumberOnly: true,
         ),
@@ -46,6 +48,24 @@ void editThreshold({
       Navigator.of(context).pop();
       int minThreshold = int.tryParse(minController.text) ?? currentMin;
       int maxThreshold = int.tryParse(maxController.text) ?? currentMax;
+
+      if (minThreshold > maxLabel) {
+        ToastService.showToast(
+          context: context,
+          message: 'Min value cannot be greater than max',
+          type: ToastificationType.error,
+        );
+        return;
+      }
+
+      if (maxThreshold < minLabel) {
+        ToastService.showToast(
+          context: context,
+          message: 'Max value cannot be less than min',
+          type: ToastificationType.error,
+        );
+        return;
+      }
 
       Map<String, int> updatedValues = {
         minColumn: minThreshold,

@@ -339,11 +339,8 @@ class DeviceNotifier extends Notifier<DeviceState> {
           expectedMessage: "RESET_SUCCESS");
 
       if (response != "RESET_SUCCESS") {
-        ToastLoadingService.dismissLoadingToast();
-        ToastService.showToast(
-            context: context,
-            message: 'Device did not respond.',
-            type: ToastificationType.error);
+        ToastLoadingService.dismissLoadingToast(
+            context, 'Device did not respond.', ToastificationType.error);
         return;
       }
 
@@ -352,18 +349,12 @@ class DeviceNotifier extends Notifier<DeviceState> {
       // await prefs.remove('api_key');
       // await prefs.remove('mac_address');
 
-      ToastLoadingService.dismissLoadingToast();
-      ToastService.showToast(
-          context: context,
-          message: 'Device is reset successfully.',
-          type: ToastificationType.info);
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Device is reset successfully.', ToastificationType.info);
     } catch (e) {
       print("❌ Device did not respond. It might be OFFLINE.");
-      ToastLoadingService.dismissLoadingToast();
-      ToastService.showToast(
-          context: context,
-          message: 'Device did not respond.',
-          type: ToastificationType.error);
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Device did not respond.', ToastificationType.error);
     }
   }
 
@@ -390,12 +381,8 @@ class DeviceNotifier extends Notifier<DeviceState> {
     final macAddress = prefs.getString('mac_address');
 
     if (macAddress == null) {
-      ToastLoadingService.dismissLoadingToast();
-      ToastService.showToast(
-        context: context,
-        message: 'No MAC address found.',
-        type: ToastificationType.error,
-      );
+      ToastLoadingService.dismissLoadingToast(
+          context, 'No MAC address found.', ToastificationType.error);
       return;
     }
 
@@ -414,12 +401,10 @@ class DeviceNotifier extends Notifier<DeviceState> {
           expectedMessage: expectedResponse);
 
       if (response == expectedResponse) {
-        ToastService.showToast(
-          context: context,
-          message:
-              'Pump ${action == 'PUMP ON' ? 'opened' : 'closed'} successfully.',
-          type: ToastificationType.info,
-        );
+        ToastLoadingService.dismissLoadingToast(
+            context,
+            'Pump ${action == 'PUMP ON' ? 'opened' : 'closed'} successfully.',
+            ToastificationType.info);
         state = state.copyWith(isPumpOpen: newPumpState);
         print('Pump is open: ${state.isPumpOpen}');
       } else {
@@ -431,8 +416,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
         message: 'Failed to ${action == 'PUMP ON' ? 'open' : 'close'} pump.',
         type: ToastificationType.error,
       );
-    } finally {
-      ToastLoadingService.dismissLoadingToast();
     }
   }
 }

@@ -15,7 +15,7 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // final authState = ref.watch(authProvider);
+    final authState = ref.watch(authProvider);
     final authNotifier = ref.watch(authProvider.notifier);
     final deviceState = ref.watch(deviceProvider);
     final deviceNotifier = ref.watch(deviceProvider.notifier);
@@ -48,10 +48,13 @@ class SettingsScreen extends ConsumerWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const TextGradient(text: 'Hanz Chico', fontSize: 20),
+                          TextGradient(
+                              text:
+                                  '${authState.userName} ${authState.userLastName}',
+                              fontSize: 20),
                           const SizedBox(height: 1),
                           Text(
-                            'hanzchrisromechico@gmail.com',
+                            authState.userEmail!,
                             style: Theme.of(context)
                                 .textTheme
                                 .bodySmall!

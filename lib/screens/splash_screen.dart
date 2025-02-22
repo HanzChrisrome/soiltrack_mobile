@@ -3,51 +3,53 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
+import 'package:soiltrack_mobile/provider/weather_provider.dart';
 
-class SplashScreen extends ConsumerStatefulWidget {
+class SplashScreen extends ConsumerWidget {
   const SplashScreen({super.key});
 
   @override
-  _SplashScreenState createState() => _SplashScreenState();
-}
+  Widget build(BuildContext context, WidgetRef ref) {
+    final sensorNotifier = ref.read(sensorsProvider.notifier);
+    final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
+    final weatherNotifier = ref.read(weatherProvider.notifier);
 
-class _SplashScreenState extends ConsumerState<SplashScreen> {
-  @override
-  void initState() {
-    super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
-      context.go('/login');
+    Future.microtask(() async {
+      await sensorNotifier.fetchSensors();
+      await soilDashboardNotifier.fetchUserPlots();
+      await soilDashboardNotifier.fetchUserPlotData();
+      await weatherNotifier.fetchWeather('Baliuag');
+      if (context.mounted) {
+        context.go('/home');
+      }
     });
-  }
 
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20.0),
-              child: Image.asset(
-                'assets/logo/DARK VERTICAL.png',
-                height: 150,
-              ),
-            ),
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: Text(
-                'Made by Team Hanz',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.black,
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          Image.asset(
+            'assets/background/background_splash.png',
+            fit: BoxFit.cover,
+          ),
+          Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/logo/soiltrack gradient.png',
+                  height: 230,
                 ),
-              ),
+                LoadingAnimationWidget.progressiveDots(
+                    color: Theme.of(context).colorScheme.onPrimary, size: 70),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
