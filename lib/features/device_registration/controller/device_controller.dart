@@ -50,6 +50,7 @@ class DeviceController {
       return;
     }
 
+    print('Navigating to wifi-scan');
     context.pushNamed('wifi-scan');
   }
 

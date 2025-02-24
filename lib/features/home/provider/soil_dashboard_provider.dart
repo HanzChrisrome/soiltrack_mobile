@@ -8,6 +8,7 @@ import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:soiltrack_mobile/core/utils/loading_toast.dart';
 import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
 import 'package:soiltrack_mobile/features/home/service/soil_dashboard_service.dart';
+import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:toastification/toastification.dart';
 
 class SoilDashboardState {
@@ -103,6 +104,7 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       final String userId = supabase.auth.currentUser!.id;
 
       final userPlots = await soilDashboardService.userPlots(userId);
+      // print('User Plots $userPlots');
 
       if (macAddress.isEmpty) {
         print('No device registered');
@@ -129,6 +131,15 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     context.pushNamed('user-plot');
   }
 
+  void setPlodId(plotId) {
+    print('Selected plot id: $plotId');
+    state = state.copyWith(selectedPlotId: plotId);
+  }
+
+  void setNutrientSensorId(npkSensorId) {
+    print('Selected sensor id $npkSensorId');
+  }
+
   Future<void> fetchUserPlotData() async {
     if (state.isFetchingUserPlotData) return;
     state = state.copyWith(isFetchingUserPlotData: true);
@@ -139,6 +150,7 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
           state.userPlots.map((plot) => plot['plot_id'].toString()).toList();
 
       final userPlotsData = await soilDashboardService.userPlotData(plotIds);
+      // print('User plots data: $userPlotsData');
 
       if (userPlotsData.isEmpty) {
         state = state.copyWith(
@@ -172,16 +184,7 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     ToastLoadingService.showLoadingToast(context,
         message: 'Assigning new crop');
     try {
-      print('Selected Crop: ${cropState.selectedCrop}');
-      final getCropId = await supabase
-          .from('crops')
-          .select('crop_id')
-          .eq('crop_name', cropState.selectedCrop!)
-          .single();
-
-      await supabase.from('user_plots').update({
-        'crop_id': getCropId['crop_id'],
-      }).eq('plot_id', state.selectedPlotId);
+      await soilDashboardService.cropId(cropState.selectedCrop!);
 
       ToastLoadingService.dismissLoadingToast(
           context, 'Crop assigned successfully', ToastificationType.success);
@@ -203,9 +206,8 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         message: 'Changing plot name');
 
     try {
-      await supabase.from('user_plots').update({'plot_name': newPlotName}).eq(
-          'plot_id', state.selectedPlotId);
-
+      await soilDashboardService.editPlotName(
+          newPlotName, state.selectedPlotId);
       fetchUserPlots();
       ToastLoadingService.dismissLoadingToast(context,
           'Plot name updated successfully', ToastificationType.success);
@@ -222,17 +224,8 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         message: 'Changing $thresholdType threshold');
 
     try {
-      final userCropId = await supabase
-          .from('user_plots')
-          .select('user_crop_id')
-          .eq('plot_id', state.selectedPlotId)
-          .single();
-
-      await supabase
-          .from('user_crops')
-          .update(updatedValues)
-          .eq('user_crop_id', userCropId['user_crop_id']);
-
+      await soilDashboardService.saveNewThreshold(
+          state.selectedPlotId, updatedValues);
       await fetchUserPlots();
 
       ToastLoadingService.dismissLoadingToast(
@@ -244,9 +237,36 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     }
   }
 
-  Future<void> deletePlot(BuildContext context) async {
-    //If no sensor assigned and data
+  Future<void> assignNutrientSensor(BuildContext context, selectedNpkId) async {
+    ToastLoadingService.showLoadingToast(context,
+        message: 'Assigning NPK Sensor');
+    final sensorNotifier = ref.read(sensorsProvider.notifier);
+    final selectedPlotID = state.selectedPlotId;
+
+    try {
+      await supabase
+          .from('user_plots')
+          .update({'soil_nutrient_sensor_id': selectedNpkId}).eq(
+              'plot_id', selectedPlotID);
+
+      await supabase.from('soil_nutrient_sensors').update({
+        'is_assigned': true,
+      }).eq('soil_nutrient_sensor_id', selectedNpkId);
+
+      await fetchUserPlots();
+      await fetchUserPlotData();
+      await sensorNotifier.fetchSensors();
+
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Sensor assigned successfully', ToastificationType.success);
+    } catch (e) {
+      print('Error assigning $e');
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Error assigning NPK', ToastificationType.error);
+    }
   }
+
+  Future<void> deletePlot(BuildContext context) async {}
 }
 
 final soilDashboardProvider =

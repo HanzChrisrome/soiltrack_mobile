@@ -44,8 +44,8 @@ class WeatherNotifier extends Notifier<WeatherState> {
   Future<void> fetchWeather(String city) async {
     state = state.copyWith(isLoading: true);
     try {
-      final data = await weatherService.getWeatherByCity(city);
-      final forecast = await weatherService.getHourlyForecastByCity(city);
+      final data = await weatherService.getWeatherByCity('Baliuag');
+      final forecast = await weatherService.getHourlyForecastByCity('Baliuag');
       final suggestions = weatherService.generateSuggestions(data, forecast);
 
       state = state.copyWith(

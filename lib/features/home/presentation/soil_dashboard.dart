@@ -5,8 +5,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/registered_plots.dart';
 import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
+import 'package:soiltrack_mobile/features/home/presentation/widgets/soil_dashboard/unassigned_sensor.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
-import 'package:soiltrack_mobile/provider/weather_provider.dart';
+import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/widgets/customizable_bottom_sheet.dart';
 import 'package:soiltrack_mobile/widgets/outline_button.dart';
 import 'package:soiltrack_mobile/widgets/text_field.dart';
@@ -31,18 +32,29 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
     super.dispose();
   }
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(weatherProvider.notifier).fetchWeather('Baliuag');
-    });
-  }
+  // @override
+  // void initState() {
+  //   super.initState();
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     ref.read(weatherProvider.notifier).fetchWeather('Baliuag');
+
+  //     final userPlots = ref.read(soilDashboardProvider).userPlots;
+  //     if (userPlots.isEmpty) {
+  //       ref.read(soilDashboardProvider.notifier).fetchUserPlots();
+  //       ref.read(soilDashboardProvider.notifier).fetchUserPlotData();
+  //     }
+  //   });
+  // }
 
   @override
   Widget build(BuildContext context) {
     final cropsNotifier = ref.read(cropProvider.notifier);
     final userPlot = ref.watch(soilDashboardProvider);
+    final sensorState = ref.watch(sensorsProvider);
+
+    final unassignedNutrientSensors = sensorState.nutrientSensors
+        .where((sensor) => sensor['is_assigned'] == false)
+        .toList();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -111,38 +123,58 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                           [
                             Column(
                               children: [
+                                if (unassignedNutrientSensors.isNotEmpty)
+                                  const UnassignedSensor(),
                                 Column(
                                   children: userPlot.userPlots.map<Widget>(
                                     (plot) {
                                       final plotName = plot['plot_name'];
-                                      final plotId = plot['plot_id'] as int;
-                                      final soilMoistureSensorName =
-                                          plot['soil_moisture_sensors']
-                                                      ?['soil_moisture_name']
-                                                  as String? ??
-                                              'No sensor assigned';
-                                      final soilNutrientSensorName =
-                                          plot['soil_nutrient_sensors']
-                                                      ?['soil_nutrient_name']
-                                                  as String? ??
-                                              'No sensor assigned';
+                                      final plotId = plot['plot_id'];
                                       final cropName = plot['user_crops']
                                               ?['crop_name'] as String? ??
                                           'No crop assigned';
-                                      final assignedCategory =
-                                          plot['user_crops']?['category']
-                                                  as String? ??
-                                              'No category assigned';
+                                      final category = plot['user_crops']
+                                              ?['category'] as String? ??
+                                          'No category assigned';
+
+                                      final sensors =
+                                          plot['user_plot_sensors'] ?? [];
+                                      final soilMoistureSensor =
+                                          sensors.firstWhere(
+                                        (sensor) =>
+                                            sensor['soil_sensors']
+                                                ['sensor_category'] ==
+                                            'Moisture Sensor',
+                                        orElse: () => null,
+                                      );
+
+                                      final soilNutrientSensor =
+                                          sensors.firstWhere(
+                                        (sensor) =>
+                                            sensor['soil_sensors']
+                                                ['sensor_category'] ==
+                                            'NPK Sensor',
+                                        orElse: () => null,
+                                      );
+
+                                      final soilMoistureSensorName =
+                                          soilMoistureSensor?['soil_sensors']
+                                                  ['sensor_name'] as String? ??
+                                              'No moisture sensor assigned';
+                                      final soilNutrientSensorName =
+                                          soilNutrientSensor?['soil_sensors']
+                                                  ['sensor_name'] as String? ??
+                                              'No nutrient sensor assigned';
 
                                       return RegisteredPlots(
-                                        plotId: plotId,
                                         plotName: plotName,
                                         cropName: cropName,
-                                        assignedCategory: assignedCategory,
+                                        assignedCategory: category,
                                         soilMoistureSensorName:
                                             soilMoistureSensorName,
                                         soilNutrientSensorName:
                                             soilNutrientSensorName,
+                                        plotId: plotId,
                                       );
                                     },
                                   ).toList(),

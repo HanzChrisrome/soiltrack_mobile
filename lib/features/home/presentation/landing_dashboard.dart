@@ -107,7 +107,7 @@ class LandingDashboard extends ConsumerWidget {
                       const SizedBox(height: 40),
                       if (weatherState.suggestionData != null &&
                           weatherState.suggestionData!.isNotEmpty)
-                        ListView.builder(
+                        ListView.separated(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
                           itemCount: weatherState.suggestionData!.length,
@@ -149,6 +149,8 @@ class LandingDashboard extends ConsumerWidget {
                               ),
                             );
                           },
+                          separatorBuilder: (context, index) =>
+                              const DividerWidget(verticalHeight: 5),
                         ),
                     ],
                   ),

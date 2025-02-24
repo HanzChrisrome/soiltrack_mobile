@@ -102,8 +102,8 @@ class ToolsSectionWidget extends ConsumerWidget {
                               : 'Assign a Sensor',
                           fontSize: 35),
                       const SizedBox(height: 20),
-                      if (sensorState.sensors.isNotEmpty)
-                        ...sensorState.sensors.map(
+                      if (sensorState.moistureSensors.isNotEmpty)
+                        ...sensorState.moistureSensors.map(
                           (sensor) {
                             final bool isSelected = cropState.selectedSensor ==
                                 sensor['soil_moisture_sensor_id'];

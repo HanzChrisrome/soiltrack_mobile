@@ -9,10 +9,12 @@ import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/crop_threshold.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_details.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/tools_section.dart';
+import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/widgets/customizable_bottom_sheet.dart';
 import 'package:soiltrack_mobile/widgets/text_field.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/widgets/text_header.dart';
+import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
 class UserPlotScreen extends ConsumerStatefulWidget {
   const UserPlotScreen({super.key});
@@ -55,17 +57,27 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
     );
 
     final int plotId = selectedPlot['plot_id'] ?? 0;
-    final plotName =
-        selectedPlot.isNotEmpty ? selectedPlot['plot_name'] : 'No plot found';
-    final selectedCrop =
-        selectedPlot['user_crops']?['crop_name'] ?? 'No selected crop';
-    final assignedSensor = selectedPlot['soil_moisture_sensors']
-            ?['soil_moisture_name'] ??
-        'No sensor assigned';
-    final assignedNutrientSensor = selectedPlot['soil_nutrient_sensors']
-            ?['soil_nutrient_name'] ??
-        'No sensor assigned';
-    final soilType = selectedPlot['soil_type'] ?? 'No soil type';
+    final plotName = selectedPlot['plot_name'] ?? 'No plot found';
+    final soilType = selectedPlot['soil_type'] ?? 'No soil type found';
+    final selectedCrop = selectedPlot['user_crops']['crop_name'] ?? 'No crop';
+
+    final sensors = selectedPlot['user_plot_sensors'] ?? [];
+    final soilMoistureSensors = sensors.firstWhere(
+      (sensor) =>
+          sensor['soil_sensors']['sensor_category'] == 'Moisture Sensor',
+      orElse: () => {},
+    );
+
+    final soilNutrientSensors = sensors.firstWhere(
+      (sensor) =>
+          sensor['soil_sensors']['sensor_category'] == 'Nutrient Sensor',
+      orElse: () => {},
+    );
+
+    final assignedMoistureSensor =
+        soilMoistureSensors?['soil_sensors']?['sensor_name'] ?? 'No sensor';
+    final assignedNutrientSensor =
+        soilNutrientSensors?['soil_sensors']?['sensor_name'] ?? 'No sensor';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -218,11 +230,12 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                         sliver: SliverList(
                           delegate: SliverChildListDelegate([
                             PlotDetailsWidget(
-                                assignedSensor: assignedSensor,
+                                assignedSensor: assignedMoistureSensor,
                                 assignedNutrientSensor: assignedNutrientSensor,
                                 soilType: soilType),
                             const SizedBox(height: 5),
-                            ToolsSectionWidget(assignedSensor: assignedSensor),
+                            ToolsSectionWidget(
+                                assignedSensor: assignedNutrientSensor),
                             const SizedBox(height: 5),
                             CropThresholdWidget(plotDetails: selectedPlot),
                             const SizedBox(height: 10),
@@ -231,12 +244,6 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                                 children: [
                                   PlotCard(
                                     selectedPlotId: plotId,
-                                    soilMoistureSensorId: userPlot.userPlotData
-                                        .first['soil_moisture_sensor_id'],
-                                    sensorName:
-                                        'Sensor ID: ${userPlot.userPlotData.first['soil_moisture_sensor_id']}',
-                                    sensorStatus:
-                                        'Moisture: ${userPlot.userPlotData.first['soil_moisture']}%',
                                     assignedCrop: selectedCrop,
                                     moistureReadings: userPlot.userPlotData,
                                   ),

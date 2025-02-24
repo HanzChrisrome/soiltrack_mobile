@@ -131,20 +131,20 @@ class CropNotifer extends Notifier<CropState> {
           .eq('crop_name', state.selectedCrop!)
           .single();
 
-      if (state.selectedSensor != null) {
-        final existingPlot = await supabase
-            .from('user_plots')
-            .select('plot_id')
-            .eq('soil_moisture_sensor_id', state.selectedSensor!)
-            .maybeSingle();
+      // if (state.selectedSensor != null) {
+      //   final existingPlot = await supabase
+      //       .from('user_plots')
+      //       .select('plot_id')
+      //       .eq('soil_moisture_sensor_id', state.selectedSensor!)
+      //       .maybeSingle();
 
-        if (existingPlot != null) {
-          print('Existing Plot: $existingPlot');
-          await supabase.from('user_plots').update({
-            'soil_moisture_sensor_id': null,
-          }).eq('plot_id', existingPlot['plot_id']);
-        }
-      }
+      //   if (existingPlot != null) {
+      //     print('Existing Plot: $existingPlot');
+      //     await supabase.from('user_plots').update({
+      //       'soil_moisture_sensor_id': null,
+      //     }).eq('plot_id', existingPlot['plot_id']);
+      //   }
+      // }
 
       final insertUserCrop = await supabase
           .from('user_crops')
@@ -171,8 +171,6 @@ class CropNotifer extends Notifier<CropState> {
             'user_id': userId,
             'plot_name': state.plotName,
             'soil_type': state.soilType,
-            'soil_moisture_sensor_id': state.selectedSensor,
-            'soil_nutrient_sensor_id': null,
           })
           .select()
           .single();
@@ -181,10 +179,15 @@ class CropNotifer extends Notifier<CropState> {
       print('Plot ID: $plotId');
 
       if (state.selectedSensor != null) {
-        await supabase.from('soil_moisture_sensors').update({
+        await supabase.from('soil_sensors').update({
           'is_assigned': true,
-        }).eq('soil_moisture_sensor_id', state.selectedSensor!);
+        }).eq('sensor_id', state.selectedSensor!);
       }
+
+      await supabase.from('user_plot_sensors').insert({
+        'plot_id': plotId,
+        'sensor_id': state.selectedSensor,
+      });
 
       soilDashboardNotifier.fetchUserPlots();
       sensorNotifier.fetchSensors();

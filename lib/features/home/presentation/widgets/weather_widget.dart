@@ -9,6 +9,12 @@ class WeatherWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final weatherState = ref.watch(weatherProvider);
 
+    if (weatherState.weatherData == null) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
     return Column(
       children: [
         Container(

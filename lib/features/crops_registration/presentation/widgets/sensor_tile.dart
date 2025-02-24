@@ -38,7 +38,8 @@ class SensorTile extends StatelessWidget {
             width: 1,
           ),
         ),
-        child: Row(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               sensorName,
@@ -49,7 +50,6 @@ class SensorTile extends StatelessWidget {
                     : const Color.fromARGB(255, 126, 126, 126),
               ),
             ),
-            const Spacer(),
             if (isAssigned && plotName != null)
               Container(
                 padding:

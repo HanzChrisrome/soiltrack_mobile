@@ -158,23 +158,22 @@ class AssignCrops extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    if (sensorState.sensors.isNotEmpty)
-                      ...sensorState.sensors.map(
+                    if (sensorState.moistureSensors.isNotEmpty)
+                      ...sensorState.moistureSensors.map(
                         (sensor) {
                           final bool isAssigned = sensor['is_assigned'] == true;
                           final String? plotName =
                               sensor['user_plots']?['plot_name'];
 
                           return SensorTile(
-                            sensorName: sensor['soil_moisture_name'],
-                            sensorId: sensor['soil_moisture_sensor_id'],
+                            sensorName: sensor['sensor_name'],
+                            sensorId: sensor['sensor_id'],
                             isAssigned: isAssigned,
                             plotName: plotName,
-                            isSelected: cropState.selectedSensor ==
-                                sensor['soil_moisture_sensor_id'],
+                            isSelected:
+                                cropState.selectedSensor == sensor['sensor_id'],
                             onTap: () {
-                              cropNotifier.selectSensor(
-                                  sensor['soil_moisture_sensor_id']);
+                              cropNotifier.selectSensor(sensor['sensor_id']);
                             },
                           );
                         },
@@ -187,7 +186,7 @@ class AssignCrops extends ConsumerWidget {
                           : () {
                               // Find the selected sensor
                               final selectedSensor =
-                                  sensorState.sensors.firstWhere(
+                                  sensorState.moistureSensors.firstWhere(
                                 (sensor) =>
                                     sensor['soil_moisture_sensor_id'] ==
                                     cropState.selectedSensor,

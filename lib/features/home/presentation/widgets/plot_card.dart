@@ -8,17 +8,11 @@ class PlotCard extends ConsumerWidget {
   const PlotCard({
     super.key,
     required this.selectedPlotId,
-    required this.soilMoistureSensorId,
-    required this.sensorName,
-    required this.sensorStatus,
     required this.assignedCrop,
     required this.moistureReadings,
   });
 
   final int selectedPlotId;
-  final int soilMoistureSensorId;
-  final String sensorName;
-  final String sensorStatus;
   final String assignedCrop;
   final List<dynamic> moistureReadings;
 

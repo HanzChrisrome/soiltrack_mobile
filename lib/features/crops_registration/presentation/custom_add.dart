@@ -265,8 +265,8 @@ class _AddCustomCropState extends ConsumerState<AddCustomCrop> {
                           ),
                         ),
                         const SizedBox(height: 20),
-                        if (sensorState.sensors.isNotEmpty)
-                          ...sensorState.sensors.map(
+                        if (sensorState.moistureSensors.isNotEmpty)
+                          ...sensorState.moistureSensors.map(
                             (sensor) {
                               final bool isAssigned =
                                   sensor['is_assigned'] == true;
@@ -327,7 +327,7 @@ class _AddCustomCropState extends ConsumerState<AddCustomCrop> {
                                       int.parse(maxPotassiumController.text);
 
                                   final selectedSensor =
-                                      sensorState.sensors.firstWhere(
+                                      sensorState.moistureSensors.firstWhere(
                                     (sensor) =>
                                         sensor['soil_moisture_sensor_id'] ==
                                         cropState.selectedSensor,

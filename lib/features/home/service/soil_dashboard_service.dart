@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 
 class SoilDashboardService {
@@ -21,24 +23,20 @@ class SoilDashboardService {
             potassium_min,
             potassium_max
         ),
-        soil_moisture_sensor_id,
-        soil_moisture_sensors (
-            soil_moisture_sensor_id,
-            soil_moisture_name,
-            soil_moisture_status,
-            is_assigned
-        ),
-        soil_nutrient_sensor_id,
-        soil_nutrient_sensors (
-            soil_nutrient_sensor_id,
-            soil_nutrient_name,
-            soil_nutrient_status,
-            is_assigned
+        user_plot_sensors (
+            sensor_id,
+            soil_sensors (
+                sensor_name,
+                sensor_status,
+                sensor_type,
+                sensor_category
+            )
         )
     ''').eq('user_id', userId).order('date_added', ascending: true);
 
       return userPlots;
     } catch (e) {
+      print('Error fetching user plots: $e');
       rethrow;
     }
   }
@@ -46,15 +44,67 @@ class SoilDashboardService {
   Future<List<Map<String, dynamic>>> userPlotData(List<String> plotIds) async {
     try {
       final userPlotsData =
-          await supabase.from('soil_moisture_readings').select('''
+          await supabase.from('soil_nutrients_readings').select('''
         plot_id,
         soil_moisture_sensor_id,
         soil_moisture,
-        read_time
+        read_time,
+        soil_nutrient_sensor_id,
+        readed_nitrogen,
+        readed_phosphorus, 
+        readed_potassium
     ''').inFilter('plot_id', plotIds).order('read_time', ascending: false);
 
       return userPlotsData;
     } catch (e) {
+      print('Error fetching user plot data: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> cropId(String selectedCrop) async {
+    try {
+      final getCropId = await supabase
+          .from('crops')
+          .select('crop_id')
+          .eq('crop_name', selectedCrop)
+          .single();
+
+      await supabase.from('user_plots').update({
+        'user_crop_id': getCropId['crop_id'],
+      }).eq('plot_id', getCropId['crop_id']);
+    } catch (e) {
+      print('Error saving new crop: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> editPlotName(String newPlotName, int selectedPlotId) async {
+    try {
+      await supabase.from('user_plots').update({
+        'plot_name': newPlotName,
+      }).eq('plot_id', selectedPlotId);
+    } catch (e) {
+      print('Error updating plot name: $e');
+      rethrow;
+    }
+  }
+
+  Future<void> saveNewThreshold(
+      int selectedPlotId, Map<String, int> updatedValues) async {
+    try {
+      final userCropId = await supabase
+          .from('user_plots')
+          .select('user_crop_id')
+          .eq('plot_id', selectedPlotId)
+          .single();
+
+      await supabase
+          .from('user_crops')
+          .update(updatedValues)
+          .eq('user_crop_id', userCropId['user_crop_id']);
+    } catch (e) {
+      print('Error updating threshold: $e');
       rethrow;
     }
   }

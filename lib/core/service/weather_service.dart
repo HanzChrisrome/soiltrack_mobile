@@ -14,9 +14,10 @@ class WeatherService {
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
-      print(response.body);
+      print('Weather fetched ${response.body}');
       return jsonDecode(response.body);
     } else {
+      print('Error in fetching');
       throw Exception("Failed to load weather data");
     }
   }
@@ -28,15 +29,16 @@ class WeatherService {
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
+      print('Error in fetching hourly forecast data');
       throw Exception("Failed to load hourly forecast data");
     }
   }
 
   List<Map<String, dynamic>> generateSuggestions(
       Map<String, dynamic> weatherData, Map<String, dynamic> forecastData) {
-    final double temp = weatherData["main"]["temp"];
-    final int humidity = weatherData["main"]["humidity"];
-    final double windSpeed = weatherData["wind"]["speed"];
+    final double temp = (weatherData["main"]["temp"] as num).toDouble();
+    final int humidity = weatherData["main"]["humidity"] as int;
+    final double windSpeed = (weatherData["wind"]["speed"] as num).toDouble();
     final bool isFrost = temp < 5;
 
     List<dynamic> hourlyForecast = forecastData["list"];
@@ -44,7 +46,7 @@ class WeatherService {
     String peakHeatTime = "";
     double maxTemp = temp;
     for (var forecast in hourlyForecast) {
-      final double temp = forecast["main"]["temp"];
+      final double temp = (forecast["main"]["temp"] as num).toDouble();
       if (temp > maxTemp) {
         maxTemp = temp;
         peakHeatTime = forecast["dt_txt"];

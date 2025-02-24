@@ -17,7 +17,6 @@ class RouterNotifier extends ChangeNotifier {
   Future<void> _loadSetupStatus() async {
     final prefs = await SharedPreferences.getInstance();
     isSetupCompleted = prefs.getBool('device_setup_completed') ?? false;
-    print('Setup status: $isSetupCompleted');
     notifyListeners();
   }
 

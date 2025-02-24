@@ -4,6 +4,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/provider/weather_provider.dart';
@@ -22,8 +24,21 @@ class SplashScreen extends ConsumerWidget {
       await soilDashboardNotifier.fetchUserPlots();
       await soilDashboardNotifier.fetchUserPlotData();
       await weatherNotifier.fetchWeather('Baliuag');
+
+      final prefs = await SharedPreferences.getInstance();
+      final isSetupCompleted = prefs.getBool('device_setup_completed') ?? false;
+
       if (context.mounted) {
-        context.go('/home');
+        final authState = ref.read(authProvider);
+        final isAuth = authState.isAuthenticated;
+
+        if (!isAuth) {
+          context.go('/login');
+        } else if (!isSetupCompleted) {
+          context.go('/setup');
+        } else {
+          context.go('/home');
+        }
       }
     });
 

@@ -3,11 +3,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:soiltrack_mobile/core/service/mqtt_service.dart';
 import 'package:soiltrack_mobile/core/utils/loading_toast.dart';
-import 'package:soiltrack_mobile/core/utils/toast_service.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:toastification/toastification.dart';
 import 'package:wifi_iot/wifi_iot.dart';
@@ -82,8 +82,9 @@ class DeviceNotifier extends Notifier<DeviceState> {
     await WiFiScan.instance.startScan();
     await Future.delayed(const Duration(seconds: 10));
     final accessPoints = await WiFiScan.instance.getScannedResults();
+    print('Access point $accessPoints');
     final esp32Devices =
-        accessPoints.where((ap) => ap.ssid.startsWith("ESP32")).toList();
+        accessPoints.where((ap) => ap.ssid.startsWith("ESP32_Config")).toList();
 
     if (esp32Devices.isEmpty) {
       state = state.copyWith(isScanning: false);
@@ -116,12 +117,14 @@ class DeviceNotifier extends Notifier<DeviceState> {
 
   Future<void> scanForAvailableWifi() async {
     state = state.copyWith(isScanning: true);
+    print('Scanning wifi');
 
-    await Future.delayed(const Duration(seconds: 5));
+    await WiFiScan.instance.startScan();
+    await Future.delayed(const Duration(seconds: 10));
 
     final accessPoints = await WiFiScan.instance.getScannedResults();
     final wifiNetworks =
-        accessPoints.where((ap) => ap.ssid.startsWith("")).toList();
+        accessPoints.where((ap) => ap.ssid.startsWith('')).toList();
 
     state = state.copyWith(availableNetworks: wifiNetworks, isScanning: false);
   }
@@ -229,7 +232,8 @@ class DeviceNotifier extends Notifier<DeviceState> {
   Future<void> getSensorCount() async {
     final authState = ref.read(authProvider);
     final firstName = authState.userName;
-    final String? macAddress = state.macAddress;
+    final prefs = await SharedPreferences.getInstance();
+    final macAddress = prefs.getString('mac_address');
 
     final mqttService = MQTTService();
     await mqttService.connect();
@@ -249,24 +253,41 @@ class DeviceNotifier extends Notifier<DeviceState> {
       final response = await mqttService.waitForResponse(responseTopic);
       final parsedResponse = jsonDecode(response);
 
-      final activeSensors = parsedResponse['active_sensors'] as int?;
+      final int moistureSensors = parsedResponse['moistureSensors'] ?? 0;
+      final int npkSensors = parsedResponse['npkSensors'] ?? 0;
 
-      if (activeSensors == null) {
+      if (moistureSensors == 0 || npkSensors == 0) {
         print("❌ No active sensors found.");
         return;
       }
 
-      for (int i = 1; i <= activeSensors; i++) {
-        final sensorName = "$firstName Sensor $i";
+      List<Map<String, dynamic>> sensorRecords = [];
 
-        await supabase.from('soil_moisture_sensors').insert({
+      for (int i = 1; i <= moistureSensors; i++) {
+        sensorRecords.add({
           'mac_address': macAddress,
-          'soil_moisture_name': sensorName,
-          'soil_moisture_status': 'ACTIVE'
+          'sensor_name': "$firstName Moisture Sensor $i",
+          'sensor_status': 'ACTIVE',
+          'sensor_type': 'moisture$i',
+          'sensor_category': 'Moisture Sensor'
         });
       }
 
-      print("✅ Successfully saved $activeSensors sensors to the database.");
+      for (int i = 1; i <= npkSensors; i++) {
+        sensorRecords.add({
+          'mac_address': macAddress,
+          'sensor_name': '$firstName NPK Sensor $i',
+          'sensor_status': 'ACTIVE',
+          'sensor_type': 'npk$i',
+          'sensor_category': 'NPK Sensor'
+        });
+      }
+
+      await supabase
+          .from('soil_sensors')
+          .upsert(sensorRecords, onConflict: 'mac_address, sensor_type');
+
+      print('🌱 Sensors saved to database.');
     } catch (e) {
       throw e.toString();
     }
@@ -351,6 +372,8 @@ class DeviceNotifier extends Notifier<DeviceState> {
 
       ToastLoadingService.dismissLoadingToast(
           context, 'Device is reset successfully.', ToastificationType.info);
+
+      context.pushNamed('wifi-scan');
     } catch (e) {
       print("❌ Device did not respond. It might be OFFLINE.");
       ToastLoadingService.dismissLoadingToast(
@@ -407,15 +430,13 @@ class DeviceNotifier extends Notifier<DeviceState> {
             ToastificationType.info);
         state = state.copyWith(isPumpOpen: newPumpState);
         print('Pump is open: ${state.isPumpOpen}');
-      } else {
-        throw Exception('Unexpected device response.');
       }
+
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Pump did not open', ToastificationType.error);
     } catch (e) {
-      ToastService.showToast(
-        context: context,
-        message: 'Failed to ${action == 'PUMP ON' ? 'open' : 'close'} pump.',
-        type: ToastificationType.error,
-      );
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Pump did not open', ToastificationType.error);
     }
   }
 }
