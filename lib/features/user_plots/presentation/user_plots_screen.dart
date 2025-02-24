@@ -4,17 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:soiltrack_mobile/features/home/presentation/widgets/plot_card.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/crop_threshold.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_chart.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_details.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/tools_section.dart';
-import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/widgets/customizable_bottom_sheet.dart';
 import 'package:soiltrack_mobile/widgets/text_field.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/widgets/text_header.dart';
-import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
 class UserPlotScreen extends ConsumerStatefulWidget {
   const UserPlotScreen({super.key});
@@ -69,8 +67,7 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
     );
 
     final soilNutrientSensors = sensors.firstWhere(
-      (sensor) =>
-          sensor['soil_sensors']['sensor_category'] == 'Nutrient Sensor',
+      (sensor) => sensor['soil_sensors']['sensor_category'] == 'NPK Sensor',
       orElse: () => {},
     );
 
@@ -78,6 +75,36 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
         soilMoistureSensors?['soil_sensors']?['sensor_name'] ?? 'No sensor';
     final assignedNutrientSensor =
         soilNutrientSensors?['soil_sensors']?['sensor_name'] ?? 'No sensor';
+
+    final nitrogenData = userPlot.userPlotNutrientData
+        .where((nutrient) => nutrient['plot_id'] == userPlot.selectedPlotId)
+        .map((nutrient) => {
+              'plot_id': nutrient['plot_id'],
+              'sensor_id': nutrient['sensor_id'],
+              'read_time': nutrient['read_time'],
+              'value': nutrient['readed_nitrogen']
+            })
+        .toList();
+
+    final phosphorusData = userPlot.userPlotNutrientData
+        .where((nutrient) => nutrient['plot_id'] == userPlot.selectedPlotId)
+        .map((nutrient) => {
+              'plot_id': nutrient['plot_id'],
+              'sensor_id': nutrient['sensor_id'],
+              'read_time': nutrient['read_time'],
+              'value': nutrient['readed_phosphorus']
+            })
+        .toList();
+
+    final potassiumData = userPlot.userPlotNutrientData
+        .where((nutrient) => nutrient['plot_id'] == userPlot.selectedPlotId)
+        .map((nutrient) => {
+              'plot_id': nutrient['plot_id'],
+              'sensor_id': nutrient['sensor_id'],
+              'read_time': nutrient['read_time'],
+              'value': nutrient['readed_potassium']
+            })
+        .toList();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -239,14 +266,26 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                             const SizedBox(height: 5),
                             CropThresholdWidget(plotDetails: selectedPlot),
                             const SizedBox(height: 10),
-                            if (userPlot.userPlotData.isNotEmpty)
+                            PlotChart(
+                              selectedPlotId: plotId,
+                              readings: userPlot.userPlotMoistureData,
+                              readingType: 'soil_moisture',
+                            ),
+                            if (assignedNutrientSensor != 'No sensor')
                               Column(
                                 children: [
-                                  PlotCard(
-                                    selectedPlotId: plotId,
-                                    assignedCrop: selectedCrop,
-                                    moistureReadings: userPlot.userPlotData,
-                                  ),
+                                  PlotChart(
+                                      selectedPlotId: plotId,
+                                      readings: nitrogenData,
+                                      readingType: 'readed_nitrogen'),
+                                  PlotChart(
+                                      selectedPlotId: plotId,
+                                      readings: phosphorusData,
+                                      readingType: 'readed_phosphorus'),
+                                  PlotChart(
+                                      selectedPlotId: plotId,
+                                      readings: potassiumData,
+                                      readingType: 'readed_potassium'),
                                 ],
                               ),
                             const SizedBox(height: 15),

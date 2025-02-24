@@ -8,12 +8,10 @@ class PlotCard extends ConsumerWidget {
   const PlotCard({
     super.key,
     required this.selectedPlotId,
-    required this.assignedCrop,
     required this.moistureReadings,
   });
 
   final int selectedPlotId;
-  final String assignedCrop;
   final List<dynamic> moistureReadings;
 
   @override
@@ -133,8 +131,7 @@ class PlotCard extends ConsumerWidget {
                   ),
                 ),
                 minX: 0,
-                maxX: moistureSpots.length.toDouble() -
-                    1, // Ensures it spans correctly
+                maxX: moistureSpots.length.toDouble() - 1,
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(

@@ -105,18 +105,18 @@ class ToolsSectionWidget extends ConsumerWidget {
                       if (sensorState.moistureSensors.isNotEmpty)
                         ...sensorState.moistureSensors.map(
                           (sensor) {
-                            final bool isSelected = cropState.selectedSensor ==
-                                sensor['soil_moisture_sensor_id'];
+                            final bool isSelected =
+                                cropState.selectedSensor == sensor['sensor_id'];
 
                             return SensorTile(
-                              sensorName: sensor['soil_moisture_name'],
-                              sensorId: sensor['soil_moisture_sensor_id'],
+                              sensorName: sensor['sensor_name'],
+                              sensorId: sensor['sensor_id'],
                               isAssigned: sensor['is_assigned'] == true,
-                              plotName: sensor['user_plots']?['plot_name'],
+                              plotName: sensor['user_plot_sensors'][0]
+                                  ['user_plots']?['plot_name'],
                               isSelected: isSelected,
                               onTap: () {
-                                cropNotifier.selectSensor(
-                                    sensor['soil_moisture_sensor_id']);
+                                cropNotifier.selectSensor(sensor['sensor_id']);
                               },
                             );
                           },
@@ -135,7 +135,7 @@ class ToolsSectionWidget extends ConsumerWidget {
             icon: Icons.delete_rounded,
             action: () {
               final String description;
-              if (userPlot.userPlotData.isEmpty) {
+              if (userPlot.userPlotMoistureData.isEmpty) {
                 description = 'Are you sure you want to delete this plot?';
               } else {
                 description =

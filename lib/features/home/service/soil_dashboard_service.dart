@@ -41,15 +41,30 @@ class SoilDashboardService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> userPlotData(List<String> plotIds) async {
+  Future<List<Map<String, dynamic>>> userPlotMoistureData(
+      List<String> plotIds) async {
     try {
-      final userPlotsData =
-          await supabase.from('soil_nutrients_readings').select('''
+      final userPlotsData = await supabase.from('moisture_readings').select('''
         plot_id,
-        soil_moisture_sensor_id,
+        sensor_id,
         soil_moisture,
+        read_time
+    ''').inFilter('plot_id', plotIds).order('read_time', ascending: false);
+
+      return userPlotsData;
+    } catch (e) {
+      print('Error fetching user plot data: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> userPlotNutrientData(
+      List<String> plotIds) async {
+    try {
+      final userPlotsData = await supabase.from('nutrient_readings').select('''
+        plot_id,
+        sensor_id,
         read_time,
-        soil_nutrient_sensor_id,
         readed_nitrogen,
         readed_phosphorus, 
         readed_potassium
@@ -57,7 +72,7 @@ class SoilDashboardService {
 
       return userPlotsData;
     } catch (e) {
-      print('Error fetching user plot data: $e');
+      print('Error fetching user plot nutrient data: $e');
       rethrow;
     }
   }

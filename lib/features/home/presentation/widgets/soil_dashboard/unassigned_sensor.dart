@@ -23,9 +23,17 @@ class UnassignedSensor extends ConsumerWidget {
         .where((sensor) => sensor['is_assigned'] == false)
         .toList();
 
-    final noNutrientSensorPlot = userPlot.userPlots
-        .where((plot) => plot['soil_nutrient_sensor_id'] == null)
-        .toList();
+    final noNutrientSensorPlot = userPlot.userPlots.where((plot) {
+      final plotSensors = plot['user_plot_sensors'] as List<dynamic>? ?? [];
+
+      final hasNutrientSensor = plotSensors.any((sensor) {
+        final soilSensor = sensor['soil_sensors'];
+        return soilSensor != null &&
+            soilSensor['sensor_category'] == 'NPK Sensor';
+      });
+
+      return !hasNutrientSensor;
+    });
 
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 5),
@@ -95,8 +103,7 @@ class UnassignedSensor extends ConsumerWidget {
                                   buttonText: 'Assign',
                                   onPressed: () async {
                                     await userPlotNotifier.assignNutrientSensor(
-                                        context,
-                                        sensor['soil_nutrient_sensor_id']);
+                                        context, sensor['sensor_id']);
 
                                     Navigator.of(context).pop();
                                   },

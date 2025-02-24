@@ -9,6 +9,8 @@ import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:soiltrack_mobile/core/service/mqtt_service.dart';
 import 'package:soiltrack_mobile/core/utils/loading_toast.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:toastification/toastification.dart';
 import 'package:wifi_iot/wifi_iot.dart';
 import 'package:wifi_scan/wifi_scan.dart';
@@ -175,6 +177,8 @@ class DeviceNotifier extends Notifier<DeviceState> {
   }
 
   Future<void> saveToDatabase() async {
+    final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
+    final sensorProvider = ref.read(sensorsProvider.notifier);
     state = state.copyWith(isSaving: true, savingError: null);
 
     final macAddress = state.macAddress;
@@ -200,6 +204,12 @@ class DeviceNotifier extends Notifier<DeviceState> {
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('device_setup_completed', true);
           await prefs.setString('mac_address', macAddress);
+
+          await getSensorCount();
+          await soilDashboardNotifier.fetchUserPlots();
+          await soilDashboardNotifier.fetchUserPlotData();
+          await sensorProvider.fetchSensors();
+
           print('ESP32 Connected Successfully without saving to database.');
           return;
         }
