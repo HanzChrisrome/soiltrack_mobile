@@ -22,7 +22,6 @@ class SplashScreen extends ConsumerWidget {
     Future.microtask(() async {
       await sensorNotifier.fetchSensors();
       await soilDashboardNotifier.fetchUserPlots();
-      await soilDashboardNotifier.fetchUserPlotData();
       await weatherNotifier.fetchWeather('Baliuag');
 
       final prefs = await SharedPreferences.getInstance();

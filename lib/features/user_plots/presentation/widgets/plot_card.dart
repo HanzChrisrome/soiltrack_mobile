@@ -64,7 +64,7 @@ class PlotCard extends ConsumerWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       margin: const EdgeInsets.only(bottom: 15),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: Colors.blue.withOpacity(0.2),
         border: Border.all(color: Colors.grey[100]!, width: 1),
         borderRadius: BorderRadius.circular(12.0),
       ),
@@ -132,20 +132,19 @@ class PlotCard extends ConsumerWidget {
                 ),
                 minX: 0,
                 maxX: moistureSpots.length.toDouble() - 1,
+                minY: 0,
+                maxY: 100,
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
                     spots: moistureSpots,
                     preventCurveOverShooting: true,
                     show: true,
-                    color: Colors.green,
+                    color: Colors.blue,
                     barWidth: 3,
                     belowBarData: BarAreaData(
                       show: true,
-                      color: Theme.of(context)
-                          .colorScheme
-                          .onPrimary
-                          .withOpacity(0.2),
+                      color: Colors.blue.withOpacity(0.2),
                     ),
                     isStrokeCapRound: true,
                   ),

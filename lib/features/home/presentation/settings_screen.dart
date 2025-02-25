@@ -152,8 +152,7 @@ class SettingsScreen extends ConsumerWidget {
                             buttonText: 'Reset',
                             onPressed: () {
                               Navigator.of(context).pop();
-                              deviceNotifier.clearPreferences();
-                              context.pushNamed('setup');
+                              context.pushNamed('wifi-scan');
                             },
                           );
                         },

@@ -9,7 +9,6 @@ class SoilDashboardService {
         plot_id,
         plot_name,
         soil_type,
-        user_crop_id,
         date_added,
         user_crops (
             crop_name,
@@ -68,13 +67,70 @@ class SoilDashboardService {
         readed_nitrogen,
         readed_phosphorus, 
         readed_potassium
-    ''').inFilter('plot_id', plotIds).order('read_time', ascending: false);
+    ''').inFilter('plot_id', plotIds).order('read_time', ascending: true);
 
       return userPlotsData;
     } catch (e) {
       print('Error fetching user plot nutrient data: $e');
       rethrow;
     }
+  }
+
+  Map<String, List<String>> generateNutrientWarnings(
+      List<Map<String, dynamic>> userPlots,
+      List<Map<String, dynamic>> nutrientData) {
+    Map<String, List<String>> warningsByPlot = {};
+
+    for (var plot in userPlots) {
+      String plotId = plot['plot_id'].toString();
+      var crop = plot['user_crops'];
+
+      if (crop == null) continue;
+
+      int nitrogenMin = crop['nitrogen_min'];
+      int nitrogenMax = crop['nitrogen_max'];
+      int phosphorusMin = crop['phosphorus_min'];
+      int phosphorusMax = crop['phosphorus_max'];
+      int potassiumMin = crop['potassium_min'];
+      int potassiumMax = crop['potassium_max'];
+
+      var recentReading = nutrientData
+          .where((reading) => reading['plot_id'] == plot['plot_id'])
+          .toList()
+          .lastOrNull;
+
+      if (recentReading == null) continue;
+
+      int nitrogen = recentReading['readed_nitrogen'];
+      int phosphorus = recentReading['readed_phosphorus'];
+      int potassium = recentReading['readed_potassium'];
+
+      List<String> warnings = [];
+
+      if (nitrogen < nitrogenMin) {
+        warnings.add("Nitrogen is too low ($nitrogen mg/L)");
+      } else if (nitrogen > nitrogenMax) {
+        warnings.add("Nitrogen is too high ($nitrogen mg/L)");
+      }
+
+      if (phosphorus < phosphorusMin) {
+        warnings.add("Phosphorus is too low ($phosphorus mg/L)");
+      } else if (phosphorus > phosphorusMax) {
+        warnings.add("Phosphorus is too high ($phosphorus mg/L)");
+      }
+
+      if (potassium < potassiumMin) {
+        warnings.add("Potassium is too low ($potassium mg/L)");
+      } else if (potassium > potassiumMax) {
+        warnings.add("Potassium is too high ($potassium mg/L)");
+      }
+
+      if (warnings.isNotEmpty) {
+        warningsByPlot[plotId] = warnings;
+      }
+    }
+
+    return warningsByPlot;
   }
 
   Future<void> cropId(String selectedCrop) async {
@@ -85,9 +141,7 @@ class SoilDashboardService {
           .eq('crop_name', selectedCrop)
           .single();
 
-      await supabase.from('user_plots').update({
-        'user_crop_id': getCropId['crop_id'],
-      }).eq('plot_id', getCropId['crop_id']);
+      return getCropId['crop_id'];
     } catch (e) {
       print('Error saving new crop: $e');
       rethrow;

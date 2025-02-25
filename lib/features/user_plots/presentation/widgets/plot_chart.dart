@@ -18,6 +18,7 @@ class PlotChart extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    // Filter readings for the selected plot
     final filteredReadings = readings
         .where((reading) => reading['plot_id'] == selectedPlotId)
         .toList();
@@ -26,20 +27,17 @@ class PlotChart extends ConsumerWidget {
       return _buildNoDataContainer(context);
     }
 
-    final reversedReadings = filteredReadings.reversed.toList();
-
-    final moistureSpots = List.generate(reversedReadings.length, (index) {
-      final value = reversedReadings[index][readingType] ?? 0.0;
+    final spots = List.generate(filteredReadings.length, (index) {
+      final value = filteredReadings[index]['value'] ?? 0.0; // Fixed key access
       return FlSpot(index.toDouble(), value.toDouble());
     });
 
-    double minY =
-        moistureSpots.map((spot) => spot.y).reduce((a, b) => a < b ? a : b);
-    double maxY =
-        moistureSpots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b);
+    // Determine min and max Y values for the chart
+    double minY = spots.map((spot) => spot.y).reduce((a, b) => a < b ? a : b);
+    double maxY = spots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b);
 
     if (minY == maxY) {
-      minY -= 1; // Ensures a visible range when there's only one value
+      minY -= 1; // Ensure visible range if all values are the same
       maxY += 1;
     } else {
       double padding = (maxY - minY) * 0.1;
@@ -48,7 +46,12 @@ class PlotChart extends ConsumerWidget {
     }
 
     return _buildChartContainer(
-        context, reversedReadings, moistureSpots, minY, maxY);
+      context,
+      filteredReadings,
+      spots,
+      minY,
+      maxY,
+    );
   }
 
   /// Container for when there is no data available
@@ -78,18 +81,23 @@ class PlotChart extends ConsumerWidget {
 
   /// Builds the chart container dynamically
   Widget _buildChartContainer(
-      BuildContext context,
-      List<dynamic> reversedReadings,
-      List<FlSpot> spots,
-      double minY,
-      double maxY) {
+    BuildContext context,
+    List<dynamic> reversedReadings,
+    List<FlSpot> spots,
+    double minY,
+    double maxY,
+  ) {
+    minY = 0;
+    maxY = 200;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       margin: const EdgeInsets.only(bottom: 15),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        border: Border.all(color: Colors.grey[100]!, width: 1),
+        color: _getChartColor(readingType).withOpacity(0.2),
+        border: Border.all(
+            color: _getChartColor(readingType).withOpacity(0.2), width: 1),
         borderRadius: BorderRadius.circular(12.0),
       ),
       child: Column(
@@ -131,7 +139,8 @@ class PlotChart extends ConsumerWidget {
                           return const Text('');
                         }
                         final timeStamp = DateTime.parse(
-                            reversedReadings[index]['read_time']);
+                          reversedReadings[index]['read_time'],
+                        );
                         return Padding(
                           padding: const EdgeInsets.only(top: 12.0),
                           child: Text(
@@ -154,6 +163,8 @@ class PlotChart extends ConsumerWidget {
                 ),
                 minX: 0,
                 maxX: spots.length.toDouble() - 1,
+                minY: minY, // Fixed 0
+                maxY: maxY, // Fixed 200
                 borderData: FlBorderData(show: false),
                 lineBarsData: [
                   LineChartBarData(
@@ -180,14 +191,14 @@ class PlotChart extends ConsumerWidget {
   /// Returns color based on reading type
   Color _getChartColor(String type) {
     switch (type) {
-      case 'soil_moisture':
-        return Colors.blue;
       case 'readed_nitrogen':
         return Colors.green;
       case 'readed_phosphorus':
         return Colors.orange;
       case 'readed_potassium':
-        return Colors.purple;
+        return const Color.fromARGB(255, 175, 23, 202);
+      case 'soil_moisture':
+        return Colors.blue;
       default:
         return Colors.black;
     }

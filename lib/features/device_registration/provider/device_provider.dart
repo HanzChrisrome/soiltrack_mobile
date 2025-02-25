@@ -207,7 +207,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
 
           await getSensorCount();
           await soilDashboardNotifier.fetchUserPlots();
-          await soilDashboardNotifier.fetchUserPlotData();
           await sensorProvider.fetchSensors();
 
           print('ESP32 Connected Successfully without saving to database.');

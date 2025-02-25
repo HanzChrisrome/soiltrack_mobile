@@ -1,7 +1,6 @@
 // home_routes.dart
 import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/soil_assigning.dart';
-import 'package:soiltrack_mobile/features/crops_registration/presentation/user_plots.dart';
 import 'package:soiltrack_mobile/features/home/presentation/home_screen.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/user_plots_screen.dart';
 
@@ -15,11 +14,6 @@ final homeRoutes = [
       return HomeScreen(initialIndex: initialIndex);
     },
     routes: [
-      GoRoute(
-        path: 'user-plots',
-        name: 'user-plots',
-        builder: (context, state) => const UserPlotsScreen(),
-      ),
       GoRoute(
         path: 'user-plot',
         name: 'user-plot',

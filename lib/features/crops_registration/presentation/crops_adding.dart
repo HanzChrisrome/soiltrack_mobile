@@ -118,7 +118,7 @@ class AddingCropsScreen extends ConsumerWidget {
                                   buttonText: 'Confirm',
                                   onPressed: () {
                                     Navigator.of(context).pop();
-                                    userPlotNotifier.saveNewCrop(context);
+                                    cropNotifier.assignCrop(context);
                                   },
                                 );
                               } else {

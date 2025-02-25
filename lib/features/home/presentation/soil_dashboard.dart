@@ -166,6 +166,13 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                                                   ['sensor_name'] as String? ??
                                               'No nutrient sensor assigned';
 
+                                      final plotWarnings =
+                                          userPlot.nutrientWarnings[
+                                                  plotId.toString()] ??
+                                              [];
+                                      final warningsLength =
+                                          plotWarnings.length;
+
                                       return RegisteredPlots(
                                         plotName: plotName,
                                         cropName: cropName,
@@ -175,6 +182,7 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                                         soilNutrientSensorName:
                                             soilNutrientSensorName,
                                         plotId: plotId,
+                                        warnings: warningsLength,
                                       );
                                     },
                                   ).toList(),

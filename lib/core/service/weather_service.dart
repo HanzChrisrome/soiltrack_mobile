@@ -59,10 +59,14 @@ class WeatherService {
 
     bool incomingRain = false;
     String rainTime = "";
+    DateTime now = DateTime.now();
+
     for (var hour in hourlyForecast.take(6)) {
-      if (hour["weather"][0]["main"] == "Rain") {
+      DateTime forecastTime = DateTime.parse(hour["dt_txt"]);
+
+      if (forecastTime.isAfter(now) && hour["weather"][0]["main"] == "Rain") {
         incomingRain = true;
-        rainTime = DateFormat.jm().format(DateTime.parse(hour["dt_txt"]));
+        rainTime = DateFormat.jm().format(forecastTime);
         break;
       }
     }
@@ -72,8 +76,7 @@ class WeatherService {
     if (incomingRain) {
       suggestions.add({
         "title": "Incoming Rain",
-        "message":
-            "Expected at $rainTime. Delay irrigation to prevent overwatering."
+        "message": "Expected at $rainTime by OpenWeatherMap."
       });
       suggestions.add({
         "title": "Rainwater Collection",

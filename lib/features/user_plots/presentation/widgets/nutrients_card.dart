@@ -11,7 +11,7 @@ class NutrientsCard extends ConsumerWidget {
       required this.nutrientType});
 
   final IconData elementIcon;
-  final String percentage;
+  final int percentage;
   final String latestReading;
   final String nutrientType;
 
@@ -51,7 +51,7 @@ class NutrientsCard extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               TextGradient(
-                text: percentage,
+                text: '$percentage',
                 fontSize: 25,
                 heightSpacing: 1,
               ),

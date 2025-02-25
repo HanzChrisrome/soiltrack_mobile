@@ -15,6 +15,7 @@ class SoilDashboardState {
   final List<Map<String, dynamic>> userPlots;
   final List<Map<String, dynamic>> userPlotMoistureData;
   final List<Map<String, dynamic>> userPlotNutrientData;
+  final Map<String, List<String>> nutrientWarnings; // <-- Updated to Map
   final bool isFetchingUserPlots;
   final bool isFetchingUserPlotData;
   final int selectedPlotId;
@@ -33,6 +34,7 @@ class SoilDashboardState {
     this.userPlots = const [],
     this.userPlotMoistureData = const [],
     this.userPlotNutrientData = const [],
+    this.nutrientWarnings = const {}, // <-- Updated default value
     this.isFetchingUserPlots = false,
     this.isFetchingUserPlotData = false,
     this.selectedPlotId = 0,
@@ -52,6 +54,7 @@ class SoilDashboardState {
     List<Map<String, dynamic>>? userPlots,
     List<Map<String, dynamic>>? userPlotMoistureData,
     List<Map<String, dynamic>>? userPlotNutrientData,
+    Map<String, List<String>>? nutrientWarnings, // <-- Updated type
     bool? isFetchingUserPlots,
     bool? isFetchingUserPlotData,
     int? selectedPlotId,
@@ -70,6 +73,8 @@ class SoilDashboardState {
       userPlots: userPlots ?? this.userPlots,
       userPlotMoistureData: userPlotMoistureData ?? this.userPlotMoistureData,
       userPlotNutrientData: userPlotNutrientData ?? this.userPlotNutrientData,
+      nutrientWarnings:
+          nutrientWarnings ?? this.nutrientWarnings, // <-- Updated
       isFetchingUserPlots: isFetchingUserPlots ?? this.isFetchingUserPlots,
       isFetchingUserPlotData:
           isFetchingUserPlotData ?? this.isFetchingUserPlotData,
@@ -108,7 +113,21 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       final String userId = supabase.auth.currentUser!.id;
 
       final userPlots = await soilDashboardService.userPlots(userId);
-      // print('User Plots $userPlots');
+
+      final List<String> plotIds =
+          userPlots.map((plot) => plot['plot_id'].toString()).toList();
+      print('Plot IDs: $plotIds');
+
+      final moistureData =
+          await soilDashboardService.userPlotMoistureData(plotIds);
+
+      print('Moisture data are: $moistureData');
+      final nutrientData =
+          await soilDashboardService.userPlotNutrientData(plotIds);
+      final warnings = soilDashboardService.generateNutrientWarnings(
+          userPlots, nutrientData);
+
+      print('Warnings: $warnings');
 
       if (macAddress.isEmpty) {
         print('No device registered');
@@ -122,7 +141,12 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
             error: 'No plots available', isFetchingUserPlots: false);
       }
 
-      state = state.copyWith(userPlots: userPlots, isFetchingUserPlots: false);
+      state = state.copyWith(
+          userPlots: userPlots,
+          userPlotMoistureData: moistureData,
+          userPlotNutrientData: nutrientData,
+          nutrientWarnings: warnings,
+          isFetchingUserPlots: false);
     } catch (e) {
       print(e);
       state = state.copyWith(error: e.toString(), isFetchingUserPlots: false);
@@ -144,49 +168,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     print('Selected sensor id $npkSensorId');
   }
 
-  Future<void> fetchUserPlotData() async {
-    if (state.isFetchingUserPlotData) return;
-    state = state.copyWith(isFetchingUserPlotData: true);
-    await Future.delayed(const Duration(seconds: 1));
-
-    try {
-      final List<String> plotIds =
-          state.userPlots.map((plot) => plot['plot_id'].toString()).toList();
-
-      final moistureData =
-          await soilDashboardService.userPlotMoistureData(plotIds);
-
-      if (moistureData.isEmpty) {
-        state = state.copyWith(
-            userPlotDataError: 'No data available',
-            isFetchingUserPlotData: false);
-      }
-
-      final nutrientData =
-          await soilDashboardService.userPlotNutrientData(plotIds);
-
-      if (nutrientData.isEmpty) {
-        state = state.copyWith(
-            userPlotDataError: 'No data available',
-            isFetchingUserPlotData: false);
-      }
-
-      print('User moisture plots data: $moistureData');
-      state = state.copyWith(
-        userPlotMoistureData: moistureData,
-        userPlotNutrientData: nutrientData,
-        loadedPlotId: state.selectedPlotId,
-        isFetchingUserPlotData: false,
-      );
-    } catch (e) {
-      print(e);
-      state =
-          state.copyWith(error: e.toString(), isFetchingUserPlotData: false);
-    } finally {
-      state = state.copyWith(isFetchingUserPlotData: false);
-    }
-  }
-
   //For editing user plots
   void setEditingUserPlot(bool isEditing) {
     state = state.copyWith(isEditingUserPlot: isEditing);
@@ -206,7 +187,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       state = state.copyWith(isEditingUserPlot: false);
       fetchUserPlots();
       await Future.delayed(const Duration(seconds: 2));
-      context.pushNamed('user-plot');
     } catch (e) {
       print('Error assigning crop: $e');
       ToastLoadingService.dismissLoadingToast(
@@ -268,7 +248,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       }).eq('sensor_id', selectedNpkId);
 
       await fetchUserPlots();
-      await fetchUserPlotData();
       await sensorNotifier.fetchSensors();
 
       ToastLoadingService.dismissLoadingToast(

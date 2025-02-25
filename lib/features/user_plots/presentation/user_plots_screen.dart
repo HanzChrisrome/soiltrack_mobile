@@ -6,10 +6,13 @@ import 'package:go_router/go_router.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/crop_threshold.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/nutrients_card.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_card.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_chart.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_details.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/tools_section.dart';
 import 'package:soiltrack_mobile/widgets/customizable_bottom_sheet.dart';
+import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/text_field.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/widgets/text_header.dart';
@@ -57,7 +60,7 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
     final int plotId = selectedPlot['plot_id'] ?? 0;
     final plotName = selectedPlot['plot_name'] ?? 'No plot found';
     final soilType = selectedPlot['soil_type'] ?? 'No soil type found';
-    final selectedCrop = selectedPlot['user_crops']['crop_name'] ?? 'No crop';
+    final selectedCrop = selectedPlot['user_crops']?['crop_name'] ?? 'No crop';
 
     final sensors = selectedPlot['user_plot_sensors'] ?? [];
     final soilMoistureSensors = sensors.firstWhere(
@@ -105,6 +108,8 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
               'value': nutrient['readed_potassium']
             })
         .toList();
+
+    final warnings = userPlot.nutrientWarnings[plotId.toString()] ?? [];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -266,11 +271,62 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                             const SizedBox(height: 5),
                             CropThresholdWidget(plotDetails: selectedPlot),
                             const SizedBox(height: 10),
-                            PlotChart(
-                              selectedPlotId: plotId,
-                              readings: userPlot.userPlotMoistureData,
-                              readingType: 'soil_moisture',
-                            ),
+                            if (assignedNutrientSensor != 'No sensor')
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 15),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withOpacity(
+                                      0.1), // Light red with opacity
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                      color: Colors.red,
+                                      width: 1), // Red border
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Row(
+                                      children: [
+                                        Icon(Icons.warning_amber_outlined,
+                                            color: Colors.red, size: 20),
+                                        SizedBox(width: 5),
+                                        Text(
+                                          'Warnings!',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.red),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 15),
+                                    ...warnings.map((warning) {
+                                      return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            warning,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium!,
+                                          ),
+                                          if (warnings.indexOf(warning) !=
+                                              warnings.length - 1)
+                                            const DividerWidget(
+                                                verticalHeight: 1,
+                                                color: Colors.red),
+                                        ],
+                                      );
+                                    }),
+                                  ],
+                                ),
+                              ),
+                            PlotCard(
+                                selectedPlotId: plotId,
+                                moistureReadings:
+                                    userPlot.userPlotMoistureData),
                             if (assignedNutrientSensor != 'No sensor')
                               Column(
                                 children: [

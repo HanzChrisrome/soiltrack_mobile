@@ -6,14 +6,16 @@ import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
 class RegisteredPlots extends ConsumerWidget {
-  const RegisteredPlots(
-      {super.key,
-      required this.plotId,
-      required this.plotName,
-      required this.cropName,
-      required this.assignedCategory,
-      required this.soilMoistureSensorName,
-      required this.soilNutrientSensorName});
+  const RegisteredPlots({
+    super.key,
+    required this.plotId,
+    required this.plotName,
+    required this.cropName,
+    required this.assignedCategory,
+    required this.soilMoistureSensorName,
+    required this.soilNutrientSensorName,
+    required this.warnings,
+  });
 
   final int plotId;
   final String plotName;
@@ -21,6 +23,7 @@ class RegisteredPlots extends ConsumerWidget {
   final String assignedCategory;
   final String soilMoistureSensorName;
   final String soilNutrientSensorName;
+  final int warnings;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -132,6 +135,25 @@ class RegisteredPlots extends ConsumerWidget {
               ),
             ],
           ),
+          const SizedBox(height: 5),
+          if (warnings > 0)
+            Row(
+              children: [
+                const Icon(
+                  Icons.warning_rounded,
+                  color: Color.fromARGB(255, 160, 27, 17),
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  'You have $warnings warnings',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: Color.fromARGB(255, 160, 27, 17),
+                  ),
+                ),
+              ],
+            ),
         ],
       ),
     );

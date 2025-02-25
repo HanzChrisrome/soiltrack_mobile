@@ -97,7 +97,6 @@ class AuthNotifier extends Notifier<AuthState> {
         print('User: ${response.user}');
 
         dashboardNotifier.fetchUserPlots();
-        dashboardNotifier.fetchUserPlotData();
         sensorNotifier.fetchSensors();
 
         state = state.copyWith(user: response.user, isAuthenticated: true);

@@ -63,7 +63,6 @@ class SensorsNotifier extends Notifier<SensorsState> {
       user_plot_sensors(
         plot_id,
         user_plots (
-          user_crop_id,
           plot_name,
           user_crops (
             crop_name
@@ -71,8 +70,6 @@ class SensorsNotifier extends Notifier<SensorsState> {
         )
       )
     ''').eq('mac_address', macAddress);
-
-      print('📡 Retrieved sensors: $sensors');
 
       // SEPARATE SENSORS BASED ON CATEGORY IF NEEDED
       final moistureSensors = sensors
