@@ -281,7 +281,7 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                                 assignedSensor: assignedNutrientSensor),
                             const SizedBox(height: 5),
                             CropThresholdWidget(plotDetails: selectedPlot),
-                            const SizedBox(height: 15),
+                            const SizedBox(height: 10),
                             if (assignedNutrientSensor != 'No sensor')
                               if (plotWarningsData['warnings'].isNotEmpty)
                                 Container(
@@ -353,6 +353,19 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                               onPressed: () {
                                 context.pushNamed('plot-analytics');
                               },
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Theme.of(context).colorScheme.surface,
+                                borderRadius: BorderRadius.circular(15),
+                                border: Border.all(
+                                  color: Colors.grey[100]!,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Column(
+                                children: [],
+                              ),
                             ),
                           ]),
                         ),

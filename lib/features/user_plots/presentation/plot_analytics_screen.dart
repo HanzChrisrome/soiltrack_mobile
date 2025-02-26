@@ -176,7 +176,7 @@ class PlotAnalyticsScreen extends ConsumerWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(height: 10),
+                      const DividerWidget(verticalHeight: 5),
                       PlotCard(
                           selectedPlotId: userPlot.selectedPlotId,
                           moistureReadings: userPlot.userPlotMoistureData),

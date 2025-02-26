@@ -117,8 +117,12 @@ class PlotChart extends ConsumerWidget {
             TextRoundedEnclose(
               text:
                   '${percentageChange! > 0 ? '+' : ''}${percentageChange.toStringAsFixed(1)}%',
-              color: _getChartColor(readingType).withOpacity(0.2),
-              textColor: _getChartColor(readingType),
+              color: percentageChange > 0
+                  ? _getChartColor(readingType).withOpacity(0.2)
+                  : Colors.red.withOpacity(0.2),
+              textColor: percentageChange > 0
+                  ? _getChartColor(readingType)
+                  : Colors.red,
             )
           ],
         ),
@@ -136,13 +140,7 @@ class PlotChart extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              TextRoundedEnclose(
-                text:
-                    '${formatReadingType(readingType)} level is based on the received data.',
-                color: Colors.white,
-                textColor: Colors.grey[500]!,
-              ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 10),
               SizedBox(
                 height: 200,
                 child: LineChart(

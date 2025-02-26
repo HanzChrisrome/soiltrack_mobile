@@ -30,11 +30,14 @@ class NutrientProgressChart extends StatelessWidget {
     int potassiumValue = potassiumData.isNotEmpty
         ? (potassiumData.last['value'] as num).toInt()
         : 0;
+
+    // Ensure moisture does not exceed 100%
     int moistureValue = moistureData.isNotEmpty
-        ? (moistureData.last['value'] as num).toInt()
+        ? (moistureData.last['value'] as num).toInt().clamp(0, 100)
         : 0;
 
-    int maxValue = 200;
+    const int nutrientMaxValue = 200;
+    const int moistureMaxValue = 100; // Cap moisture at 100%
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -52,16 +55,21 @@ class NutrientProgressChart extends StatelessWidget {
             textColor: Colors.grey[500]!,
           ),
           const SizedBox(height: 10),
-          _buildProgressBar("Moisture", moistureValue, maxValue, Colors.blue),
+
+          // Moisture Progress Bar (Capped at 100%)
+          _buildProgressBar(
+              "Moisture", moistureValue, moistureMaxValue, Colors.blue),
+
+          // Nutrient Progress Bars (Only show if at least one is nonzero)
           if (nitrogenValue != 0 || phosphorusValue != 0 || potassiumValue != 0)
             Column(
               children: [
                 _buildProgressBar(
-                    "Nitrogen", nitrogenValue, maxValue, Colors.red),
-                _buildProgressBar(
-                    "Phosphorus", phosphorusValue, maxValue, Colors.orange),
-                _buildProgressBar(
-                    "Potassium", potassiumValue, maxValue, Colors.green),
+                    "Nitrogen", nitrogenValue, nutrientMaxValue, Colors.green),
+                _buildProgressBar("Phosphorus", phosphorusValue,
+                    nutrientMaxValue, Colors.orange),
+                _buildProgressBar("Potassium", potassiumValue, nutrientMaxValue,
+                    Colors.purple),
               ],
             ),
         ],
