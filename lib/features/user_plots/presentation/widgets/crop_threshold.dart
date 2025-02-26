@@ -123,28 +123,6 @@ class _CropThresholdWidgetState extends ConsumerState<CropThresholdWidget> {
           ),
           const DividerWidget(verticalHeight: 1),
           SpecificDetails(
-            icon: Icons.local_florist,
-            title: 'Potassium Level',
-            details: '$potassiumMin% - $potassiumMax%',
-            onPressed: () {
-              editThreshold(
-                context: context,
-                title: 'Edit Potassium Threshold',
-                minLabel: potassiumMin,
-                maxLabel: potassiumMax,
-                minController: minPotassium,
-                maxController: maxPotassium,
-                currentMin: potassiumMin,
-                currentMax: potassiumMax,
-                thresholdType: 'Potassium',
-                soilDashboardNotifier: userPlotNotifier,
-                minColumn: 'potassium_min',
-                maxColumn: 'potassium_max',
-              );
-            },
-          ),
-          const DividerWidget(verticalHeight: 1),
-          SpecificDetails(
             icon: Icons.science_outlined,
             title: 'Phosphorus Level',
             details: '$phosphorusMin% - $phosphorusMax%',
@@ -162,6 +140,28 @@ class _CropThresholdWidgetState extends ConsumerState<CropThresholdWidget> {
                 soilDashboardNotifier: userPlotNotifier,
                 minColumn: 'phosphorus_min',
                 maxColumn: 'phosphorus_max',
+              );
+            },
+          ),
+          const DividerWidget(verticalHeight: 1),
+          SpecificDetails(
+            icon: Icons.local_florist,
+            title: 'Potassium Level',
+            details: '$potassiumMin% - $potassiumMax%',
+            onPressed: () {
+              editThreshold(
+                context: context,
+                title: 'Edit Potassium Threshold',
+                minLabel: potassiumMin,
+                maxLabel: potassiumMax,
+                minController: minPotassium,
+                maxController: maxPotassium,
+                currentMin: potassiumMin,
+                currentMax: potassiumMax,
+                thresholdType: 'Potassium',
+                soilDashboardNotifier: userPlotNotifier,
+                minColumn: 'potassium_min',
+                maxColumn: 'potassium_max',
               );
             },
           ),

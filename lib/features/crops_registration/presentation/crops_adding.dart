@@ -20,7 +20,6 @@ class AddingCropsScreen extends ConsumerWidget {
     final sensorState = ref.watch(sensorsProvider);
     final sensorNotifier = ref.read(sensorsProvider.notifier);
     final userPlot = ref.watch(soilDashboardProvider);
-    final userPlotNotifier = ref.read(soilDashboardProvider.notifier);
 
     if (sensorState.moistureSensors.isEmpty && !sensorState.isFetchingSensors) {
       Future.microtask(() => sensorNotifier.fetchSensors());

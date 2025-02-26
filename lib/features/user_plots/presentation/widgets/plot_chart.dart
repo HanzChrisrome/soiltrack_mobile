@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:soiltrack_mobile/widgets/divider_widget.dart';
+import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 import 'package:intl/intl.dart' as intl;
 
@@ -89,102 +91,135 @@ class PlotChart extends ConsumerWidget {
   ) {
     minY = 0;
     maxY = 200;
+    double? latestReading;
+    double? previousReading;
+    if (spots.length >= 2) {
+      latestReading = spots.last.y;
+      previousReading = spots[spots.length - 2].y;
+    }
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      margin: const EdgeInsets.only(bottom: 15),
-      decoration: BoxDecoration(
-        color: _getChartColor(readingType).withOpacity(0.2),
-        border: Border.all(
-            color: _getChartColor(readingType).withOpacity(0.2), width: 1),
-        borderRadius: BorderRadius.circular(12.0),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextRoundedEnclose(
-            text:
-                '${formatReadingType(readingType)} level is based on the received data.',
-            color: Colors.white,
-            textColor: Colors.grey[500]!,
+    // Calculate percentage change
+    double? percentageChange;
+    if (latestReading != null &&
+        previousReading != null &&
+        previousReading != 0) {
+      percentageChange =
+          ((latestReading - previousReading) / previousReading) * 100;
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            TextGradient(text: formatReadingType(readingType), fontSize: 20),
+            const SizedBox(width: 15),
+            TextRoundedEnclose(
+              text:
+                  '${percentageChange! > 0 ? '+' : ''}${percentageChange.toStringAsFixed(1)}%',
+              color: _getChartColor(readingType).withOpacity(0.2),
+              textColor: _getChartColor(readingType),
+            )
+          ],
+        ),
+        const SizedBox(height: 10),
+        Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+          margin: const EdgeInsets.only(bottom: 15),
+          decoration: BoxDecoration(
+            color: _getChartColor(readingType).withOpacity(0.2),
+            border: Border.all(
+                color: _getChartColor(readingType).withOpacity(0.2), width: 1),
+            borderRadius: BorderRadius.circular(12.0),
           ),
-          const SizedBox(height: 30),
-          SizedBox(
-            height: 200,
-            child: LineChart(
-              LineChartData(
-                gridData: const FlGridData(show: true),
-                titlesData: FlTitlesData(
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          value.toStringAsFixed(0),
-                          style: const TextStyle(
-                            color: Colors.black,
-                            fontSize: 8,
-                          ),
-                        );
-                      },
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              TextRoundedEnclose(
+                text:
+                    '${formatReadingType(readingType)} level is based on the received data.',
+                color: Colors.white,
+                textColor: Colors.grey[500]!,
+              ),
+              const SizedBox(height: 30),
+              SizedBox(
+                height: 200,
+                child: LineChart(
+                  LineChartData(
+                    gridData: const FlGridData(show: true),
+                    titlesData: FlTitlesData(
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (value, meta) {
+                            return Text(
+                              value.toStringAsFixed(0),
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 8,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (value, meta) {
+                            int index = value.toInt();
+                            if (index < 0 || index >= reversedReadings.length) {
+                              return const Text('');
+                            }
+                            final timeStamp = DateTime.parse(
+                              reversedReadings[index]['read_time'],
+                            );
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 12.0),
+                              child: Text(
+                                intl.DateFormat.Hm().format(timeStamp),
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 8,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
                     ),
-                  ),
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        int index = value.toInt();
-                        if (index < 0 || index >= reversedReadings.length) {
-                          return const Text('');
-                        }
-                        final timeStamp = DateTime.parse(
-                          reversedReadings[index]['read_time'],
-                        );
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 12.0),
-                          child: Text(
-                            intl.DateFormat.Hm().format(timeStamp),
-                            style: const TextStyle(
-                              color: Colors.black,
-                              fontSize: 8,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
+                    minX: 0,
+                    maxX: spots.length.toDouble() - 1,
+                    minY: minY, // Fixed 0
+                    maxY: maxY, // Fixed 200
+                    borderData: FlBorderData(show: false),
+                    lineBarsData: [
+                      LineChartBarData(
+                        spots: spots,
+                        preventCurveOverShooting: true,
+                        show: true,
+                        color: _getChartColor(readingType),
+                        barWidth: 3,
+                        belowBarData: BarAreaData(
+                          show: true,
+                          color: _getChartColor(readingType).withOpacity(0.2),
+                        ),
+                        isStrokeCapRound: true,
+                      ),
+                    ],
                   ),
                 ),
-                minX: 0,
-                maxX: spots.length.toDouble() - 1,
-                minY: minY, // Fixed 0
-                maxY: maxY, // Fixed 200
-                borderData: FlBorderData(show: false),
-                lineBarsData: [
-                  LineChartBarData(
-                    spots: spots,
-                    preventCurveOverShooting: true,
-                    show: true,
-                    color: _getChartColor(readingType),
-                    barWidth: 3,
-                    belowBarData: BarAreaData(
-                      show: true,
-                      color: _getChartColor(readingType).withOpacity(0.2),
-                    ),
-                    isStrokeCapRound: true,
-                  ),
-                ],
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

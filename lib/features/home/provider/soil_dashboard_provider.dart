@@ -15,7 +15,8 @@ class SoilDashboardState {
   final List<Map<String, dynamic>> userPlots;
   final List<Map<String, dynamic>> userPlotMoistureData;
   final List<Map<String, dynamic>> userPlotNutrientData;
-  final Map<String, List<String>> nutrientWarnings; // <-- Updated to Map
+  final List<Map<String, dynamic>> nutrientWarnings;
+  final List<Map<String, dynamic>> plotsSuggestion;
   final bool isFetchingUserPlots;
   final bool isFetchingUserPlotData;
   final int selectedPlotId;
@@ -34,7 +35,8 @@ class SoilDashboardState {
     this.userPlots = const [],
     this.userPlotMoistureData = const [],
     this.userPlotNutrientData = const [],
-    this.nutrientWarnings = const {}, // <-- Updated default value
+    this.nutrientWarnings = const [],
+    this.plotsSuggestion = const [],
     this.isFetchingUserPlots = false,
     this.isFetchingUserPlotData = false,
     this.selectedPlotId = 0,
@@ -54,7 +56,8 @@ class SoilDashboardState {
     List<Map<String, dynamic>>? userPlots,
     List<Map<String, dynamic>>? userPlotMoistureData,
     List<Map<String, dynamic>>? userPlotNutrientData,
-    Map<String, List<String>>? nutrientWarnings, // <-- Updated type
+    List<Map<String, dynamic>>? nutrientWarnings,
+    List<Map<String, dynamic>>? plotsSuggestion,
     bool? isFetchingUserPlots,
     bool? isFetchingUserPlotData,
     int? selectedPlotId,
@@ -73,8 +76,8 @@ class SoilDashboardState {
       userPlots: userPlots ?? this.userPlots,
       userPlotMoistureData: userPlotMoistureData ?? this.userPlotMoistureData,
       userPlotNutrientData: userPlotNutrientData ?? this.userPlotNutrientData,
-      nutrientWarnings:
-          nutrientWarnings ?? this.nutrientWarnings, // <-- Updated
+      nutrientWarnings: nutrientWarnings ?? this.nutrientWarnings,
+      plotsSuggestion: plotsSuggestion ?? this.plotsSuggestion,
       isFetchingUserPlots: isFetchingUserPlots ?? this.isFetchingUserPlots,
       isFetchingUserPlotData:
           isFetchingUserPlotData ?? this.isFetchingUserPlotData,
@@ -114,21 +117,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
 
       final userPlots = await soilDashboardService.userPlots(userId);
 
-      final List<String> plotIds =
-          userPlots.map((plot) => plot['plot_id'].toString()).toList();
-      print('Plot IDs: $plotIds');
-
-      final moistureData =
-          await soilDashboardService.userPlotMoistureData(plotIds);
-
-      print('Moisture data are: $moistureData');
-      final nutrientData =
-          await soilDashboardService.userPlotNutrientData(plotIds);
-      final warnings = soilDashboardService.generateNutrientWarnings(
-          userPlots, nutrientData);
-
-      print('Warnings: $warnings');
-
       if (macAddress.isEmpty) {
         print('No device registered');
         state = state.copyWith(error: 'No device registered');
@@ -140,17 +128,60 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         state = state.copyWith(
             error: 'No plots available', isFetchingUserPlots: false);
       }
+      state = state.copyWith(userPlots: userPlots);
 
-      state = state.copyWith(
-          userPlots: userPlots,
-          userPlotMoistureData: moistureData,
-          userPlotNutrientData: nutrientData,
-          nutrientWarnings: warnings,
-          isFetchingUserPlots: false);
+      await fetchUserPlotData();
     } catch (e) {
       print(e);
       state = state.copyWith(error: e.toString(), isFetchingUserPlots: false);
+    } finally {
+      state = state.copyWith(isFetchingUserPlots: false);
     }
+  }
+
+  Future<void> fetchUserPlotData() async {
+    final List<String> plotIds =
+        state.userPlots.map((plot) => plot['plot_id'].toString()).toList();
+
+    final moistureData =
+        await soilDashboardService.userPlotMoistureData(plotIds);
+
+    final nutrientData =
+        await soilDashboardService.userPlotNutrientData(plotIds);
+
+    final messages = soilDashboardService.generateNutrientWarnings(
+        state.userPlots, moistureData, nutrientData);
+
+    final warningsOnly = messages.map((plot) {
+      final filteredMessages = (plot['messages'] as List)
+          .where((message) => message['type'] == 'Warning')
+          .toList();
+
+      return {
+        'plot_id': plot['plot_id'],
+        'plot_name': plot['plot_name'],
+        'warnings': filteredMessages.map((msg) => msg['message']).toList(),
+      };
+    }).toList();
+
+    final suggestionsOnly = messages.map((plot) {
+      final filteredMessages = (plot['messages'] as List)
+          .where((message) => message['type'] == 'Suggestion')
+          .toList();
+
+      return {
+        'plot_id': plot['plot_id'],
+        'plot_name': plot['plot_name'],
+        'suggestions': filteredMessages.map((msg) => msg['message']).toList(),
+      };
+    }).toList();
+
+    state = state.copyWith(
+      userPlotMoistureData: moistureData,
+      userPlotNutrientData: nutrientData,
+      nutrientWarnings: warningsOnly,
+      plotsSuggestion: suggestionsOnly,
+    );
   }
 
   void setSelectedPlotId(BuildContext context, plotId) async {

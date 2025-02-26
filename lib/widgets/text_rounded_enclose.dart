@@ -5,11 +5,13 @@ class TextRoundedEnclose extends StatelessWidget {
       {super.key,
       required this.text,
       required this.color,
-      required this.textColor});
+      required this.textColor,
+      this.fontSize = 12.0});
 
   final String text;
   final Color color;
   final Color textColor;
+  final double fontSize;
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +25,7 @@ class TextRoundedEnclose extends StatelessWidget {
         text,
         style: TextStyle(
           color: textColor,
-          fontSize: 12.0,
+          fontSize: fontSize,
           fontWeight: FontWeight.w500,
         ),
       ),

@@ -20,8 +20,6 @@ class AssignCrops extends ConsumerWidget {
     final cropNotifier = ref.watch(cropProvider.notifier);
     final sensorState = ref.watch(sensorsProvider);
 
-    Future.microtask(() => cropNotifier.unselectSensor());
-
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -162,8 +160,8 @@ class AssignCrops extends ConsumerWidget {
                       ...sensorState.moistureSensors.map(
                         (sensor) {
                           final bool isAssigned = sensor['is_assigned'] == true;
-                          final String? plotName =
-                              sensor['user_plots']?['plot_name'];
+                          final String? plotName = sensor['user_plot_sensors']
+                              ?[0]['user_plots']?['plot_name'];
 
                           return SensorTile(
                             sensorName: sensor['sensor_name'],

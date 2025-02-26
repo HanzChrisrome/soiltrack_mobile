@@ -6,13 +6,12 @@ import 'package:go_router/go_router.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/crop_threshold.dart';
-import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/nutrients_card.dart';
-import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_card.dart';
-import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_chart.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/line_chart.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_details.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/tools_section.dart';
 import 'package:soiltrack_mobile/widgets/customizable_bottom_sheet.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
+import 'package:soiltrack_mobile/widgets/filled_button.dart';
 import 'package:soiltrack_mobile/widgets/text_field.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/widgets/text_header.dart';
@@ -57,7 +56,6 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
       orElse: () => {},
     );
 
-    final int plotId = selectedPlot['plot_id'] ?? 0;
     final plotName = selectedPlot['plot_name'] ?? 'No plot found';
     final soilType = selectedPlot['soil_type'] ?? 'No soil type found';
     final selectedCrop = selectedPlot['user_crops']?['crop_name'] ?? 'No crop';
@@ -78,6 +76,16 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
         soilMoistureSensors?['soil_sensors']?['sensor_name'] ?? 'No sensor';
     final assignedNutrientSensor =
         soilNutrientSensors?['soil_sensors']?['sensor_name'] ?? 'No sensor';
+
+    final moistureData = userPlot.userPlotMoistureData
+        .where((moisture) => moisture['plot_id'] == userPlot.selectedPlotId)
+        .map((moisture) => {
+              'plot_id': moisture['plot_id'],
+              'sensor_id': moisture['sensor_id'],
+              'read_time': moisture['read_time'],
+              'value': moisture['soil_moisture']
+            })
+        .toList();
 
     final nitrogenData = userPlot.userPlotNutrientData
         .where((nutrient) => nutrient['plot_id'] == userPlot.selectedPlotId)
@@ -109,7 +117,10 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
             })
         .toList();
 
-    final warnings = userPlot.nutrientWarnings[plotId.toString()] ?? [];
+    final plotWarningsData = userPlot.nutrientWarnings.firstWhere(
+      (warning) => warning['plot_id'] == userPlot.selectedPlotId,
+      orElse: () => {},
+    );
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -258,7 +269,7 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                       ),
                       SliverPadding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 10),
+                            horizontal: 15, vertical: 10),
                         sliver: SliverList(
                           delegate: SliverChildListDelegate([
                             PlotDetailsWidget(
@@ -270,81 +281,79 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                                 assignedSensor: assignedNutrientSensor),
                             const SizedBox(height: 5),
                             CropThresholdWidget(plotDetails: selectedPlot),
-                            const SizedBox(height: 10),
-                            if (assignedNutrientSensor != 'No sensor')
-                              Container(
-                                margin: const EdgeInsets.only(bottom: 15),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 20, vertical: 10),
-                                decoration: BoxDecoration(
-                                  color: Colors.red.withOpacity(
-                                      0.1), // Light red with opacity
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                      color: Colors.red,
-                                      width: 1), // Red border
-                                ),
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Row(
-                                      children: [
-                                        Icon(Icons.warning_amber_outlined,
-                                            color: Colors.red, size: 20),
-                                        SizedBox(width: 5),
-                                        Text(
-                                          'Warnings!',
-                                          style: TextStyle(
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.red),
-                                        ),
-                                      ],
-                                    ),
-                                    const SizedBox(height: 15),
-                                    ...warnings.map((warning) {
-                                      return Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            warning,
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium!,
-                                          ),
-                                          if (warnings.indexOf(warning) !=
-                                              warnings.length - 1)
-                                            const DividerWidget(
-                                                verticalHeight: 1,
-                                                color: Colors.red),
-                                        ],
-                                      );
-                                    }),
-                                  ],
-                                ),
-                              ),
-                            PlotCard(
-                                selectedPlotId: plotId,
-                                moistureReadings:
-                                    userPlot.userPlotMoistureData),
-                            if (assignedNutrientSensor != 'No sensor')
-                              Column(
-                                children: [
-                                  PlotChart(
-                                      selectedPlotId: plotId,
-                                      readings: nitrogenData,
-                                      readingType: 'readed_nitrogen'),
-                                  PlotChart(
-                                      selectedPlotId: plotId,
-                                      readings: phosphorusData,
-                                      readingType: 'readed_phosphorus'),
-                                  PlotChart(
-                                      selectedPlotId: plotId,
-                                      readings: potassiumData,
-                                      readingType: 'readed_potassium'),
-                                ],
-                              ),
                             const SizedBox(height: 15),
+                            if (assignedNutrientSensor != 'No sensor')
+                              if (plotWarningsData['warnings'].isNotEmpty)
+                                Container(
+                                  margin: const EdgeInsets.only(bottom: 15),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 10),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.withOpacity(
+                                        0.1), // Light red with opacity
+                                    borderRadius: BorderRadius.circular(10),
+                                    border: Border.all(
+                                        color: Colors.red,
+                                        width: 1), // Red border
+                                  ),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Row(
+                                        children: [
+                                          Icon(Icons.warning_amber_outlined,
+                                              color: Colors.red, size: 20),
+                                          SizedBox(width: 5),
+                                          Text(
+                                            'Warnings!',
+                                            style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.red),
+                                          ),
+                                        ],
+                                      ),
+                                      const SizedBox(height: 15),
+                                      ...plotWarningsData['warnings']
+                                          .map((warning) {
+                                        return Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              warning,
+                                              style: Theme.of(context)
+                                                  .textTheme
+                                                  .bodyMedium!,
+                                            ),
+                                            if (plotWarningsData['warnings']
+                                                    .indexOf(warning) !=
+                                                plotWarningsData['warnings']
+                                                        .length -
+                                                    1)
+                                              const DividerWidget(
+                                                  verticalHeight: 1,
+                                                  color: Colors.red),
+                                          ],
+                                        );
+                                      }),
+                                    ],
+                                  ),
+                                ),
+                            NutrientProgressChart(
+                              nitrogenData: nitrogenData,
+                              phosphorusData: phosphorusData,
+                              potassiumData: potassiumData,
+                              moistureData: moistureData,
+                            ),
+                            const SizedBox(height: 5),
+                            FilledCustomButton(
+                              buttonText: 'View Analytics',
+                              icon: Icons.remove_red_eye_outlined,
+                              onPressed: () {
+                                context.pushNamed('plot-analytics');
+                              },
+                            ),
                           ]),
                         ),
                       ),

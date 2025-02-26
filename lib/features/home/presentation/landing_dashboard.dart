@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
-import 'package:soiltrack_mobile/features/home/presentation/widgets/actions_card.dart';
-import 'package:soiltrack_mobile/features/home/presentation/widgets/weather_widget.dart';
+import 'package:soiltrack_mobile/features/home/presentation/widgets/home/greeting_widget.dart';
+import 'package:soiltrack_mobile/features/home/presentation/widgets/home/weather_widget.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/weather_provider.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
@@ -15,13 +16,14 @@ class LandingDashboard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final weatherState = ref.watch(weatherProvider);
+    final userPlotState = ref.watch(soilDashboardProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 25),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -43,40 +45,7 @@ class LandingDashboard extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-                Container(
-                  width: double.infinity,
-                  height: 120,
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-                  decoration: BoxDecoration(
-                    image: const DecorationImage(
-                      image: AssetImage('assets/weather/night.png'),
-                      fit: BoxFit.cover,
-                    ),
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Good evening!",
-                        style: Theme.of(context).textTheme.titleSmall!.copyWith(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 22,
-                            letterSpacing: -1.5,
-                            height: 1,
-                            color: Colors.white),
-                      ),
-                      const SizedBox(height: 5),
-                      Text('Welcome back, ${authState.userName}!',
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodySmall!
-                              .copyWith(color: Colors.white)),
-                    ],
-                  ),
-                ),
+                GreetingWidget(userName: authState.userName as String),
                 const SizedBox(height: 10),
                 const WeatherWidget(),
                 const SizedBox(height: 10),
@@ -167,25 +136,63 @@ class LandingDashboard extends ConsumerWidget {
                       width: 1.0,
                     ),
                   ),
-                  child: const Column(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          TextGradient(text: 'Actions needed', fontSize: 20),
-                          Icon(
-                            Icons.arrow_forward_ios,
-                            color: Color.fromARGB(255, 44, 44, 44),
-                          )
+                          const TextGradient(text: 'Warnings', fontSize: 20),
+                          TextRoundedEnclose(
+                              text: 'Plot Warnings',
+                              color: Colors.white,
+                              textColor: Colors.grey[500]!),
                         ],
                       ),
-                      SizedBox(height: 40),
-                      ActionsCard(),
-                      DividerWidget(),
-                      ActionsCard(),
-                      DividerWidget(),
-                      ActionsCard(),
+                      if (userPlotState.nutrientWarnings.isNotEmpty)
+                        ...userPlotState.nutrientWarnings.map((plotWarning) {
+                          final plotName = plotWarning['plot_name'];
+                          final warnings =
+                              List<String>.from(plotWarning['warnings']);
+
+                          if (warnings.isEmpty) return const SizedBox();
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const DividerWidget(verticalHeight: 5),
+                              Text(
+                                '$plotName Plot Warning',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      height: 0.8,
+                                      color: const Color.fromARGB(
+                                          255, 141, 19, 10),
+                                    ),
+                              ),
+                              const SizedBox(height: 10),
+                              ...warnings.map((warning) {
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 2),
+                                  child: Text(
+                                    warning,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall!
+                                        .copyWith(
+                                          color: const Color.fromARGB(
+                                              255, 97, 97, 97),
+                                        ),
+                                  ),
+                                );
+                              }),
+                            ],
+                          );
+                        }),
                     ],
                   ),
                 ),

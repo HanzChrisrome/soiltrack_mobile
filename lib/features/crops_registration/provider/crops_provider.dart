@@ -7,7 +7,6 @@ import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:soiltrack_mobile/core/utils/loading_toast.dart';
 import 'package:soiltrack_mobile/features/crops_registration/models/crop_model.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
-import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:toastification/toastification.dart';
 
 class CropState {
@@ -115,8 +114,6 @@ class CropNotifer extends Notifier<CropState> {
 
   Future<void> assignCrop(BuildContext context) async {
     final soilDashboardState = ref.watch(soilDashboardProvider);
-    final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
-    final sensorNotifier = ref.read(sensorsProvider.notifier);
 
     state = state.copyWith(isSaving: true);
     ToastLoadingService.showLoadingToast(context, message: 'Assigning Crop');

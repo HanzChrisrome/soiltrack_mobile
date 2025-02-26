@@ -117,7 +117,7 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                     ),
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 20, vertical: 10),
+                          horizontal: 15, vertical: 10),
                       sliver: SliverList(
                         delegate: SliverChildListDelegate(
                           [
@@ -166,12 +166,20 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                                                   ['sensor_name'] as String? ??
                                               'No nutrient sensor assigned';
 
-                                      final plotWarnings =
-                                          userPlot.nutrientWarnings[
-                                                  plotId.toString()] ??
-                                              [];
-                                      final warningsLength =
-                                          plotWarnings.length;
+                                      final plotWarningsData =
+                                          userPlot.nutrientWarnings.firstWhere(
+                                        (warning) =>
+                                            warning['plot_id'] == plotId,
+                                        orElse: () => {},
+                                      );
+
+                                      final warnings =
+                                          plotWarningsData.isNotEmpty
+                                              ? List<String>.from(
+                                                  plotWarningsData['warnings'])
+                                              : [];
+
+                                      final warningsLength = warnings.length;
 
                                       return RegisteredPlots(
                                         plotName: plotName,

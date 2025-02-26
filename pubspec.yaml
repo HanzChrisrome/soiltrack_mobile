@@ -71,5 +71,7 @@ flutter:
     - assets/background/background_splash.png
 
     #WEATHER WIDGETS
+    - assets/weather/morning.png
+    - assets/weather/afternoon.png
     - assets/weather/night.png
     - assets/weather/normal_night.png

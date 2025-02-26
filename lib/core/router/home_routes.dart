@@ -2,6 +2,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/soil_assigning.dart';
 import 'package:soiltrack_mobile/features/home/presentation/home_screen.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/plot_analytics_screen.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/user_plots_screen.dart';
 
 final homeRoutes = [
@@ -18,6 +19,11 @@ final homeRoutes = [
         path: 'user-plot',
         name: 'user-plot',
         builder: (context, state) => const UserPlotScreen(),
+      ),
+      GoRoute(
+        path: 'plot-analytics',
+        name: 'plot-analytics',
+        builder: (context, state) => const PlotAnalyticsScreen(),
       ),
       GoRoute(
         path: 'soil-assigning',

@@ -43,10 +43,8 @@ class PlotCard extends ConsumerWidget {
       );
     }
 
-    final reversedReadings = filteredReadings.reversed.toList();
-
-    final moistureSpots = List.generate(reversedReadings.length, (index) {
-      final moistureValue = reversedReadings[index]['soil_moisture'];
+    final moistureSpots = List.generate(filteredReadings.length, (index) {
+      final moistureValue = filteredReadings[index]['soil_moisture'];
       return FlSpot(index.toDouble(), moistureValue.toDouble());
     });
 
@@ -102,12 +100,12 @@ class PlotCard extends ConsumerWidget {
                       showTitles: true,
                       getTitlesWidget: (value, meta) {
                         int index = value.toInt();
-                        if (index < 0 || index >= reversedReadings.length) {
+                        if (index < 0 || index >= filteredReadings.length) {
                           return const Text('');
                         }
                         // Get the timestamp for this index
                         final timeStamp = DateTime.parse(
-                            reversedReadings[index]['read_time']);
+                            filteredReadings[index]['read_time']);
 
                         return Padding(
                           padding: const EdgeInsets.only(top: 12.0),

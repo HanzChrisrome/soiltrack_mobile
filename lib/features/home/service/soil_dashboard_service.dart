@@ -48,7 +48,7 @@ class SoilDashboardService {
         sensor_id,
         soil_moisture,
         read_time
-    ''').inFilter('plot_id', plotIds).order('read_time', ascending: false);
+    ''').inFilter('plot_id', plotIds).order('read_time', ascending: true);
 
       return userPlotsData;
     } catch (e) {
@@ -76,23 +76,51 @@ class SoilDashboardService {
     }
   }
 
-  Map<String, List<String>> generateNutrientWarnings(
+  Future<Map<String, dynamic>> latestNitrogenData(
+      List<Map<String, dynamic>> nutrientsData) async {
+    try {
+      final latestReading = nutrientsData.last;
+      return {
+        'plot_id': latestReading['plot_id'],
+        'readed_nitrogen': latestReading['readed_nitrogen'],
+        'read_time': latestReading['read_time'],
+      };
+    } catch (e) {
+      print('Error fetching latest nitrogen data: $e');
+      rethrow;
+    }
+  }
+
+  List<Map<String, dynamic>> generateNutrientWarnings(
       List<Map<String, dynamic>> userPlots,
+      List<Map<String, dynamic>> moistureData,
       List<Map<String, dynamic>> nutrientData) {
-    Map<String, List<String>> warningsByPlot = {};
+    List<Map<String, dynamic>> warningsList = [];
 
     for (var plot in userPlots) {
-      String plotId = plot['plot_id'].toString();
-      var crop = plot['user_crops'];
+      final plotId = plot['plot_id'];
+      final plotName = plot['plot_name'];
+      final crop = plot['user_crops'];
 
       if (crop == null) continue;
 
-      int nitrogenMin = crop['nitrogen_min'];
-      int nitrogenMax = crop['nitrogen_max'];
-      int phosphorusMin = crop['phosphorus_min'];
-      int phosphorusMax = crop['phosphorus_max'];
-      int potassiumMin = crop['potassium_min'];
-      int potassiumMax = crop['potassium_max'];
+      final moistureMin = crop['moisture_min'];
+      final moistureMax = crop['moisture_max'];
+      final nitrogenMin = crop['nitrogen_min'];
+      final nitrogenMax = crop['nitrogen_max'];
+      final phosphorusMin = crop['phosphorus_min'];
+      final phosphorusMax = crop['phosphorus_max'];
+      final potassiumMin = crop['potassium_min'];
+      final potassiumMax = crop['potassium_max'];
+
+      var recentMoisture = moistureData
+          .where((reading) => reading['plot_id'] == plot['plot_id'])
+          .toList()
+          .lastOrNull;
+
+      if (recentMoisture == null) continue;
+
+      int moisture = recentMoisture['soil_moisture'];
 
       var recentReading = nutrientData
           .where((reading) => reading['plot_id'] == plot['plot_id'])
@@ -105,32 +133,106 @@ class SoilDashboardService {
       int phosphorus = recentReading['readed_phosphorus'];
       int potassium = recentReading['readed_potassium'];
 
-      List<String> warnings = [];
+      List<Map<String, String>> plotMessages = [];
+
+      if (moisture < moistureMin) {
+        plotMessages.add({
+          "type": "Warning",
+          "message": "Soil moisture is too low ($moisture%)"
+        });
+        plotMessages.add({
+          "type": "Suggestion",
+          "message":
+              "What to do: Water the soil more often and use rice husks or mulch to keep moisture."
+        });
+      } else if (moisture > moistureMax) {
+        plotMessages.add({
+          "type": "Warning",
+          "message": "Soil moisture is too high ($moisture%)"
+        });
+        plotMessages.add({
+          "type": "Suggestion",
+          "message":
+              "What to do: Reduce watering and make sure water can drain properly."
+        });
+      }
 
       if (nitrogen < nitrogenMin) {
-        warnings.add("Nitrogen is too low ($nitrogen mg/L)");
+        plotMessages.add({
+          "type": "Warning",
+          "message": "Nitrogen is too low ($nitrogen mg/L)"
+        });
+        plotMessages.add({
+          "type": "Suggestion",
+          "message":
+              "What to do: Apply fertilizers like compost, vermicast, or urea to improve soil health."
+        });
       } else if (nitrogen > nitrogenMax) {
-        warnings.add("Nitrogen is too high ($nitrogen mg/L)");
+        plotMessages.add({
+          "type": "Warning",
+          "message": "Nitrogen is too high ($nitrogen mg/L)"
+        });
+        plotMessages.add({
+          "type": "Suggestion",
+          "message":
+              "What to do: Use less nitrogen fertilizer and grow crops like corn or mung beans to absorb excess nitrogen."
+        });
       }
 
       if (phosphorus < phosphorusMin) {
-        warnings.add("Phosphorus is too low ($phosphorus mg/L)");
+        plotMessages.add({
+          "type": "Warning",
+          "message": "Phosphorus is too low ($phosphorus mg/L)"
+        });
+        plotMessages.add({
+          "type": "Suggestion",
+          "message":
+              "What to do: Add phosphorus-rich fertilizers like bone meal, rock phosphate, or chicken manure."
+        });
       } else if (phosphorus > phosphorusMax) {
-        warnings.add("Phosphorus is too high ($phosphorus mg/L)");
+        plotMessages.add({
+          "type": "Warning",
+          "message": "Phosphorus is too high ($phosphorus mg/L)"
+        });
+        plotMessages.add({
+          "type": "Suggestion",
+          "message":
+              "What to do: Use less phosphorus fertilizer and mix compost into the soil for better balance."
+        });
       }
 
       if (potassium < potassiumMin) {
-        warnings.add("Potassium is too low ($potassium mg/L)");
+        plotMessages.add({
+          "type": "Warning",
+          "message": "Potassium is too low ($potassium mg/L)"
+        });
+        plotMessages.add({
+          "type": "Suggestion",
+          "message":
+              "What to do: Use potassium fertilizers like wood ash, banana peel compost, or potassium sulfate."
+        });
       } else if (potassium > potassiumMax) {
-        warnings.add("Potassium is too high ($potassium mg/L)");
+        plotMessages.add({
+          "type": "Warning",
+          "message": "Potassium is too high ($potassium mg/L)"
+        });
+        plotMessages.add({
+          "type": "Suggestion",
+          "message":
+              "What to do: Water the soil more often to help wash out excess potassium."
+        });
       }
 
-      if (warnings.isNotEmpty) {
-        warningsByPlot[plotId] = warnings;
+      if (plotMessages.isNotEmpty) {
+        warningsList.add({
+          'plot_id': plotId,
+          'plot_name': plotName,
+          'messages': plotMessages,
+        });
       }
     }
 
-    return warningsByPlot;
+    return warningsList;
   }
 
   Future<void> cropId(String selectedCrop) async {
@@ -162,16 +264,10 @@ class SoilDashboardService {
   Future<void> saveNewThreshold(
       int selectedPlotId, Map<String, int> updatedValues) async {
     try {
-      final userCropId = await supabase
-          .from('user_plots')
-          .select('user_crop_id')
-          .eq('plot_id', selectedPlotId)
-          .single();
-
       await supabase
           .from('user_crops')
           .update(updatedValues)
-          .eq('user_crop_id', userCropId['user_crop_id']);
+          .eq('plot_id', selectedPlotId);
     } catch (e) {
       print('Error updating threshold: $e');
       rethrow;
