@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/crop_threshold.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/line_chart.dart';
@@ -50,6 +51,8 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
   Widget build(BuildContext context) {
     final userPlot = ref.watch(soilDashboardProvider);
     final userPlotNotifier = ref.read(soilDashboardProvider.notifier);
+    final deviceState = ref.watch(deviceProvider);
+    final deviceStateNotifier = ref.read(deviceProvider.notifier);
 
     final selectedPlot = userPlot.userPlots.firstWhere(
       (plot) => plot['plot_id'] == userPlot.selectedPlotId,
@@ -277,69 +280,91 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                                 assignedNutrientSensor: assignedNutrientSensor,
                                 soilType: soilType),
                             const SizedBox(height: 5),
+                            if (deviceState.isPumpOpen)
+                              GestureDetector(
+                                onTap: () {
+                                  deviceStateNotifier.closeAll(context);
+                                },
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 30),
+                                  decoration: BoxDecoration(
+                                    color: Colors.red.withOpacity(0.1),
+                                    borderRadius: BorderRadius.circular(15),
+                                    border: Border.all(
+                                      color: Colors.red,
+                                      width: 1,
+                                    ),
+                                  ),
+                                  child: const Center(
+                                    child: Text(
+                                        'Pump is currently open, close the pump?'),
+                                  ),
+                                ),
+                              ),
+                            const SizedBox(height: 5),
                             ToolsSectionWidget(
                                 assignedSensor: assignedNutrientSensor),
                             const SizedBox(height: 5),
                             CropThresholdWidget(plotDetails: selectedPlot),
                             const SizedBox(height: 10),
-                            if (assignedNutrientSensor != 'No sensor')
-                              if (plotWarningsData['warnings'].isNotEmpty)
-                                Container(
-                                  margin: const EdgeInsets.only(bottom: 15),
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 20, vertical: 10),
-                                  decoration: BoxDecoration(
-                                    color: Colors.red.withOpacity(
-                                        0.1), // Light red with opacity
-                                    borderRadius: BorderRadius.circular(10),
-                                    border: Border.all(
-                                        color: Colors.red,
-                                        width: 1), // Red border
-                                  ),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Row(
-                                        children: [
-                                          Icon(Icons.warning_amber_outlined,
-                                              color: Colors.red, size: 20),
-                                          SizedBox(width: 5),
-                                          Text(
-                                            'Warnings!',
-                                            style: TextStyle(
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.red),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 15),
-                                      ...plotWarningsData['warnings']
-                                          .map((warning) {
-                                        return Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              warning,
-                                              style: Theme.of(context)
-                                                  .textTheme
-                                                  .bodyMedium!,
-                                            ),
-                                            if (plotWarningsData['warnings']
-                                                    .indexOf(warning) !=
-                                                plotWarningsData['warnings']
-                                                        .length -
-                                                    1)
-                                              const DividerWidget(
-                                                  verticalHeight: 1,
-                                                  color: Colors.red),
-                                          ],
-                                        );
-                                      }),
-                                    ],
-                                  ),
+                            if (plotWarningsData['warnings'] != null &&
+                                plotWarningsData['warnings'].isNotEmpty)
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 15),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withOpacity(
+                                      0.1), // Light red with opacity
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                      color: Colors.red,
+                                      width: 1), // Red border
                                 ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Row(
+                                      children: [
+                                        Icon(Icons.warning_amber_outlined,
+                                            color: Colors.red, size: 20),
+                                        SizedBox(width: 5),
+                                        Text(
+                                          'Warning!',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.red),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 15),
+                                    ...plotWarningsData['warnings']
+                                        .map((warning) {
+                                      return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            warning,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium!,
+                                          ),
+                                          if (plotWarningsData['warnings']
+                                                  .indexOf(warning) !=
+                                              plotWarningsData['warnings']
+                                                      .length -
+                                                  1)
+                                            const DividerWidget(
+                                                verticalHeight: 1,
+                                                color: Colors.red),
+                                        ],
+                                      );
+                                    }),
+                                  ],
+                                ),
+                              ),
                             NutrientProgressChart(
                               nitrogenData: nitrogenData,
                               phosphorusData: phosphorusData,
@@ -353,19 +378,6 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                               onPressed: () {
                                 context.pushNamed('plot-analytics');
                               },
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Theme.of(context).colorScheme.surface,
-                                borderRadius: BorderRadius.circular(15),
-                                border: Border.all(
-                                  color: Colors.grey[100]!,
-                                  width: 1,
-                                ),
-                              ),
-                              child: Column(
-                                children: [],
-                              ),
                             ),
                           ]),
                         ),

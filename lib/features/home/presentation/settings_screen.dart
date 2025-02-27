@@ -27,7 +27,7 @@ class SettingsScreen extends ConsumerWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 35),
+            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 35),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -191,37 +191,6 @@ class SettingsScreen extends ConsumerWidget {
                             onPressed: () {
                               Navigator.of(context).pop();
                               deviceNotifier.getSensorCount();
-                            },
-                          );
-                        },
-                      ),
-                      const DividerWidget(verticalHeight: 0),
-                      SettingsItem(
-                        settingsText:
-                            deviceState.isPumpOpen ? 'Close Pump' : 'Open Pump',
-                        settingsIcon: deviceState.isPumpOpen
-                            ? Icons.lock
-                            : Icons.heat_pump,
-                        onTap: () {
-                          showCustomBottomSheet(
-                            context: context,
-                            title: deviceState.isPumpOpen
-                                ? 'Close Pump'
-                                : 'Open Pump',
-                            description:
-                                'Are you sure you want to ${deviceState.isPumpOpen ? 'close' : 'open'} the pump?',
-                            icon: deviceState.isPumpOpen
-                                ? Icons.close_fullscreen_sharp
-                                : Icons.open_in_full_sharp,
-                            buttonText:
-                                deviceState.isPumpOpen ? 'Close' : 'Open',
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              if (deviceState.isPumpOpen) {
-                                deviceNotifier.openPump(context, "PUMP ON");
-                              } else {
-                                deviceNotifier.openPump(context, "PUMP OFF");
-                              }
                             },
                           );
                         },

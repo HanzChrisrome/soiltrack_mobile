@@ -17,12 +17,14 @@ class SoilDashboardState {
   final List<Map<String, dynamic>> userPlotNutrientData;
   final List<Map<String, dynamic>> nutrientWarnings;
   final List<Map<String, dynamic>> plotsSuggestion;
+  final List<Map<String, dynamic>> deviceWarnings;
   final bool isFetchingUserPlots;
   final bool isFetchingUserPlotData;
   final int selectedPlotId;
   final int loadedPlotId;
   final String? error;
   final String? userPlotDataError;
+  final DateTime? selectedTimeRange;
 
   //For editing user plots state
   final bool isEditingUserPlot;
@@ -37,12 +39,14 @@ class SoilDashboardState {
     this.userPlotNutrientData = const [],
     this.nutrientWarnings = const [],
     this.plotsSuggestion = const [],
+    this.deviceWarnings = const [],
     this.isFetchingUserPlots = false,
     this.isFetchingUserPlotData = false,
     this.selectedPlotId = 0,
     this.loadedPlotId = 0,
     this.error,
     this.userPlotDataError,
+    this.selectedTimeRange,
 
     //For editing user plots state
     this.isEditingUserPlot = false,
@@ -58,12 +62,14 @@ class SoilDashboardState {
     List<Map<String, dynamic>>? userPlotNutrientData,
     List<Map<String, dynamic>>? nutrientWarnings,
     List<Map<String, dynamic>>? plotsSuggestion,
+    List<Map<String, dynamic>>? deviceWarnings,
     bool? isFetchingUserPlots,
     bool? isFetchingUserPlotData,
     int? selectedPlotId,
     int? loadedPlotId,
     String? error,
     String? userPlotDataError,
+    DateTime? selectedTimeRange,
 
     //For editing user plots state
     bool? isEditingUserPlot,
@@ -78,6 +84,9 @@ class SoilDashboardState {
       userPlotNutrientData: userPlotNutrientData ?? this.userPlotNutrientData,
       nutrientWarnings: nutrientWarnings ?? this.nutrientWarnings,
       plotsSuggestion: plotsSuggestion ?? this.plotsSuggestion,
+      deviceWarnings: deviceWarnings ?? this.deviceWarnings,
+
+      //DATA
       isFetchingUserPlots: isFetchingUserPlots ?? this.isFetchingUserPlots,
       isFetchingUserPlotData:
           isFetchingUserPlotData ?? this.isFetchingUserPlotData,
@@ -85,6 +94,7 @@ class SoilDashboardState {
       loadedPlotId: loadedPlotId ?? this.loadedPlotId,
       error: error ?? this.error,
       userPlotDataError: userPlotDataError ?? this.userPlotDataError,
+      selectedTimeRange: selectedTimeRange ?? this.selectedTimeRange,
 
       //For editing user plots state
       isEditingUserPlot: isEditingUserPlot ?? this.isEditingUserPlot,
@@ -104,6 +114,30 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
   @override
   SoilDashboardState build() {
     return SoilDashboardState();
+  }
+
+  void updateTimeSelection(String selectedTimeRange) {
+    final DateTime now = DateTime.now();
+    DateTime startDate;
+
+    switch (selectedTimeRange) {
+      case '1D':
+        startDate = now.subtract(const Duration(days: 1));
+        break;
+      case '1W':
+        startDate = now.subtract(const Duration(days: 7));
+        break;
+      case '1M':
+        startDate = DateTime(now.year, now.month - 1, now.day);
+        break;
+      case '3M':
+        startDate = DateTime(now.year, now.month - 3, now.day);
+        break;
+      default:
+        startDate = now.subtract(const Duration(days: 1));
+    }
+
+    state = state.copyWith(selectedTimeRange: startDate);
   }
 
   Future<void> fetchUserPlots() async {
@@ -176,11 +210,26 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       };
     }).toList();
 
+    final deviceWarningsOnly = messages.map((plot) {
+      final filteredMessages = (plot['messages'] as List)
+          .where((message) => message['type'] == 'Device Warning')
+          .toList();
+
+      return {
+        'plot_id': plot['plot_id'],
+        'plot_name': plot['plot_name'],
+        'warnings': filteredMessages.map((msg) => msg['message']).toList(),
+      };
+    }).toList();
+
+    print('Device warnings: $deviceWarningsOnly');
+
     state = state.copyWith(
       userPlotMoistureData: moistureData,
       userPlotNutrientData: nutrientData,
       nutrientWarnings: warningsOnly,
       plotsSuggestion: suggestionsOnly,
+      deviceWarnings: deviceWarningsOnly,
     );
   }
 

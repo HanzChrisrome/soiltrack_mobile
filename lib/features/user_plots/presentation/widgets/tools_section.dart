@@ -25,6 +25,16 @@ class ToolsSectionWidget extends ConsumerWidget {
     final userPlot = ref.watch(soilDashboardProvider);
     final userPlotNotifier = ref.read(soilDashboardProvider.notifier);
 
+    final userPlotList = userPlot.userPlots;
+
+    final selectedPlot = userPlotList.firstWhere(
+        (plot) => plot['plot_id'] == userPlot.selectedPlotId,
+        orElse: () => {});
+
+    final valveTagging = selectedPlot['valve_tagging'];
+    final isValveOpen =
+        deviceState.valveStates[selectedPlot['plot_id']] ?? false;
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
@@ -41,29 +51,30 @@ class ToolsSectionWidget extends ConsumerWidget {
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [
           ToolsButton(
-            buttonName: deviceState.isPumpOpen ? 'Close Pump' : 'Open Pump',
-            icon: deviceState.isPumpOpen
+            buttonName: isValveOpen ? 'Close Valve' : 'Open Valve',
+            icon: isValveOpen
                 ? Icons.open_in_full_sharp
                 : Icons.close_fullscreen_outlined,
             action: () {
               showCustomBottomSheet(
-                context: context,
-                title: deviceState.isPumpOpen ? 'Close Pump' : 'Open Pump',
-                description:
-                    'Are you sure you want to ${deviceState.isPumpOpen ? 'close' : 'open'} the pump?',
-                icon: deviceState.isPumpOpen
-                    ? Icons.close_fullscreen_sharp
-                    : Icons.open_in_full_sharp,
-                buttonText: deviceState.isPumpOpen ? 'Close' : 'Open',
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  if (deviceState.isPumpOpen) {
-                    deviceNotifier.openPump(context, "PUMP ON");
-                  } else {
-                    deviceNotifier.openPump(context, "PUMP OFF");
-                  }
-                },
-              );
+                  context: context,
+                  title: isValveOpen ? 'Close Valve' : 'Open Valve',
+                  description:
+                      'Are you sure you want to ${isValveOpen ? 'close' : 'open'} the valve?',
+                  icon: isValveOpen
+                      ? Icons.close_fullscreen_sharp
+                      : Icons.open_in_full_sharp,
+                  buttonText: isValveOpen ? 'Close' : 'Open',
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    if (isValveOpen) {
+                      deviceNotifier.openPump(context, "VLVE OFF", valveTagging,
+                          selectedPlot['plot_id']);
+                    } else {
+                      deviceNotifier.openPump(context, "VLVE ON", valveTagging,
+                          selectedPlot['plot_id']);
+                    }
+                  });
             },
           ),
           const SizedBox(width: 5),

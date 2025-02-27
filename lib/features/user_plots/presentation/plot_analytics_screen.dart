@@ -101,59 +101,57 @@ class PlotAnalyticsScreen extends ConsumerWidget {
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     [
-                      if (assignedNutrientSensor != 'No sensor')
-                        if (plotWarnings['warnings'].isNotEmpty)
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 15),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 10),
-                            decoration: BoxDecoration(
-                              color: Colors.red
-                                  .withOpacity(0.1), // Light red with opacity
-                              borderRadius: BorderRadius.circular(10),
-                              border: Border.all(
-                                  color: Colors.red, width: 1), // Red border
-                            ),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const Row(
-                                  children: [
-                                    Icon(Icons.warning_amber_outlined,
-                                        color: Colors.red, size: 20),
-                                    SizedBox(width: 5),
-                                    Text(
-                                      'Warnings!',
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.red),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 15),
-                                ...plotWarnings['warnings'].map((warning) {
-                                  return Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        warning,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium!,
-                                      ),
-                                      if (plotWarnings['warnings']
-                                              .indexOf(warning) !=
-                                          plotWarnings['warnings'].length - 1)
-                                        const DividerWidget(
-                                            verticalHeight: 1,
-                                            color: Colors.red),
-                                    ],
-                                  );
-                                }),
-                              ],
-                            ),
+                      if (plotWarnings['warnings'] != null &&
+                          plotWarnings['warnings'].isNotEmpty)
+                        Container(
+                          margin: const EdgeInsets.only(bottom: 15),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 20, vertical: 10),
+                          decoration: BoxDecoration(
+                            color: Colors.red
+                                .withOpacity(0.1), // Light red with opacity
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                                color: Colors.red, width: 1), // Red border
                           ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Row(
+                                children: [
+                                  Icon(Icons.warning_amber_outlined,
+                                      color: Colors.red, size: 20),
+                                  SizedBox(width: 5),
+                                  Text(
+                                    'Warning!',
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 15),
+                              ...plotWarnings['warnings'].map((warning) {
+                                return Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      warning,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium!,
+                                    ),
+                                    if (plotWarnings['warnings']
+                                            .indexOf(warning) !=
+                                        plotWarnings['warnings'].length - 1)
+                                      const DividerWidget(
+                                          verticalHeight: 1, color: Colors.red),
+                                  ],
+                                );
+                              }),
+                            ],
+                          ),
+                        ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -247,6 +245,29 @@ class PlotAnalyticsScreen extends ConsumerWidget {
                                 );
                               }),
                             ],
+                          ),
+                        ),
+                      if (assignedNutrientSensor == 'No sensor')
+                        Container(
+                          height: 150,
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.surface,
+                            border: Border.all(
+                                color: Colors.grey[100]!,
+                                width: 1), // Red border
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Padding(
+                            padding: EdgeInsets.all(20),
+                            child: Center(
+                              child: Text(
+                                'No NPK Sensor assigned to this plot',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                     ],

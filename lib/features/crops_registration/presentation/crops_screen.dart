@@ -49,10 +49,8 @@ class CropsScreen extends ConsumerWidget {
                             color: Theme.of(context).colorScheme.onPrimary,
                           ),
                           const SizedBox(height: 10),
-                          TextGradient(
-                            text: userPlotState.isEditingUserPlot
-                                ? 'Assign a new crop for your plot'
-                                : 'Assign a crop for your plot',
+                          const TextGradient(
+                            text: 'Assign a crop for your plot',
                             textAlign: TextAlign.center,
                             fontSize: 40,
                             letterSpacing: -2.9,

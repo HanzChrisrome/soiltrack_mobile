@@ -264,29 +264,7 @@ class _AddCustomCropState extends ConsumerState<AddCustomCrop> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 20),
-                        if (sensorState.moistureSensors.isNotEmpty)
-                          ...sensorState.moistureSensors.map(
-                            (sensor) {
-                              final bool isAssigned =
-                                  sensor['is_assigned'] == true;
-                              final String? plotName =
-                                  sensor['user_plots']?['plot_name'];
-
-                              return SensorTile(
-                                sensorName: sensor['soil_moisture_name'],
-                                sensorId: sensor['soil_moisture_sensor_id'],
-                                isAssigned: isAssigned,
-                                plotName: plotName,
-                                isSelected: cropState.selectedSensor ==
-                                    sensor['soil_moisture_sensor_id'],
-                                onTap: () {
-                                  cropNotifier.selectSensor(
-                                      sensor['soil_moisture_sensor_id']);
-                                },
-                              );
-                            },
-                          ),
+                        const SizedBox(height: 10),
                         FilledCustomButton(
                           icon: Icons.verified_outlined,
                           buttonText: 'Proceed',
@@ -367,7 +345,7 @@ class _AddCustomCropState extends ConsumerState<AddCustomCrop> {
                                   );
                                 },
                         ),
-                        const SizedBox(height: 20),
+                        const SizedBox(height: 50),
                       ],
                     ),
                   ),

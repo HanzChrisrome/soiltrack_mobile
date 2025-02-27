@@ -113,7 +113,8 @@ class CropNotifer extends Notifier<CropState> {
   }
 
   Future<void> assignCrop(BuildContext context) async {
-    final soilDashboardState = ref.watch(soilDashboardProvider);
+    final soilDashboardState = ref.read(soilDashboardProvider);
+    final soilDashboardNotifier = ref.watch(soilDashboardProvider.notifier);
 
     state = state.copyWith(isSaving: true);
     ToastLoadingService.showLoadingToast(context, message: 'Assigning Crop');
@@ -185,6 +186,7 @@ class CropNotifer extends Notifier<CropState> {
         });
       }
 
+      soilDashboardNotifier.fetchUserPlots();
       ToastLoadingService.dismissLoadingToast(
           context, 'Crop assigned successfully', ToastificationType.success);
       state = state.copyWith(isSaving: false);
@@ -265,8 +267,6 @@ class CropNotifer extends Notifier<CropState> {
             'user_id': supabase.auth.currentUser!.id,
             'plot_name': state.plotName,
             'soil_type': state.soilType,
-            'soil_moisture_sensor_id': state.selectedSensor,
-            'soil_nutrient_sensor_id': null,
           })
           .select()
           .single();

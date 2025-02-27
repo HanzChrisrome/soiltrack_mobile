@@ -139,12 +139,76 @@ class LandingDashboard extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      const TextGradient(text: 'Device Warnings', fontSize: 20),
+                      if (userPlotState.deviceWarnings.isNotEmpty)
+                        ...userPlotState.deviceWarnings.map((deviceWarning) {
+                          final plotName = deviceWarning['plot_name'];
+                          final warnings =
+                              List<String>.from(deviceWarning['warnings']);
+
+                          if (warnings.isEmpty) return const SizedBox();
+
+                          return Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const DividerWidget(verticalHeight: 5),
+                              Text(
+                                '$plotName Plot Warning',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge!
+                                    .copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      height: 0.8,
+                                      color: const Color.fromARGB(
+                                          255, 141, 19, 10),
+                                    ),
+                              ),
+                              const SizedBox(height: 10),
+                              ...warnings.map((warning) {
+                                return Padding(
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 2),
+                                  child: Text(
+                                    warning,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall!
+                                        .copyWith(
+                                          color: const Color.fromARGB(
+                                              255, 97, 97, 97),
+                                        ),
+                                  ),
+                                );
+                              }),
+                            ],
+                          );
+                        }),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(25),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surface,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: Colors.grey[100]!,
+                      width: 1.0,
+                    ),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const TextGradient(text: 'Warnings', fontSize: 20),
+                          const TextGradient(
+                              text: 'Plot Warnings', fontSize: 20),
                           TextRoundedEnclose(
-                              text: 'Plot Warnings',
+                              text: 'Farm Related Warnings',
                               color: Colors.white,
                               textColor: Colors.grey[500]!),
                         ],

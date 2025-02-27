@@ -5,13 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/registered_plots.dart';
 import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
+import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/soil_dashboard/unassigned_sensor.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
-import 'package:soiltrack_mobile/widgets/customizable_bottom_sheet.dart';
-import 'package:soiltrack_mobile/widgets/outline_button.dart';
-import 'package:soiltrack_mobile/widgets/text_field.dart';
-import 'package:soiltrack_mobile/widgets/text_gradient.dart';
+import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
 import 'package:soiltrack_mobile/widgets/text_header.dart';
 
 class SoilDashboardScreen extends ConsumerStatefulWidget {
@@ -48,9 +46,10 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final cropsNotifier = ref.read(cropProvider.notifier);
     final userPlot = ref.watch(soilDashboardProvider);
     final sensorState = ref.watch(sensorsProvider);
+    final deviceState = ref.watch(deviceProvider);
+    final deviceNotifier = ref.read(deviceProvider.notifier);
 
     final unassignedNutrientSensors = sensorState.nutrientSensors
         .where((sensor) => sensor['is_assigned'] == false)
@@ -123,6 +122,58 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                           [
                             Column(
                               children: [
+                                GestureDetector(
+                                  onTap: () {
+                                    showCustomBottomSheet(
+                                      context: context,
+                                      title: deviceState.isPumpOpen
+                                          ? 'Close Pump and All Valves'
+                                          : 'Open Pump and Valves',
+                                      description:
+                                          'Are you sure you want to do this action?',
+                                      icon: Icons.arrow_forward_ios_outlined,
+                                      buttonText: 'Proceed',
+                                      onPressed: () {
+                                        if (deviceState.isPumpOpen) {
+                                          deviceNotifier.closeAll(context);
+                                        } else {
+                                          deviceNotifier.openAll(context);
+                                        }
+                                        Navigator.of(context).pop();
+                                      },
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 15, vertical: 20),
+                                    decoration: BoxDecoration(
+                                      color: deviceState.isPumpOpen
+                                          ? Colors.red.withOpacity(0.1)
+                                          : Colors.green.withOpacity(0.1),
+                                      borderRadius: BorderRadius.circular(15),
+                                      border: Border.all(
+                                        color: deviceState.isPumpOpen
+                                            ? Colors.red
+                                            : Colors.green,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        deviceState.isPumpOpen
+                                            ? 'Close pump and all valves'
+                                            : 'Open pump and all valves',
+                                        style: TextStyle(
+                                          color: deviceState.isPumpOpen
+                                              ? Colors.red
+                                              : Colors.green,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
                                 if (unassignedNutrientSensors.isNotEmpty)
                                   const UnassignedSensor(),
                                 Column(
@@ -196,40 +247,6 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                                   ).toList(),
                                 ),
                               ],
-                            ),
-                            const SizedBox(height: 5),
-                            OutlineCustomButton(
-                              buttonText: 'Add Another Plot',
-                              iconData: Icons.add_box_outlined,
-                              onPressed: () {
-                                showCustomizableBottomSheet(
-                                  context: context,
-                                  height: 350,
-                                  centerContent: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      const SizedBox(height: 20),
-                                      const TextGradient(
-                                          text: 'Name your plot', fontSize: 40),
-                                      const SizedBox(height: 20),
-                                      TextFieldWidget(
-                                        label: 'Plot Name',
-                                        controller: plotNameController,
-                                        focusNode: plotNameFocusNode,
-                                      ),
-                                    ],
-                                  ),
-                                  buttonText: 'Proceed',
-                                  onPressed: () {
-                                    Navigator.pop(context);
-                                    cropsNotifier.setPlotName(
-                                        plotNameController.text, context);
-                                  },
-                                  onSheetCreated: () {
-                                    plotNameFocusNode.requestFocus();
-                                  },
-                                );
-                              },
                             ),
                             const SizedBox(height: 100),
                           ],

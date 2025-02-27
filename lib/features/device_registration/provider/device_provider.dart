@@ -26,6 +26,7 @@ class DeviceState {
   final bool isConnecting;
   final bool isSaving;
   final bool isResetting;
+  final Map<int, bool> valveStates;
   final bool isPumpOpen;
   final String? savingError;
 
@@ -39,6 +40,7 @@ class DeviceState {
     this.isConnecting = false,
     this.isSaving = false,
     this.isResetting = false,
+    this.valveStates = const {},
     this.isPumpOpen = false,
     this.savingError,
   });
@@ -53,6 +55,7 @@ class DeviceState {
     bool? isConnecting,
     bool? isSaving,
     bool? isResetting,
+    Map<int, bool>? valveStates,
     bool? isPumpOpen,
     String? savingError,
   }) {
@@ -66,6 +69,7 @@ class DeviceState {
       isConnecting: isConnecting ?? this.isConnecting,
       isSaving: isSaving ?? this.isSaving,
       isResetting: isResetting ?? this.isResetting,
+      valveStates: valveStates ?? this.valveStates,
       isPumpOpen: isPumpOpen ?? this.isPumpOpen,
       savingError: savingError ?? this.savingError,
     );
@@ -397,13 +401,247 @@ class DeviceNotifier extends Notifier<DeviceState> {
     await prefs.remove('mac_address');
   }
 
-  Future<void> openPump(BuildContext context, String action) async {
-    final newPumpState = !state.isPumpOpen;
-    final action = newPumpState ? 'PUMP ON' : 'PUMP OFF';
-    // Show loading
+  Future<bool> _openPump(BuildContext context) async {
     ToastLoadingService.showLoadingToast(
       context,
-      message: action == 'PUMP ON' ? 'Opening pump...' : 'Closing pump...',
+      message: 'Opening Pump...',
+    );
+
+    final mqttService = MQTTService();
+    await mqttService.connect();
+
+    final prefs = await SharedPreferences.getInstance();
+    final macAddress = prefs.getString('mac_address');
+
+    if (macAddress == null) {
+      ToastLoadingService.dismissLoadingToast(
+        context,
+        'No MAC address found.',
+        ToastificationType.error,
+      );
+      return false;
+    }
+
+    final pumpControlTopic = "soiltrack/device/$macAddress/pump";
+    final responseTopic = "$pumpControlTopic/status";
+    const expectedResponse = "P_OPEN";
+
+    mqttService.subscribe(responseTopic);
+    await Future.delayed(const Duration(seconds: 1));
+    mqttService.publish(pumpControlTopic, "PUMP ON");
+
+    try {
+      String response = await mqttService.waitForResponse(responseTopic,
+          expectedMessage: expectedResponse);
+
+      if (response == expectedResponse) {
+        ToastLoadingService.dismissLoadingToast(
+          context,
+          'Pump opened successfully!',
+          ToastificationType.info,
+        );
+
+        state = state.copyWith(isPumpOpen: true);
+        return true;
+      } else {
+        ToastLoadingService.dismissLoadingToast(
+            context, 'Pump did not open', ToastificationType.error);
+        return false;
+      }
+    } catch (e) {
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Pump did not open', ToastificationType.error);
+      return false;
+    }
+  }
+
+  Future<void> _closePump(BuildContext context) async {
+    ToastLoadingService.showLoadingToast(context, message: 'Closing pump...');
+
+    final mqttService = MQTTService();
+    await mqttService.connect();
+
+    final prefs = await SharedPreferences.getInstance();
+    final macAddress = prefs.getString('mac_address');
+
+    if (macAddress == null) {
+      ToastLoadingService.dismissLoadingToast(
+          context, 'No MAC address found.', ToastificationType.error);
+      return;
+    }
+
+    final pumpControlTopic = "soiltrack/device/$macAddress/pump";
+    final responseTopic = "$pumpControlTopic/status";
+    const expectedResponse = "P_CLOSE";
+
+    mqttService.subscribe(responseTopic);
+    await Future.delayed(const Duration(seconds: 1));
+    mqttService.publish(pumpControlTopic, "PUMP OFF");
+
+    try {
+      String response = await mqttService.waitForResponse(responseTopic,
+          expectedMessage: expectedResponse);
+
+      if (response == expectedResponse) {
+        ToastLoadingService.dismissLoadingToast(
+          context,
+          'Pump closed successfully!',
+          ToastificationType.info,
+        );
+
+        state = state.copyWith(isPumpOpen: false);
+      } else {
+        ToastLoadingService.dismissLoadingToast(
+            context, 'Pump did not close', ToastificationType.error);
+      }
+    } catch (e) {
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Pump did not close', ToastificationType.error);
+    }
+  }
+
+  Future<void> closeAll(BuildContext context) async {
+    ToastLoadingService.showLoadingToast(context,
+        message: 'Closing all valves.');
+
+    final mqttService = MQTTService();
+    await mqttService.connect();
+
+    final prefs = await SharedPreferences.getInstance();
+    final macAddress = prefs.getString('mac_address');
+
+    if (macAddress == null) {
+      ToastLoadingService.dismissLoadingToast(
+        context,
+        'No MAC address found.',
+        ToastificationType.error,
+      );
+      return;
+    }
+
+    final pumpControlTopic = "soiltrack/device/$macAddress/pump";
+    final responseTopic = "$pumpControlTopic/status";
+    const expectedResponse = "CLOSE";
+
+    mqttService.subscribe(responseTopic);
+    await Future.delayed(const Duration(seconds: 1));
+    mqttService.publish(pumpControlTopic, "CLOSE ALL");
+
+    try {
+      String response = await mqttService.waitForResponse(responseTopic,
+          expectedMessage: expectedResponse);
+
+      if (response == expectedResponse) {
+        ToastLoadingService.dismissLoadingToast(
+          context,
+          'All valves and pump closed successfully.',
+          ToastificationType.info,
+        );
+
+        final openValves = state.valveStates.entries
+            .where((entry) => entry.value)
+            .map((entry) => entry.key)
+            .toList();
+
+        print('Open valves: $openValves');
+        if (openValves.isNotEmpty) {
+          await supabase
+              .from('irrigation_log')
+              .update({'time_stopped': DateTime.now().toIso8601String()}).eq(
+                  'mac_address', macAddress);
+        }
+
+        state = state.copyWith(valveStates: {}, isPumpOpen: false);
+      } else {
+        ToastLoadingService.dismissLoadingToast(
+            context, 'Valves did not close', ToastificationType.error);
+      }
+    } catch (e) {
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Valves did not close', ToastificationType.error);
+    }
+  }
+
+  Future<void> openAll(BuildContext context) async {
+    final userPlotState = ref.watch(soilDashboardProvider);
+
+    ToastLoadingService.showLoadingToast(context,
+        message: 'Opening the pump and all valves.');
+
+    final prefs = await SharedPreferences.getInstance();
+    final macAddress = prefs.getString('mac_address');
+
+    final mqttService = MQTTService();
+    await mqttService.connect();
+
+    final pumpControlTopic = "soiltrack/device/$macAddress/pump";
+    final responseTopic = "$pumpControlTopic/status";
+
+    mqttService.subscribe(responseTopic);
+    await Future.delayed(const Duration(seconds: 1));
+
+    mqttService.publish(pumpControlTopic, "OPEN ALL");
+
+    try {
+      String response = await mqttService.waitForResponse(responseTopic,
+          expectedMessage: "OPEN");
+
+      if (response == "OPEN") {
+        final userPlots = userPlotState.userPlots;
+
+        if (userPlots.isEmpty) {
+          ToastLoadingService.dismissLoadingToast(
+              context, 'No plots found.', ToastificationType.error);
+          return;
+        }
+
+        final updatedValveStates = {
+          for (var plot in userPlots) (plot['plot_id'] as int): true
+        };
+
+        state = state.copyWith(
+          valveStates: updatedValveStates,
+          isPumpOpen: true,
+        );
+
+        final List<Map<String, dynamic>> logEntries = userPlots.map((plot) {
+          return {
+            'mac_address': macAddress,
+            'plot_id': plot['plot_id'],
+            'time_started': DateTime.now().toIso8601String(),
+          };
+        }).toList();
+
+        await supabase.from('irrigation_log').insert(logEntries);
+        print('All valves opened and saved: $logEntries');
+
+        ToastLoadingService.dismissLoadingToast(
+          context,
+          'Pump and all valves opened successfully.',
+          ToastificationType.info,
+        );
+      } else {
+        ToastLoadingService.dismissLoadingToast(
+            context, 'Error in saving', ToastificationType.error);
+      }
+    } catch (e) {
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Error in everything', ToastificationType.error);
+    }
+  }
+
+  Future<void> openPump(BuildContext context, String action,
+      String valveTagging, int plotId) async {
+    final isValveOpening = action == 'VLVE ON';
+    final newValveState = isValveOpening;
+    final activeValves = state.valveStates.values.where((v) => v).length;
+    final fullAction = "$action $valveTagging";
+
+    ToastLoadingService.showLoadingToast(
+      context,
+      message: action == 'VLVE ON'
+          ? 'Opening Pump for Valve $valveTagging.'
+          : 'Closing Pump for Valve $valveTagging.',
     );
 
     final mqttService = MQTTService();
@@ -421,12 +659,11 @@ class DeviceNotifier extends Notifier<DeviceState> {
     final pumpControlTopic = "soiltrack/device/$macAddress/pump";
     final responseTopic = "$pumpControlTopic/status";
     final expectedResponse =
-        action == 'PUMP ON' ? "PUMP_OPENED" : "PUMP_CLOSED";
+        isValveOpening ? "${valveTagging}_OPEN" : "${valveTagging}_CLS";
 
     mqttService.subscribe(responseTopic);
-
     await Future.delayed(const Duration(seconds: 1));
-    mqttService.publish(pumpControlTopic, action);
+    mqttService.publish(pumpControlTopic, fullAction);
 
     try {
       String response = await mqttService.waitForResponse(responseTopic,
@@ -434,18 +671,59 @@ class DeviceNotifier extends Notifier<DeviceState> {
 
       if (response == expectedResponse) {
         ToastLoadingService.dismissLoadingToast(
-            context,
-            'Pump ${action == 'PUMP ON' ? 'opened' : 'closed'} successfully.',
-            ToastificationType.info);
-        state = state.copyWith(isPumpOpen: newPumpState);
-        print('Pump is open: ${state.isPumpOpen}');
-      }
+          context,
+          'Valve ${action == 'VLVE ON' ? 'opened' : 'closed'} successfully ($valveTagging).',
+          ToastificationType.info,
+        );
 
-      ToastLoadingService.dismissLoadingToast(
-          context, 'Pump did not open', ToastificationType.error);
+        if (isValveOpening && activeValves == 0) {
+          bool pumpOpened = await _openPump(context);
+          if (!pumpOpened) {
+            ToastLoadingService.dismissLoadingToast(
+              context,
+              'Failed to open pump. Valve cannot be opened.',
+              ToastificationType.error,
+            );
+            return;
+          }
+        }
+
+        final updatedValveStates = Map<int, bool>.from(state.valveStates);
+        updatedValveStates[plotId] = newValveState;
+
+        state = state.copyWith(valveStates: updatedValveStates);
+
+        final remainingOpenValves =
+            updatedValveStates.values.where((v) => v).length;
+        if (remainingOpenValves == 0) {
+          await _closePump(context);
+        }
+
+        //SAVE TO DB
+        if (isValveOpening) {
+          await supabase.from('irrigation_log').insert({
+            'mac_address': macAddress,
+            'plot_id': plotId,
+            'time_started': DateTime.now().toIso8601String(),
+          });
+        } else {
+          await supabase
+              .from('irrigation_log')
+              .update({
+                'time_stopped': DateTime.now().toIso8601String(),
+              })
+              .eq('mac_address', macAddress)
+              .eq('plot_id', plotId);
+        }
+
+        print('Valve states: $updatedValveStates');
+      } else {
+        ToastLoadingService.dismissLoadingToast(
+            context, 'Valve did not open', ToastificationType.error);
+      }
     } catch (e) {
       ToastLoadingService.dismissLoadingToast(
-          context, 'Pump did not open', ToastificationType.error);
+          context, 'Valve did not open', ToastificationType.error);
     }
   }
 }
