@@ -153,7 +153,7 @@ class LandingDashboard extends ConsumerWidget {
                             children: [
                               const DividerWidget(verticalHeight: 5),
                               Text(
-                                '$plotName Plot Warning',
+                                '$plotName Warning',
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodyLarge!
@@ -226,7 +226,7 @@ class LandingDashboard extends ConsumerWidget {
                             children: [
                               const DividerWidget(verticalHeight: 5),
                               Text(
-                                '$plotName Plot Warning',
+                                '$plotName Warning',
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodyLarge!

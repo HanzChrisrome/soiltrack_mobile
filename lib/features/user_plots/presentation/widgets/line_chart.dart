@@ -1,8 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart'; // Import for date formatting
+import 'package:soiltrack_mobile/core/utils/loading_toast.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
+import 'package:toastification/toastification.dart';
 
-class NutrientProgressChart extends StatelessWidget {
+class NutrientProgressChart extends ConsumerWidget {
   const NutrientProgressChart({
     super.key,
     required this.nitrogenData,
@@ -17,7 +21,9 @@ class NutrientProgressChart extends StatelessWidget {
   final List<Map<String, dynamic>> moistureData;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final soilDashboardNotifier = ref.watch(soilDashboardProvider.notifier);
+
     // Extract the latest timestamp from the most recent data entry
     String lastUpdated = _getLatestTimestamp();
 
@@ -49,10 +55,25 @@ class NutrientProgressChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          TextRoundedEnclose(
-            text: 'Readings as of $lastUpdated',
-            color: Colors.white,
-            textColor: Colors.grey[500]!,
+          Row(
+            children: [
+              TextRoundedEnclose(
+                text: 'Readings as of $lastUpdated',
+                color: Colors.white,
+                textColor: Colors.grey[500]!,
+              ),
+              const Spacer(),
+              GestureDetector(
+                onTap: () {
+                  soilDashboardNotifier.fetchUserPlotData();
+                },
+                child: const Icon(
+                  Icons.refresh,
+                  color: Colors.green,
+                  size: 20,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 10),
 

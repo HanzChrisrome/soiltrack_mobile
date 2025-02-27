@@ -79,7 +79,7 @@ class SoilAssigningScreen extends ConsumerWidget {
                                   context: context,
                                   title: 'Pick this kind of soil?',
                                   description:
-                                      'Proceed to assign a crop after confirming.',
+                                      'You can edit this later in the settings.',
                                   icon: Icons.arrow_forward_ios_outlined,
                                   buttonText: 'Proceed',
                                   onPressed: () {
@@ -99,7 +99,7 @@ class SoilAssigningScreen extends ConsumerWidget {
                                   context: context,
                                   title: 'Pick this kind of soil?',
                                   description:
-                                      'Proceed to assign a crop after confirming.',
+                                      'You can edit this later in the settings.',
                                   icon: Icons.arrow_forward_ios_outlined,
                                   buttonText: 'Proceed',
                                   onPressed: () {
@@ -119,7 +119,7 @@ class SoilAssigningScreen extends ConsumerWidget {
                                   context: context,
                                   title: 'Pick this kind of soil?',
                                   description:
-                                      'Proceed to assign a crop after confirming.',
+                                      'You can edit this later in the settings.',
                                   icon: Icons.arrow_forward_ios_outlined,
                                   buttonText: 'Proceed',
                                   onPressed: () {

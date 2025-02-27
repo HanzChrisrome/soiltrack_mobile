@@ -144,34 +144,19 @@ class CropNotifer extends Notifier<CropState> {
         plotId = insertedPlot['plot_id'];
       }
 
-      if (soilDashboardState.isEditingUserPlot == true) {
-        await supabase.from('user_crops').update({
-          'crop_name': getCropId['crop_name'],
-          'category': getCropId['category'],
-          'moisture_min': getCropId['moisture_min'],
-          'moisture_max': getCropId['moisture_max'],
-          'nitrogen_min': getCropId['nitrogen_min'],
-          'nitrogen_max': getCropId['nitrogen_max'],
-          'phosphorus_min': getCropId['phosphorus_min'],
-          'phosphorus_max': getCropId['phosphorus_max'],
-          'potassium_min': getCropId['potassium_min'],
-          'potassium_max': getCropId['potassium_max'],
-        }).eq('plot_id', plotId);
-      } else {
-        await supabase.from('user_crops').insert({
-          'crop_name': getCropId['crop_name'],
-          'category': getCropId['category'],
-          'moisture_min': getCropId['moisture_min'],
-          'moisture_max': getCropId['moisture_max'],
-          'nitrogen_min': getCropId['nitrogen_min'],
-          'nitrogen_max': getCropId['nitrogen_max'],
-          'phosphorus_min': getCropId['phosphorus_min'],
-          'phosphorus_max': getCropId['phosphorus_max'],
-          'potassium_min': getCropId['potassium_min'],
-          'potassium_max': getCropId['potassium_max'],
-          'plot_id': plotId,
-        });
-      }
+      await supabase.from('user_crops').upsert({
+        'crop_name': getCropId['crop_name'],
+        'category': getCropId['category'],
+        'moisture_min': getCropId['moisture_min'],
+        'moisture_max': getCropId['moisture_max'],
+        'nitrogen_min': getCropId['nitrogen_min'],
+        'nitrogen_max': getCropId['nitrogen_max'],
+        'phosphorus_min': getCropId['phosphorus_min'],
+        'phosphorus_max': getCropId['phosphorus_max'],
+        'potassium_min': getCropId['potassium_min'],
+        'potassium_max': getCropId['potassium_max'],
+        'plot_id': plotId,
+      }, onConflict: 'plot_id');
 
       if (state.selectedSensor != null) {
         await supabase.from('soil_sensors').update({
@@ -214,10 +199,27 @@ class CropNotifer extends Notifier<CropState> {
     context.pushNamed('soil-assigning');
   }
 
-  void setSoilType(String soilType, BuildContext context) {
-    print('Soil Type: $soilType');
-    state = state.copyWith(soilType: soilType);
-    context.pushNamed('select-category');
+  Future<void> setSoilType(String soilType, BuildContext context) async {
+    final userPlotState = ref.read(soilDashboardProvider);
+    final soilDashboardNotifier = ref.watch(soilDashboardProvider.notifier);
+    final plotId = userPlotState.selectedPlotId;
+
+    ToastLoadingService.showLoadingToast(context, message: 'Setting Soil Type');
+    try {
+      await supabase.from('user_plots').update({
+        'soil_type': soilType,
+      }).eq('plot_id', plotId);
+
+      soilDashboardNotifier.fetchUserPlots();
+      soilDashboardNotifier.fetchUserPlotData();
+
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Soil type set successfully', ToastificationType.success);
+    } catch (e) {
+      print('Error setting soil type: $e');
+      ToastLoadingService.dismissLoadingToast(
+          context, 'Error setting soil type', ToastificationType.error);
+    }
   }
 
   Future<void> saveNewCrop(

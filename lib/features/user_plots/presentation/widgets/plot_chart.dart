@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 import 'package:intl/intl.dart' as intl;
@@ -20,26 +19,32 @@ class PlotChart extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Filter readings for the selected plot
     final filteredReadings = readings
         .where((reading) => reading['plot_id'] == selectedPlotId)
         .toList();
 
-    if (filteredReadings.isEmpty || filteredReadings.length < 5) {
+    filteredReadings.sort((a, b) => DateTime.parse(b['read_time'])
+        .compareTo(DateTime.parse(a['read_time'])));
+
+    final latestReadings = filteredReadings.take(10).toList();
+
+    latestReadings.sort((a, b) => DateTime.parse(a['read_time'])
+        .compareTo(DateTime.parse(b['read_time'])));
+
+    if (latestReadings.isEmpty || latestReadings.length < 5) {
       return _buildNoDataContainer(context);
     }
 
-    final spots = List.generate(filteredReadings.length, (index) {
-      final value = filteredReadings[index]['value'] ?? 0.0; // Fixed key access
+    final spots = List.generate(latestReadings.length, (index) {
+      final value = latestReadings[index]['value'] ?? 0.0;
       return FlSpot(index.toDouble(), value.toDouble());
     });
 
-    // Determine min and max Y values for the chart
     double minY = spots.map((spot) => spot.y).reduce((a, b) => a < b ? a : b);
     double maxY = spots.map((spot) => spot.y).reduce((a, b) => a > b ? a : b);
 
     if (minY == maxY) {
-      minY -= 1; // Ensure visible range if all values are the same
+      minY -= 1;
       maxY += 1;
     } else {
       double padding = (maxY - minY) * 0.1;
@@ -49,14 +54,13 @@ class PlotChart extends ConsumerWidget {
 
     return _buildChartContainer(
       context,
-      filteredReadings,
+      latestReadings,
       spots,
       minY,
       maxY,
     );
   }
 
-  /// Container for when there is no data available
   Widget _buildNoDataContainer(BuildContext context) {
     return Container(
       width: double.infinity,

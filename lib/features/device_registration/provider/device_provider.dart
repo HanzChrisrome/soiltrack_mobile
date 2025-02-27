@@ -126,7 +126,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
     print('Scanning wifi');
 
     await WiFiScan.instance.startScan();
-    await Future.delayed(const Duration(seconds: 10));
+    await Future.delayed(const Duration(seconds: 5));
 
     final accessPoints = await WiFiScan.instance.getScannedResults();
     final wifiNetworks =
@@ -181,6 +181,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
   }
 
   Future<void> saveToDatabase() async {
+    if (state.isSaving) return;
     final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
     final sensorProvider = ref.read(sensorsProvider.notifier);
     state = state.copyWith(isSaving: true, savingError: null);
@@ -194,7 +195,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
       return;
     }
 
-    await Future.delayed(const Duration(seconds: 30));
+    await Future.delayed(const Duration(seconds: 15));
 
     try {
       final checkIfMacIsExisting = await supabase
@@ -205,15 +206,17 @@ class DeviceNotifier extends Notifier<DeviceState> {
 
       if (checkIfMacIsExisting != null) {
         if (checkIfMacIsExisting['user_id'] == userId) {
+          print('Device already saved to database.');
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('device_setup_completed', true);
           await prefs.setString('mac_address', macAddress);
 
-          await getSensorCount();
+          // await getSensorCount();
           await soilDashboardNotifier.fetchUserPlots();
           await sensorProvider.fetchSensors();
 
           print('ESP32 Connected Successfully without saving to database.');
+          state = state.copyWith(isSaving: false);
           return;
         }
       }
@@ -228,17 +231,16 @@ class DeviceNotifier extends Notifier<DeviceState> {
         throw Exception(responseSaving.error!.message);
       }
 
-      await getSensorCount();
+      // await getSensorCount();
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('device_setup_completed', true);
       await prefs.setString('mac_address', macAddress);
       print('Device saved to database.');
+      state = state.copyWith(isSaving: false);
     } catch (e) {
       print(e.toString());
       state = state.copyWith(isSaving: false, savingError: e.toString());
-    } finally {
-      state = state.copyWith(isSaving: false);
     }
   }
 
@@ -295,10 +297,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
           'sensor_category': 'NPK Sensor'
         });
       }
-
-      await supabase
-          .from('soil_sensors')
-          .upsert(sensorRecords, onConflict: 'mac_address, sensor_type');
 
       print('🌱 Sensors saved to database.');
     } catch (e) {

@@ -21,7 +21,7 @@ class WeatherWidget extends ConsumerWidget {
           width: double.infinity,
           decoration: BoxDecoration(
             image: const DecorationImage(
-              image: AssetImage('assets/weather/normal_night.png'),
+              image: AssetImage('assets/weather/SUNNY DAY.png'),
               fit: BoxFit.cover,
             ),
             borderRadius: BorderRadius.circular(25),

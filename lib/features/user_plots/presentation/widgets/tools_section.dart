@@ -81,7 +81,9 @@ class ToolsSectionWidget extends ConsumerWidget {
           ToolsButton(
             buttonName: 'Change Soil',
             icon: Icons.layers_rounded,
-            action: () {},
+            action: () {
+              context.pushNamed('soil-assigning');
+            },
           ),
           const SizedBox(width: 5),
           ToolsButton(
@@ -94,77 +96,89 @@ class ToolsSectionWidget extends ConsumerWidget {
           ),
           const SizedBox(width: 5),
           ToolsButton(
-            buttonName: assignedSensor == 'No sensor assigned'
-                ? 'Assign Sensor'
-                : 'Change Sensor',
-            icon: Icons.sensors,
-            action: () {
-              showCustomizableBottomSheet(
-                height: 500,
-                context: context,
-                centerContent: Consumer(builder: (context, ref, child) {
-                  final cropState = ref.watch(cropProvider);
-
-                  return Column(
-                    children: [
-                      TextGradient(
-                          text: assignedSensor != 'No sensor assigned'
-                              ? 'Change Sensor'
-                              : 'Assign a Sensor',
-                          fontSize: 35),
-                      const SizedBox(height: 20),
-                      if (sensorState.moistureSensors.isNotEmpty)
-                        ...sensorState.moistureSensors.map(
-                          (sensor) {
-                            final bool isSelected =
-                                cropState.selectedSensor == sensor['sensor_id'];
-
-                            return SensorTile(
-                              sensorName: sensor['sensor_name'],
-                              sensorId: sensor['sensor_id'],
-                              isAssigned: sensor['is_assigned'] == true,
-                              plotName: sensor['user_plot_sensors'][0]
-                                  ['user_plots']?['plot_name'],
-                              isSelected: isSelected,
-                              onTap: () {
-                                cropNotifier.selectSensor(sensor['sensor_id']);
-                              },
-                            );
-                          },
-                        ),
-                    ],
-                  );
-                }),
-                buttonText: 'Proceed',
-                onPressed: () {},
-              );
-            },
+            buttonName: 'Placeholder',
+            icon: Icons.stay_primary_landscape_outlined,
+            action: () {},
           ),
           const SizedBox(width: 5),
           ToolsButton(
-            buttonName: 'Delete Plot',
-            icon: Icons.delete_rounded,
-            action: () {
-              final String description;
-              if (userPlot.userPlotMoistureData.isEmpty) {
-                description = 'Are you sure you want to delete this plot?';
-              } else {
-                description =
-                    'Are you sure you want to delete this plot and all its data?';
-              }
-
-              showCustomBottomSheet(
-                context: context,
-                title: 'Delete Plot',
-                description: description,
-                icon: Icons.delete_rounded,
-                buttonText: 'Delete',
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-              );
-            },
+            buttonName: 'Placeholder',
+            icon: Icons.stay_primary_landscape_outlined,
+            action: () {},
           ),
+          // const SizedBox(width: 5),
+          // ToolsButton(
+          //   buttonName: assignedSensor == 'No sensor assigned'
+          //       ? 'Assign Sensor'
+          //       : 'Change Sensor',
+          //   icon: Icons.sensors,
+          //   action: () {
+          //     showCustomizableBottomSheet(
+          //       height: 500,
+          //       context: context,
+          //       centerContent: Consumer(builder: (context, ref, child) {
+          //         final cropState = ref.watch(cropProvider);
+
+          //         return Column(
+          //           children: [
+          //             TextGradient(
+          //                 text: assignedSensor != 'No sensor assigned'
+          //                     ? 'Change Sensor'
+          //                     : 'Assign a Sensor',
+          //                 fontSize: 35),
+          //             const SizedBox(height: 20),
+          //             if (sensorState.moistureSensors.isNotEmpty)
+          //               ...sensorState.moistureSensors.map(
+          //                 (sensor) {
+          //                   final bool isSelected =
+          //                       cropState.selectedSensor == sensor['sensor_id'];
+
+          //                   return SensorTile(
+          //                     sensorName: sensor['sensor_name'],
+          //                     sensorId: sensor['sensor_id'],
+          //                     isAssigned: sensor['is_assigned'] == true,
+          //                     plotName: sensor['user_plot_sensors'][0]
+          //                         ['user_plots']?['plot_name'],
+          //                     isSelected: isSelected,
+          //                     onTap: () {
+          //                       cropNotifier.selectSensor(sensor['sensor_id']);
+          //                     },
+          //                   );
+          //                 },
+          //               ),
+          //           ],
+          //         );
+          //       }),
+          //       buttonText: 'Proceed',
+          //       onPressed: () {},
+          //     );
+          //   },
+          // ),
+          // const SizedBox(width: 5),
+          // ToolsButton(
+          //   buttonName: 'Delete Plot',
+          //   icon: Icons.delete_rounded,
+          //   action: () {
+          //     final String description;
+          //     if (userPlot.userPlotMoistureData.isEmpty) {
+          //       description = 'Are you sure you want to delete this plot?';
+          //     } else {
+          //       description =
+          //           'Are you sure you want to delete this plot and all its data?';
+          //     }
+
+          //     showCustomBottomSheet(
+          //       context: context,
+          //       title: 'Delete Plot',
+          //       description: description,
+          //       icon: Icons.delete_rounded,
+          //       buttonText: 'Delete',
+          //       onPressed: () {
+          //         Navigator.of(context).pop();
+          //       },
+          //     );
+          //   },
+          // ),
         ],
       ),
     );

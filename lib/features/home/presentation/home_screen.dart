@@ -22,7 +22,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<IconData> navIcons = [
     Icons.dashboard_customize_outlined,
     Icons.grass,
-    Icons.cloud,
+    // Icons.cloud,
     Icons.settings,
   ];
 
@@ -30,7 +30,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<String> navTitle = [
     'Home',
     'Soil',
-    'Weather',
+    // 'Weather',
     'Settings',
   ];
 
@@ -43,7 +43,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // Navigation bar widget
   Widget _navBar() {
     return Container(
-      width: 300,
+      width: 250,
       height: 65,
       margin: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -111,8 +111,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       case 1:
         return const SoilDashboardScreen();
       case 2:
-        return const SizedBox(); // Placeholder for Weather screen
-      case 3:
         return const SettingsScreen();
       default:
         return const LandingDashboard();

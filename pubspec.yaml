@@ -75,3 +75,5 @@ flutter:
     - assets/weather/afternoon.png
     - assets/weather/night.png
     - assets/weather/normal_night.png
+    - assets/weather/SUNNY DAY.png
+    - assets/weather/CLOUDY DAY.png

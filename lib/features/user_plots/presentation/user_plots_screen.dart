@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
@@ -16,6 +17,7 @@ import 'package:soiltrack_mobile/widgets/filled_button.dart';
 import 'package:soiltrack_mobile/widgets/text_field.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/widgets/text_header.dart';
+import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
 class UserPlotScreen extends ConsumerStatefulWidget {
   const UserPlotScreen({super.key});
@@ -124,6 +126,33 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
       (warning) => warning['plot_id'] == userPlot.selectedPlotId,
       orElse: () => {},
     );
+
+    String formatTimestamp(String timestamp) {
+      try {
+        DateTime dateTime = DateTime.parse(timestamp);
+
+        if (!dateTime.isUtc) {
+          dateTime = dateTime.toUtc();
+        }
+
+        DateTime localTime = dateTime.toLocal();
+
+        return DateFormat('hh:mm a').format(localTime); // Only show time
+      } catch (e) {
+        return 'Invalid date';
+      }
+    }
+
+    final irrigationLogs =
+        (selectedPlot['irrigation_log'] as List<dynamic>? ?? [])
+            .map((log) => {
+                  'mac_address': log['mac_address'],
+                  'time_started': formatTimestamp(log['time_started']),
+                  'time_stopped': log['time_stopped'] != null
+                      ? formatTimestamp(log['time_stopped'])
+                      : 'Ongoing',
+                })
+            .toList();
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -365,20 +394,111 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                                   ],
                                 ),
                               ),
-                            NutrientProgressChart(
-                              nitrogenData: nitrogenData,
-                              phosphorusData: phosphorusData,
-                              potassiumData: potassiumData,
-                              moistureData: moistureData,
-                            ),
-                            const SizedBox(height: 5),
-                            FilledCustomButton(
-                              buttonText: 'View Analytics',
-                              icon: Icons.remove_red_eye_outlined,
-                              onPressed: () {
-                                context.pushNamed('plot-analytics');
-                              },
-                            ),
+                            if (moistureData.isEmpty ||
+                                nitrogenData.isEmpty ||
+                                phosphorusData.isEmpty ||
+                                potassiumData.isEmpty)
+                              Container(
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.red.withOpacity(0.1),
+                                  border: Border.all(color: Colors.red),
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: const Center(
+                                  child: Text(
+                                    'No sensors are assigned',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ),
+                              ),
+                            if (moistureData.isNotEmpty)
+                              Column(
+                                children: [
+                                  NutrientProgressChart(
+                                    nitrogenData: nitrogenData,
+                                    phosphorusData: phosphorusData,
+                                    potassiumData: potassiumData,
+                                    moistureData: moistureData,
+                                  ),
+                                  const SizedBox(height: 5),
+                                  FilledCustomButton(
+                                    buttonText: 'View Analytics',
+                                    icon: Icons.remove_red_eye_outlined,
+                                    onPressed: () {
+                                      context.pushNamed('plot-analytics');
+                                    },
+                                  ),
+                                ],
+                              ),
+                            const SizedBox(height: 10),
+                            if (irrigationLogs.isNotEmpty)
+                              Container(
+                                margin: const EdgeInsets.only(bottom: 15),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 15),
+                                decoration: BoxDecoration(
+                                  color: Theme.of(context).colorScheme.surface,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border:
+                                      Border.all(color: Colors.blue, width: 1),
+                                ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        const Icon(Icons.water_drop_outlined,
+                                            color: Colors.blue, size: 20),
+                                        const SizedBox(width: 5),
+                                        const Text(
+                                          'Irrigation Log',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.blue),
+                                        ),
+                                        const Spacer(),
+                                        TextRoundedEnclose(
+                                            text: DateFormat('MMMM d, yyyy')
+                                                .format(DateTime.now()),
+                                            color: Colors.white,
+                                            textColor: Colors.grey[500]!),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 20),
+                                    ...irrigationLogs.map((log) {
+                                      return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Text(
+                                                'Started: ${log['time_started']}',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium!,
+                                              ),
+                                              const SizedBox(width: 30),
+                                              Text(
+                                                'Stopped: ${log['time_stopped'] ?? 'Ongoing'}',
+                                                style: Theme.of(context)
+                                                    .textTheme
+                                                    .bodyMedium!,
+                                              ),
+                                            ],
+                                          ),
+                                          if (irrigationLogs.indexOf(log) !=
+                                              irrigationLogs.length - 1)
+                                            DividerWidget(
+                                                verticalHeight: 1,
+                                                color: Colors.grey[300]!),
+                                        ],
+                                      );
+                                    }),
+                                  ],
+                                ),
+                              ),
                           ]),
                         ),
                       ),

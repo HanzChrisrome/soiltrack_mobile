@@ -21,7 +21,15 @@ class PlotCard extends ConsumerWidget {
         .where((reading) => reading['plot_id'] == selectedPlotId)
         .toList();
 
-    if (filteredReadings.isEmpty) {
+    filteredReadings.sort((a, b) => DateTime.parse(b['read_time'])
+        .compareTo(DateTime.parse(a['read_time'])));
+
+    final latestReadings = filteredReadings.take(10).toList();
+
+    latestReadings.sort((a, b) => DateTime.parse(a['read_time'])
+        .compareTo(DateTime.parse(b['read_time'])));
+
+    if (latestReadings.isEmpty) {
       return Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
@@ -44,8 +52,8 @@ class PlotCard extends ConsumerWidget {
       );
     }
 
-    final moistureSpots = List.generate(filteredReadings.length, (index) {
-      final moistureValue = filteredReadings[index]['soil_moisture'];
+    final moistureSpots = List.generate(latestReadings.length, (index) {
+      final moistureValue = latestReadings[index]['soil_moisture'];
       return FlSpot(index.toDouble(), moistureValue.toDouble());
     });
 

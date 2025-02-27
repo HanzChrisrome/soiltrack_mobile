@@ -6,15 +6,28 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:soiltrack_mobile/features/device_registration/controller/device_controller.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
-class ConfigurationScreen extends ConsumerWidget {
+class ConfigurationScreen extends ConsumerStatefulWidget {
   const ConfigurationScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final deviceController = DeviceController(context, ref);
+  ConsumerState<ConfigurationScreen> createState() =>
+      _ConfigurationScreenState();
+}
 
-    Future.microtask(() => deviceController.saveToDatabase());
+class _ConfigurationScreenState extends ConsumerState<ConfigurationScreen> {
+  late DeviceController deviceController;
 
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      deviceController = DeviceController(context, ref);
+      deviceController.saveToDatabase();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Center(
         child: Padding(

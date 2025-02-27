@@ -4,6 +4,13 @@ import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 
 class SoilDashboardService {
   Future<List<Map<String, dynamic>>> userPlots(String userId) async {
+    final now = DateTime.now();
+    final todayStart =
+        DateTime(now.year, now.month, now.day).toUtc().toIso8601String();
+    final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59)
+        .toUtc()
+        .toIso8601String();
+
     try {
       final userPlots = await supabase.from('user_plots').select('''
         plot_id,
@@ -34,7 +41,38 @@ class SoilDashboardService {
         )
     ''').eq('user_id', userId).order('date_added', ascending: true);
 
-      return userPlots;
+      final List<int> plotIds =
+          userPlots.map<int>((plot) => plot['plot_id'] as int).toList();
+
+      final irrigationLogs = await supabase
+          .from('irrigation_log')
+          .select('''
+            irrigation_log_id,
+            mac_address,
+            time_started,
+            time_stopped,
+            plot_id
+          ''')
+          .inFilter('plot_id', plotIds)
+          .gte('time_started', todayStart)
+          .lt('time_started', todayEnd);
+
+      print('Irrigation Logs: $irrigationLogs');
+
+      final updatedPlots = userPlots.map((plot) {
+        final plotId = plot['plot_id'];
+
+        final plotLogs =
+            irrigationLogs.where((log) => log['plot_id'] == plotId).toList();
+
+        return {
+          ...plot,
+          'irrigation_log': plotLogs,
+        };
+      }).toList();
+
+      print('Updated User Plots: $updatedPlots');
+      return updatedPlots;
     } catch (e) {
       print('Error fetching user plots: $e');
       rethrow;

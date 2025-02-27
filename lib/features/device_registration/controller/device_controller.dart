@@ -104,14 +104,12 @@ class DeviceController {
     final deviceState = ref.watch(deviceProvider);
     final deviceNotifier = ref.read(deviceProvider.notifier);
 
-    Future.microtask(() async {
-      if (!deviceState.isSaving && deviceState.savingError == null) {
-        await deviceNotifier.saveToDatabase();
-        if (!ref.read(deviceProvider).isSaving &&
-            ref.read(deviceProvider).savingError == null) {
-          context.pushNamed('home');
-        }
+    if (!deviceState.isSaving && deviceState.savingError == null) {
+      await deviceNotifier.saveToDatabase();
+      if (!ref.read(deviceProvider).isSaving &&
+          ref.read(deviceProvider).savingError == null) {
+        context.pushNamed('home');
       }
-    });
+    }
   }
 }
