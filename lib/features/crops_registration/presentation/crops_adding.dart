@@ -107,7 +107,7 @@ class AddingCropsScreen extends ConsumerWidget {
                           return GestureDetector(
                             onTap: () {
                               if (userPlot.isEditingUserPlot) {
-                                cropNotifier.selectCropName(crop.cropName);
+                                cropNotifier.selectCropName(crop['crop_name']);
                                 showCustomBottomSheet(
                                   context: context,
                                   title: 'Change Crop Assignment',
@@ -121,20 +121,20 @@ class AddingCropsScreen extends ConsumerWidget {
                                   },
                                 );
                               } else {
-                                cropNotifier.selectCropName(crop.cropName);
+                                cropNotifier.selectCropName(crop['crop_name']);
                                 context.pushNamed('assign-crops');
                               }
                             },
                             child: CropsCard(
-                              cropName: crop.cropName,
-                              minMoisture: crop.minMoisture.toString(),
-                              maxMoisture: crop.maxMoisture.toString(),
-                              minNitrogen: crop.minNitrogen.toString(),
-                              maxNitrogen: crop.maxNitrogen.toString(),
-                              minPotassium: crop.minPotassium.toString(),
-                              maxPotassium: crop.maxPotassium.toString(),
-                              minPhosphorus: crop.minPhosphorus.toString(),
-                              maxPhosphorus: crop.maxPhosphorus.toString(),
+                              cropName: crop['crop_name'],
+                              minMoisture: crop['moisture_min'].toString(),
+                              maxMoisture: crop['moisture_max'].toString(),
+                              minNitrogen: crop['nitrogen_min'].toString(),
+                              maxNitrogen: crop['nitrogen_max'].toString(),
+                              minPotassium: crop['potassium_min'].toString(),
+                              maxPotassium: crop['potassium_max'].toString(),
+                              minPhosphorus: crop['phosphorus_min'].toString(),
+                              maxPhosphorus: crop['phosphorus_max'].toString(),
                             ),
                           );
                         }).toList(),

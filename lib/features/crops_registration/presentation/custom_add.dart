@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/core/utils/toast_service.dart';
-import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/sensor_tile.dart';
 import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
 import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';

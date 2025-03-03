@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class GreetingWidget extends StatelessWidget {
   final String userName;
 
-  const GreetingWidget({Key? key, required this.userName}) : super(key: key);
+  const GreetingWidget({super.key, required this.userName});
 
   @override
   Widget build(BuildContext context) {

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/crops_type.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
@@ -10,8 +9,6 @@ class CropsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final userPlotState = ref.watch(soilDashboardProvider);
-
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,

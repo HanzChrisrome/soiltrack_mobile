@@ -52,7 +52,6 @@ class SensorsNotifier extends Notifier<SensorsState> {
         return;
       }
 
-      // FETCH ALL SENSORS FROM THE COMBINED TABLE
       final sensors = await supabase.from('soil_sensors').select('''
       sensor_id,
       sensor_name,

@@ -1,83 +1,56 @@
 // ignore_for_file: avoid_print
 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:soiltrack_mobile/features/auth/provider/auth_provider_state.dart';
 
-class AuthState {
-  final User? user;
-  final String? userName;
-  final String? userLastName;
-  final String? userEmail;
-  final bool isAuthenticated;
-  final bool isLoggingIn;
-  final bool isRegistering;
-
-  AuthState({
-    this.user,
-    this.userName,
-    this.userLastName,
-    this.userEmail,
-    this.isAuthenticated = false,
-    this.isLoggingIn = false,
-    this.isRegistering = false,
-  });
-
-  AuthState copyWith({
-    User? user,
-    String? userName,
-    String? userLastName,
-    String? userEmail,
-    bool? isAuthenticated,
-    bool? isLoggingIn,
-    bool? isRegistering,
-  }) {
-    return AuthState(
-      user: user ?? this.user,
-      userName: userName ?? this.userName,
-      userLastName: userLastName ?? this.userLastName,
-      userEmail: userEmail ?? this.userEmail,
-      isAuthenticated: isAuthenticated ?? this.isAuthenticated,
-      isLoggingIn: isLoggingIn ?? this.isLoggingIn,
-      isRegistering: isRegistering ?? this.isRegistering,
-    );
-  }
-}
-
-class AuthNotifier extends Notifier<AuthState> {
+class AuthNotifier extends Notifier<UserAuthState> {
   @override
-  AuthState build() {
+  UserAuthState build() {
     final session = supabase.auth.currentSession;
     if (session != null) {
       _fetchUserName(session.user.id);
-      return AuthState(
+      return UserAuthState(
         user: session.user,
         isAuthenticated: true,
       );
     }
 
-    return AuthState(isAuthenticated: false);
+    return UserAuthState(isAuthenticated: false);
   }
 
-  void _fetchUserName(String userId) async {
+  Future<void> _fetchUserName(String userId) async {
     try {
-      final userRecord = await supabase
-          .from('users')
-          .select('user_fname, user_lname, user_email')
+      final userRecord = await supabase.from('users').select('''
+      user_fname,
+      user_lname,
+      user_email,
+    ''').eq('user_id', userId).maybeSingle();
+
+      final userIotDevice = await supabase
+          .from('iot_devices')
+          .select(
+            'mac_address',
+          )
           .eq('user_id', userId)
-          .single();
+          .maybeSingle();
+
+      NotifierHelper.logMessage('User Device: $userIotDevice');
 
       state = state.copyWith(
-          userName: userRecord['user_fname'],
-          userLastName: userRecord['user_lname'],
-          userEmail: userRecord['user_email'],
+          userName: userRecord?['user_fname'],
+          userLastName: userRecord?['user_lname'],
+          userEmail: userRecord?['user_email'],
           isAuthenticated: true);
 
-      print('User name: ${state.userName}');
+      NotifierHelper.logMessage('User: ${state.userName}');
     } catch (e) {
-      print('Error fetching user name: $e');
+      NotifierHelper.logError(e);
     }
   }
 
@@ -93,11 +66,11 @@ class AuthNotifier extends Notifier<AuthState> {
       );
 
       if (response.user != null) {
-        _fetchUserName(response.user!.id);
-        print('User: ${response.user}');
-
-        dashboardNotifier.fetchUserPlots();
-        sensorNotifier.fetchSensors();
+        await Future.wait([
+          _fetchUserName(response.user!.id),
+          dashboardNotifier.fetchUserPlots(),
+          sensorNotifier.fetchSensors(),
+        ]);
 
         state = state.copyWith(user: response.user, isAuthenticated: true);
       }
@@ -150,13 +123,16 @@ class AuthNotifier extends Notifier<AuthState> {
 
   Future<void> signOut() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      prefs.remove('mac_address');
+
       await supabase.auth.signOut();
       state = state.copyWith(isAuthenticated: false, user: null, userName: '');
     } catch (e) {
-      print('Error signing out: $e');
+      NotifierHelper.logError(e);
     }
   }
 }
 
 final authProvider =
-    NotifierProvider<AuthNotifier, AuthState>(() => AuthNotifier());
+    NotifierProvider<AuthNotifier, UserAuthState>(() => AuthNotifier());

@@ -1,0 +1,27 @@
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'soil_dashboard_state.freezed.dart';
+
+@freezed
+class SoilDashboardState with _$SoilDashboardState {
+  factory SoilDashboardState({
+    @Default([]) List<Map<String, dynamic>> userPlots,
+    @Default([]) List<Map<String, dynamic>> userPlotMoistureData,
+    @Default([]) List<Map<String, dynamic>> userPlotNutrientData,
+    @Default([]) List<Map<String, dynamic>> nutrientWarnings,
+    @Default([]) List<Map<String, dynamic>> plotsSuggestion,
+    @Default([]) List<Map<String, dynamic>> deviceWarnings,
+    @Default(false) bool isFetchingUserPlots,
+    @Default(false) bool isFetchingUserPlotData,
+    @Default(0) int selectedPlotId,
+    @Default(0) int loadedPlotId,
+    String? error,
+    String? userPlotDataError,
+    DateTime? selectedTimeRange,
+    @Default(false) bool isEditingUserPlot,
+    @Default(false) bool isSavingNewCrop,
+    @Default(false) bool isSavingNewSoilType,
+    @Default(false) bool isSavingNewSoilMoistureSensor,
+    @Default(false) bool isSavingNewSoilNutrientSensor,
+  }) = _SoilDashboardState;
+}

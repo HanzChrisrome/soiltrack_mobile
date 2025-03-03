@@ -7,6 +7,7 @@ import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -71,31 +72,14 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const SizedBox(height: 24.0),
-                        ShaderMask(
-                          shaderCallback: (bounds) => const LinearGradient(
-                            colors: [
-                              Color.fromARGB(255, 9, 73, 14),
-                              Color.fromARGB(255, 54, 201, 24)
-                            ],
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                          ).createShader(bounds),
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: Text(
-                              'Create an\nAccount',
-                              textAlign: TextAlign.center,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .titleLarge
-                                  ?.copyWith(
-                                      fontSize: 52,
-                                      letterSpacing: -3.5,
-                                      height: 1,
-                                      color: Colors.white),
-                            ),
+                        if (keyboardHeight == 0)
+                          const TextGradient(
+                            text: 'Create an\nAccount',
+                            fontSize: 52,
+                            heightSpacing: 0.9,
+                            letterSpacing: -2.5,
+                            textAlign: TextAlign.center,
                           ),
-                        ),
                         const SizedBox(height: 25.0),
                         TextFieldWidget(
                           label: 'Name',

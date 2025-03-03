@@ -34,4 +34,6 @@ class Crop {
       maxPhosphorus: json['phosphorus_max'] as int,
     );
   }
+
+  toJson() {}
 }

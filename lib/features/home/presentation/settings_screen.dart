@@ -18,7 +18,6 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final authNotifier = ref.watch(authProvider.notifier);
-    final deviceState = ref.watch(deviceProvider);
     final deviceNotifier = ref.watch(deviceProvider.notifier);
     final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
 
@@ -153,25 +152,6 @@ class SettingsScreen extends ConsumerWidget {
                             onPressed: () {
                               Navigator.of(context).pop();
                               context.pushNamed('wifi-scan');
-                            },
-                          );
-                        },
-                      ),
-                      const DividerWidget(verticalHeight: 0),
-                      SettingsItem(
-                        settingsText: 'Change Wi-Fi Connection',
-                        settingsIcon: Icons.wifi_outlined,
-                        onTap: () {
-                          showCustomBottomSheet(
-                            context: context,
-                            title: 'Change Wi-Fi Connection',
-                            description:
-                                'Are you sure you want to change the current connection of the SoilTracker?',
-                            icon: Icons.reset_tv_outlined,
-                            buttonText: 'Confirm',
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              deviceNotifier.changeWifiConnection(context);
                             },
                           );
                         },

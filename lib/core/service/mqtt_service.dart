@@ -4,6 +4,7 @@ import 'dart:async';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
+import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 
 class Config {
   static String get mqttBroker => dotenv.env['MQTT_BROKER'] ?? "";
@@ -33,6 +34,7 @@ class MQTTService {
         .startClean();
 
     try {
+      NotifierHelper.logMessage('🔌 Connecting to MQTT Broker...');
       await _client.connect();
 
       _client.updates!
@@ -77,7 +79,6 @@ class MQTTService {
 
     final timer = Timer(Duration(milliseconds: timeoutMs), () {
       if (!completer.isCompleted) {
-        print('⏳ Timeout: No response received on $topic');
         completer.completeError('⏳ Timeout: No response received on $topic');
       }
     });
@@ -97,5 +98,20 @@ class MQTTService {
     });
 
     return completer.future;
+  }
+
+  Future<String> publishAndWaitForResponse(
+      String requestTopic, String responseTopic, String message,
+      {String? expectedResponse, int timeoutMs = 10000}) async {
+    await connect();
+    subscribe(responseTopic);
+    publish(requestTopic, message);
+
+    try {
+      return await waitForResponse(responseTopic,
+          expectedMessage: expectedResponse, timeoutMs: timeoutMs);
+    } catch (e) {
+      return Future.error(e);
+    }
   }
 }

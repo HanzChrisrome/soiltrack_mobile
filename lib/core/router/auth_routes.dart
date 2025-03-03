@@ -18,7 +18,7 @@ final authRoutes = [
         name: 'register',
         builder: (context, state) => const RegisterScreen(),
         pageBuilder: (context, state) {
-          return customPageTransition(context, const RegisterScreen());
+          return slideTransitionBuilder(context, const RegisterScreen());
         },
       ),
     ],

@@ -45,7 +45,7 @@ class LandingDashboard extends ConsumerWidget {
                   ],
                 ),
                 const SizedBox(height: 20),
-                GreetingWidget(userName: authState.userName as String),
+                GreetingWidget(userName: authState.userName ?? ''),
                 const SizedBox(height: 10),
                 const WeatherWidget(),
                 const SizedBox(height: 10),

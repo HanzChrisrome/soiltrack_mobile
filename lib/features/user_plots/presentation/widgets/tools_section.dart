@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/sensor_tile.dart';
-import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/tools_button.dart';
-import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
-import 'package:soiltrack_mobile/widgets/customizable_bottom_sheet.dart';
-import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
 class ToolsSectionWidget extends ConsumerWidget {
   const ToolsSectionWidget({super.key, required this.assignedSensor});
@@ -20,8 +15,6 @@ class ToolsSectionWidget extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final deviceState = ref.watch(deviceProvider);
     final deviceNotifier = ref.read(deviceProvider.notifier);
-    final sensorState = ref.watch(sensorsProvider);
-    final cropNotifier = ref.watch(cropProvider.notifier);
     final userPlot = ref.watch(soilDashboardProvider);
     final userPlotNotifier = ref.read(soilDashboardProvider.notifier);
 

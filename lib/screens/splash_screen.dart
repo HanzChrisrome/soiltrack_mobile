@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
+import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/provider/weather_provider.dart';
@@ -18,11 +19,13 @@ class SplashScreen extends ConsumerWidget {
     final sensorNotifier = ref.read(sensorsProvider.notifier);
     final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
     final weatherNotifier = ref.read(weatherProvider.notifier);
+    final cropNotifier = ref.read(cropProvider.notifier);
 
     Future.microtask(() async {
       await sensorNotifier.fetchSensors();
       await soilDashboardNotifier.fetchUserPlots();
       await weatherNotifier.fetchWeather('Baliuag');
+      await cropNotifier.fetchAllCrops();
 
       final prefs = await SharedPreferences.getInstance();
       final isSetupCompleted = prefs.getBool('device_setup_completed') ?? false;

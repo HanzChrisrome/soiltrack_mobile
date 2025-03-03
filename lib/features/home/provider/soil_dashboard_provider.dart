@@ -1,112 +1,14 @@
-// ignore_for_file: avoid_print, use_build_context_synchronously
+// ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
-import 'package:soiltrack_mobile/core/utils/loading_toast.dart';
+import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_state.dart';
 import 'package:soiltrack_mobile/features/home/service/soil_dashboard_service.dart';
 import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
-import 'package:toastification/toastification.dart';
-
-class SoilDashboardState {
-  final List<Map<String, dynamic>> userPlots;
-  final List<Map<String, dynamic>> userPlotMoistureData;
-  final List<Map<String, dynamic>> userPlotNutrientData;
-  final List<Map<String, dynamic>> nutrientWarnings;
-  final List<Map<String, dynamic>> plotsSuggestion;
-  final List<Map<String, dynamic>> deviceWarnings;
-  final bool isFetchingUserPlots;
-  final bool isFetchingUserPlotData;
-  final int selectedPlotId;
-  final int loadedPlotId;
-  final String? error;
-  final String? userPlotDataError;
-  final DateTime? selectedTimeRange;
-
-  //For editing user plots state
-  final bool isEditingUserPlot;
-  final bool isSavingNewCrop;
-  final bool isSavingNewSoilType;
-  final bool isSavingNewSoilMoistureSensor;
-  final bool isSavingNewSoilNutrientSensor;
-
-  SoilDashboardState({
-    this.userPlots = const [],
-    this.userPlotMoistureData = const [],
-    this.userPlotNutrientData = const [],
-    this.nutrientWarnings = const [],
-    this.plotsSuggestion = const [],
-    this.deviceWarnings = const [],
-    this.isFetchingUserPlots = false,
-    this.isFetchingUserPlotData = false,
-    this.selectedPlotId = 0,
-    this.loadedPlotId = 0,
-    this.error,
-    this.userPlotDataError,
-    this.selectedTimeRange,
-
-    //For editing user plots state
-    this.isEditingUserPlot = false,
-    this.isSavingNewCrop = false,
-    this.isSavingNewSoilType = false,
-    this.isSavingNewSoilMoistureSensor = false,
-    this.isSavingNewSoilNutrientSensor = false,
-  });
-
-  SoilDashboardState copyWith({
-    List<Map<String, dynamic>>? userPlots,
-    List<Map<String, dynamic>>? userPlotMoistureData,
-    List<Map<String, dynamic>>? userPlotNutrientData,
-    List<Map<String, dynamic>>? nutrientWarnings,
-    List<Map<String, dynamic>>? plotsSuggestion,
-    List<Map<String, dynamic>>? deviceWarnings,
-    bool? isFetchingUserPlots,
-    bool? isFetchingUserPlotData,
-    int? selectedPlotId,
-    int? loadedPlotId,
-    String? error,
-    String? userPlotDataError,
-    DateTime? selectedTimeRange,
-
-    //For editing user plots state
-    bool? isEditingUserPlot,
-    bool? isSavingNewCrop,
-    bool? isSavingNewSoilType,
-    bool? isSavingNewSoilMoistureSensor,
-    bool? isSavingNewSoilNutrientSensor,
-  }) {
-    return SoilDashboardState(
-      userPlots: userPlots ?? this.userPlots,
-      userPlotMoistureData: userPlotMoistureData ?? this.userPlotMoistureData,
-      userPlotNutrientData: userPlotNutrientData ?? this.userPlotNutrientData,
-      nutrientWarnings: nutrientWarnings ?? this.nutrientWarnings,
-      plotsSuggestion: plotsSuggestion ?? this.plotsSuggestion,
-      deviceWarnings: deviceWarnings ?? this.deviceWarnings,
-
-      //DATA
-      isFetchingUserPlots: isFetchingUserPlots ?? this.isFetchingUserPlots,
-      isFetchingUserPlotData:
-          isFetchingUserPlotData ?? this.isFetchingUserPlotData,
-      selectedPlotId: selectedPlotId ?? this.selectedPlotId,
-      loadedPlotId: loadedPlotId ?? this.loadedPlotId,
-      error: error ?? this.error,
-      userPlotDataError: userPlotDataError ?? this.userPlotDataError,
-      selectedTimeRange: selectedTimeRange ?? this.selectedTimeRange,
-
-      //For editing user plots state
-      isEditingUserPlot: isEditingUserPlot ?? this.isEditingUserPlot,
-      isSavingNewCrop: isSavingNewCrop ?? this.isSavingNewCrop,
-      isSavingNewSoilType: isSavingNewSoilType ?? this.isSavingNewSoilType,
-      isSavingNewSoilMoistureSensor:
-          isSavingNewSoilMoistureSensor ?? this.isSavingNewSoilMoistureSensor,
-      isSavingNewSoilNutrientSensor:
-          isSavingNewSoilNutrientSensor ?? this.isSavingNewSoilNutrientSensor,
-    );
-  }
-}
 
 class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
   final SoilDashboardService soilDashboardService = SoilDashboardService();
@@ -116,58 +18,21 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     return SoilDashboardState();
   }
 
-  void updateTimeSelection(String selectedTimeRange) {
-    final DateTime now = DateTime.now();
-    DateTime startDate;
-
-    switch (selectedTimeRange) {
-      case '1D':
-        startDate = now.subtract(const Duration(days: 1));
-        break;
-      case '1W':
-        startDate = now.subtract(const Duration(days: 7));
-        break;
-      case '1M':
-        startDate = DateTime(now.year, now.month - 1, now.day);
-        break;
-      case '3M':
-        startDate = DateTime(now.year, now.month - 3, now.day);
-        break;
-      default:
-        startDate = now.subtract(const Duration(days: 1));
-    }
-
-    state = state.copyWith(selectedTimeRange: startDate);
-  }
-
   Future<void> fetchUserPlots() async {
     if (state.isFetchingUserPlots) return;
     state = state.copyWith(isFetchingUserPlots: true);
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final macAddress = prefs.getString('mac_address') ?? '';
       final String userId = supabase.auth.currentUser!.id;
-
       final userPlots = await soilDashboardService.userPlots(userId);
-
-      if (macAddress.isEmpty) {
-        print('No device registered');
-        state = state.copyWith(error: 'No device registered');
-        return;
-      }
-
-      if (userPlots.isEmpty) {
-        print('No plots available');
-        state = state.copyWith(
-            error: 'No plots available', isFetchingUserPlots: false);
-      }
-      state = state.copyWith(userPlots: userPlots);
+      state = state.copyWith(
+        userPlots: userPlots,
+        error: userPlots.isEmpty ? 'No plots found' : null,
+      );
 
       await fetchUserPlotData();
     } catch (e) {
-      print(e);
-      state = state.copyWith(error: e.toString(), isFetchingUserPlots: false);
+      NotifierHelper.logError(e);
     } finally {
       state = state.copyWith(isFetchingUserPlots: false);
     }
@@ -222,8 +87,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       };
     }).toList();
 
-    print('Device warnings: $deviceWarningsOnly');
-
     state = state.copyWith(
       userPlotMoistureData: moistureData,
       userPlotNutrientData: nutrientData,
@@ -233,87 +96,51 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     );
   }
 
-  void setSelectedPlotId(BuildContext context, plotId) async {
-    print('Selected plot ID: $plotId');
-    state = state.copyWith(selectedPlotId: plotId);
-    context.pushNamed('user-plot');
-  }
-
-  void setPlodId(plotId) {
-    print('Selected plot id: $plotId');
-    state = state.copyWith(selectedPlotId: plotId);
-  }
-
-  void setNutrientSensorId(npkSensorId) {
-    print('Selected sensor id $npkSensorId');
-  }
-
-  //For editing user plots
-  void setEditingUserPlot(bool isEditing) {
-    state = state.copyWith(isEditingUserPlot: isEditing);
-  }
-
   Future<void> saveNewCrop(BuildContext context) async {
     final cropState = ref.watch(cropProvider);
-
-    ToastLoadingService.showLoadingToast(context,
-        message: 'Assigning new crop');
+    NotifierHelper.showLoadingToast(context, 'Assigning crop to plot');
     try {
       await soilDashboardService.cropId(cropState.selectedCrop!);
 
-      ToastLoadingService.dismissLoadingToast(
-          context, 'Crop assigned successfully', ToastificationType.success);
-
-      state = state.copyWith(isEditingUserPlot: false);
-      fetchUserPlots();
-      await Future.delayed(const Duration(seconds: 2));
+      NotifierHelper.showSuccessToast(context, 'Crop assigned successfully');
+      await fetchUserPlots();
     } catch (e) {
-      print('Error assigning crop: $e');
-      ToastLoadingService.dismissLoadingToast(
-          context, 'Error assigning crop', ToastificationType.error);
+      NotifierHelper.logError(e, context, 'Error assigning crop');
+    } finally {
       state = state.copyWith(isSavingNewCrop: false);
     }
   }
 
   Future<void> editPlotName(BuildContext context, String newPlotName) async {
-    ToastLoadingService.showLoadingToast(context,
-        message: 'Changing plot name');
+    NotifierHelper.showLoadingToast(context, 'Updating plot name');
 
     try {
       await soilDashboardService.editPlotName(
           newPlotName, state.selectedPlotId);
       fetchUserPlots();
-      ToastLoadingService.dismissLoadingToast(context,
-          'Plot name updated successfully', ToastificationType.success);
+      NotifierHelper.showSuccessToast(context, 'Plot name updated');
     } catch (e) {
-      print('Error updating plot name: $e');
-      ToastLoadingService.dismissLoadingToast(
-          context, 'Error updating plot name', ToastificationType.error);
+      NotifierHelper.logError(e, context, 'Error updating plot name');
     }
   }
 
   Future<void> saveNewThreshold(BuildContext context, String thresholdType,
       Map<String, int> updatedValues) async {
-    ToastLoadingService.showLoadingToast(context,
-        message: 'Changing $thresholdType threshold');
+    NotifierHelper.showLoadingToast(context, 'Updating threshold');
 
     try {
       await soilDashboardService.saveNewThreshold(
           state.selectedPlotId, updatedValues);
       await fetchUserPlots();
 
-      ToastLoadingService.dismissLoadingToast(
-          context, 'Threshold updated', ToastificationType.success);
+      NotifierHelper.showSuccessToast(context, 'Threshold updated');
     } catch (e) {
-      print('Error updating threshold: $e');
-      ToastLoadingService.dismissLoadingToast(
-          context, 'Error updating threshold', ToastificationType.error);
+      NotifierHelper.logError(e, context, 'Error updating threshold');
     }
   }
 
   Future<void> assignNutrientSensor(BuildContext context, selectedNpkId) async {
-    ToastLoadingService.showLoadingToast(context,
-        message: 'Assigning NPK Sensor');
+    NotifierHelper.showLoadingToast(context, 'Assigning NPK sensor');
     final sensorNotifier = ref.read(sensorsProvider.notifier);
     final selectedPlotID = state.selectedPlotId;
 
@@ -330,16 +157,54 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       await fetchUserPlots();
       await sensorNotifier.fetchSensors();
 
-      ToastLoadingService.dismissLoadingToast(
-          context, 'Sensor assigned successfully', ToastificationType.success);
+      NotifierHelper.showSuccessToast(context, 'NPK sensor assigned');
     } catch (e) {
-      print('Error assigning $e');
-      ToastLoadingService.dismissLoadingToast(
-          context, 'Error assigning NPK', ToastificationType.error);
+      NotifierHelper.logError(e, context, 'Error assigning NPK sensor');
     }
   }
 
-  Future<void> deletePlot(BuildContext context) async {}
+  void updateTimeSelection(String selectedTimeRange) {
+    final DateTime now = DateTime.now();
+    DateTime startDate;
+
+    switch (selectedTimeRange) {
+      case '1D':
+        startDate = now.subtract(const Duration(days: 1));
+        break;
+      case '1W':
+        startDate = now.subtract(const Duration(days: 7));
+        break;
+      case '1M':
+        startDate = DateTime(now.year, now.month - 1, now.day);
+        break;
+      case '3M':
+        startDate = DateTime(now.year, now.month - 3, now.day);
+        break;
+      default:
+        startDate = now.subtract(const Duration(days: 1));
+    }
+
+    state = state.copyWith(selectedTimeRange: startDate);
+  }
+
+  void setSelectedPlotId(BuildContext context, plotId) async {
+    NotifierHelper.logMessage('Selected plot id: $plotId');
+    state = state.copyWith(selectedPlotId: plotId);
+    context.pushNamed('user-plot');
+  }
+
+  void setPlodId(plotId) {
+    NotifierHelper.logMessage('Selected plot id: $plotId');
+    state = state.copyWith(selectedPlotId: plotId);
+  }
+
+  void setNutrientSensorId(npkSensorId) {
+    NotifierHelper.logMessage('Selected NPK sensor id: $npkSensorId');
+  }
+
+  void setEditingUserPlot(bool isEditing) {
+    state = state.copyWith(isEditingUserPlot: isEditing);
+  }
 }
 
 final soilDashboardProvider =

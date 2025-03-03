@@ -1,0 +1,594 @@
+// coverage:ignore-file
+// GENERATED CODE - DO NOT MODIFY BY HAND
+// ignore_for_file: type=lint
+// ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
+
+part of 'soil_dashboard_state.dart';
+
+// **************************************************************************
+// FreezedGenerator
+// **************************************************************************
+
+T _$identity<T>(T value) => value;
+
+final _privateConstructorUsedError = UnsupportedError(
+    'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models');
+
+/// @nodoc
+mixin _$SoilDashboardState {
+  List<Map<String, dynamic>> get userPlots =>
+      throw _privateConstructorUsedError;
+  List<Map<String, dynamic>> get userPlotMoistureData =>
+      throw _privateConstructorUsedError;
+  List<Map<String, dynamic>> get userPlotNutrientData =>
+      throw _privateConstructorUsedError;
+  List<Map<String, dynamic>> get nutrientWarnings =>
+      throw _privateConstructorUsedError;
+  List<Map<String, dynamic>> get plotsSuggestion =>
+      throw _privateConstructorUsedError;
+  List<Map<String, dynamic>> get deviceWarnings =>
+      throw _privateConstructorUsedError;
+  bool get isFetchingUserPlots => throw _privateConstructorUsedError;
+  bool get isFetchingUserPlotData => throw _privateConstructorUsedError;
+  int get selectedPlotId => throw _privateConstructorUsedError;
+  int get loadedPlotId => throw _privateConstructorUsedError;
+  String? get error => throw _privateConstructorUsedError;
+  String? get userPlotDataError => throw _privateConstructorUsedError;
+  DateTime? get selectedTimeRange => throw _privateConstructorUsedError;
+  bool get isEditingUserPlot => throw _privateConstructorUsedError;
+  bool get isSavingNewCrop => throw _privateConstructorUsedError;
+  bool get isSavingNewSoilType => throw _privateConstructorUsedError;
+  bool get isSavingNewSoilMoistureSensor => throw _privateConstructorUsedError;
+  bool get isSavingNewSoilNutrientSensor => throw _privateConstructorUsedError;
+
+  /// Create a copy of SoilDashboardState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $SoilDashboardStateCopyWith<SoilDashboardState> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $SoilDashboardStateCopyWith<$Res> {
+  factory $SoilDashboardStateCopyWith(
+          SoilDashboardState value, $Res Function(SoilDashboardState) then) =
+      _$SoilDashboardStateCopyWithImpl<$Res, SoilDashboardState>;
+  @useResult
+  $Res call(
+      {List<Map<String, dynamic>> userPlots,
+      List<Map<String, dynamic>> userPlotMoistureData,
+      List<Map<String, dynamic>> userPlotNutrientData,
+      List<Map<String, dynamic>> nutrientWarnings,
+      List<Map<String, dynamic>> plotsSuggestion,
+      List<Map<String, dynamic>> deviceWarnings,
+      bool isFetchingUserPlots,
+      bool isFetchingUserPlotData,
+      int selectedPlotId,
+      int loadedPlotId,
+      String? error,
+      String? userPlotDataError,
+      DateTime? selectedTimeRange,
+      bool isEditingUserPlot,
+      bool isSavingNewCrop,
+      bool isSavingNewSoilType,
+      bool isSavingNewSoilMoistureSensor,
+      bool isSavingNewSoilNutrientSensor});
+}
+
+/// @nodoc
+class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
+    implements $SoilDashboardStateCopyWith<$Res> {
+  _$SoilDashboardStateCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of SoilDashboardState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? userPlots = null,
+    Object? userPlotMoistureData = null,
+    Object? userPlotNutrientData = null,
+    Object? nutrientWarnings = null,
+    Object? plotsSuggestion = null,
+    Object? deviceWarnings = null,
+    Object? isFetchingUserPlots = null,
+    Object? isFetchingUserPlotData = null,
+    Object? selectedPlotId = null,
+    Object? loadedPlotId = null,
+    Object? error = freezed,
+    Object? userPlotDataError = freezed,
+    Object? selectedTimeRange = freezed,
+    Object? isEditingUserPlot = null,
+    Object? isSavingNewCrop = null,
+    Object? isSavingNewSoilType = null,
+    Object? isSavingNewSoilMoistureSensor = null,
+    Object? isSavingNewSoilNutrientSensor = null,
+  }) {
+    return _then(_value.copyWith(
+      userPlots: null == userPlots
+          ? _value.userPlots
+          : userPlots // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+      userPlotMoistureData: null == userPlotMoistureData
+          ? _value.userPlotMoistureData
+          : userPlotMoistureData // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+      userPlotNutrientData: null == userPlotNutrientData
+          ? _value.userPlotNutrientData
+          : userPlotNutrientData // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+      nutrientWarnings: null == nutrientWarnings
+          ? _value.nutrientWarnings
+          : nutrientWarnings // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+      plotsSuggestion: null == plotsSuggestion
+          ? _value.plotsSuggestion
+          : plotsSuggestion // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+      deviceWarnings: null == deviceWarnings
+          ? _value.deviceWarnings
+          : deviceWarnings // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+      isFetchingUserPlots: null == isFetchingUserPlots
+          ? _value.isFetchingUserPlots
+          : isFetchingUserPlots // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isFetchingUserPlotData: null == isFetchingUserPlotData
+          ? _value.isFetchingUserPlotData
+          : isFetchingUserPlotData // ignore: cast_nullable_to_non_nullable
+              as bool,
+      selectedPlotId: null == selectedPlotId
+          ? _value.selectedPlotId
+          : selectedPlotId // ignore: cast_nullable_to_non_nullable
+              as int,
+      loadedPlotId: null == loadedPlotId
+          ? _value.loadedPlotId
+          : loadedPlotId // ignore: cast_nullable_to_non_nullable
+              as int,
+      error: freezed == error
+          ? _value.error
+          : error // ignore: cast_nullable_to_non_nullable
+              as String?,
+      userPlotDataError: freezed == userPlotDataError
+          ? _value.userPlotDataError
+          : userPlotDataError // ignore: cast_nullable_to_non_nullable
+              as String?,
+      selectedTimeRange: freezed == selectedTimeRange
+          ? _value.selectedTimeRange
+          : selectedTimeRange // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      isEditingUserPlot: null == isEditingUserPlot
+          ? _value.isEditingUserPlot
+          : isEditingUserPlot // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSavingNewCrop: null == isSavingNewCrop
+          ? _value.isSavingNewCrop
+          : isSavingNewCrop // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSavingNewSoilType: null == isSavingNewSoilType
+          ? _value.isSavingNewSoilType
+          : isSavingNewSoilType // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSavingNewSoilMoistureSensor: null == isSavingNewSoilMoistureSensor
+          ? _value.isSavingNewSoilMoistureSensor
+          : isSavingNewSoilMoistureSensor // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSavingNewSoilNutrientSensor: null == isSavingNewSoilNutrientSensor
+          ? _value.isSavingNewSoilNutrientSensor
+          : isSavingNewSoilNutrientSensor // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ) as $Val);
+  }
+}
+
+/// @nodoc
+abstract class _$$SoilDashboardStateImplCopyWith<$Res>
+    implements $SoilDashboardStateCopyWith<$Res> {
+  factory _$$SoilDashboardStateImplCopyWith(_$SoilDashboardStateImpl value,
+          $Res Function(_$SoilDashboardStateImpl) then) =
+      __$$SoilDashboardStateImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call(
+      {List<Map<String, dynamic>> userPlots,
+      List<Map<String, dynamic>> userPlotMoistureData,
+      List<Map<String, dynamic>> userPlotNutrientData,
+      List<Map<String, dynamic>> nutrientWarnings,
+      List<Map<String, dynamic>> plotsSuggestion,
+      List<Map<String, dynamic>> deviceWarnings,
+      bool isFetchingUserPlots,
+      bool isFetchingUserPlotData,
+      int selectedPlotId,
+      int loadedPlotId,
+      String? error,
+      String? userPlotDataError,
+      DateTime? selectedTimeRange,
+      bool isEditingUserPlot,
+      bool isSavingNewCrop,
+      bool isSavingNewSoilType,
+      bool isSavingNewSoilMoistureSensor,
+      bool isSavingNewSoilNutrientSensor});
+}
+
+/// @nodoc
+class __$$SoilDashboardStateImplCopyWithImpl<$Res>
+    extends _$SoilDashboardStateCopyWithImpl<$Res, _$SoilDashboardStateImpl>
+    implements _$$SoilDashboardStateImplCopyWith<$Res> {
+  __$$SoilDashboardStateImplCopyWithImpl(_$SoilDashboardStateImpl _value,
+      $Res Function(_$SoilDashboardStateImpl) _then)
+      : super(_value, _then);
+
+  /// Create a copy of SoilDashboardState
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? userPlots = null,
+    Object? userPlotMoistureData = null,
+    Object? userPlotNutrientData = null,
+    Object? nutrientWarnings = null,
+    Object? plotsSuggestion = null,
+    Object? deviceWarnings = null,
+    Object? isFetchingUserPlots = null,
+    Object? isFetchingUserPlotData = null,
+    Object? selectedPlotId = null,
+    Object? loadedPlotId = null,
+    Object? error = freezed,
+    Object? userPlotDataError = freezed,
+    Object? selectedTimeRange = freezed,
+    Object? isEditingUserPlot = null,
+    Object? isSavingNewCrop = null,
+    Object? isSavingNewSoilType = null,
+    Object? isSavingNewSoilMoistureSensor = null,
+    Object? isSavingNewSoilNutrientSensor = null,
+  }) {
+    return _then(_$SoilDashboardStateImpl(
+      userPlots: null == userPlots
+          ? _value._userPlots
+          : userPlots // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+      userPlotMoistureData: null == userPlotMoistureData
+          ? _value._userPlotMoistureData
+          : userPlotMoistureData // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+      userPlotNutrientData: null == userPlotNutrientData
+          ? _value._userPlotNutrientData
+          : userPlotNutrientData // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+      nutrientWarnings: null == nutrientWarnings
+          ? _value._nutrientWarnings
+          : nutrientWarnings // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+      plotsSuggestion: null == plotsSuggestion
+          ? _value._plotsSuggestion
+          : plotsSuggestion // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+      deviceWarnings: null == deviceWarnings
+          ? _value._deviceWarnings
+          : deviceWarnings // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+      isFetchingUserPlots: null == isFetchingUserPlots
+          ? _value.isFetchingUserPlots
+          : isFetchingUserPlots // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isFetchingUserPlotData: null == isFetchingUserPlotData
+          ? _value.isFetchingUserPlotData
+          : isFetchingUserPlotData // ignore: cast_nullable_to_non_nullable
+              as bool,
+      selectedPlotId: null == selectedPlotId
+          ? _value.selectedPlotId
+          : selectedPlotId // ignore: cast_nullable_to_non_nullable
+              as int,
+      loadedPlotId: null == loadedPlotId
+          ? _value.loadedPlotId
+          : loadedPlotId // ignore: cast_nullable_to_non_nullable
+              as int,
+      error: freezed == error
+          ? _value.error
+          : error // ignore: cast_nullable_to_non_nullable
+              as String?,
+      userPlotDataError: freezed == userPlotDataError
+          ? _value.userPlotDataError
+          : userPlotDataError // ignore: cast_nullable_to_non_nullable
+              as String?,
+      selectedTimeRange: freezed == selectedTimeRange
+          ? _value.selectedTimeRange
+          : selectedTimeRange // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      isEditingUserPlot: null == isEditingUserPlot
+          ? _value.isEditingUserPlot
+          : isEditingUserPlot // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSavingNewCrop: null == isSavingNewCrop
+          ? _value.isSavingNewCrop
+          : isSavingNewCrop // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSavingNewSoilType: null == isSavingNewSoilType
+          ? _value.isSavingNewSoilType
+          : isSavingNewSoilType // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSavingNewSoilMoistureSensor: null == isSavingNewSoilMoistureSensor
+          ? _value.isSavingNewSoilMoistureSensor
+          : isSavingNewSoilMoistureSensor // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isSavingNewSoilNutrientSensor: null == isSavingNewSoilNutrientSensor
+          ? _value.isSavingNewSoilNutrientSensor
+          : isSavingNewSoilNutrientSensor // ignore: cast_nullable_to_non_nullable
+              as bool,
+    ));
+  }
+}
+
+/// @nodoc
+
+class _$SoilDashboardStateImpl implements _SoilDashboardState {
+  _$SoilDashboardStateImpl(
+      {final List<Map<String, dynamic>> userPlots = const [],
+      final List<Map<String, dynamic>> userPlotMoistureData = const [],
+      final List<Map<String, dynamic>> userPlotNutrientData = const [],
+      final List<Map<String, dynamic>> nutrientWarnings = const [],
+      final List<Map<String, dynamic>> plotsSuggestion = const [],
+      final List<Map<String, dynamic>> deviceWarnings = const [],
+      this.isFetchingUserPlots = false,
+      this.isFetchingUserPlotData = false,
+      this.selectedPlotId = 0,
+      this.loadedPlotId = 0,
+      this.error,
+      this.userPlotDataError,
+      this.selectedTimeRange,
+      this.isEditingUserPlot = false,
+      this.isSavingNewCrop = false,
+      this.isSavingNewSoilType = false,
+      this.isSavingNewSoilMoistureSensor = false,
+      this.isSavingNewSoilNutrientSensor = false})
+      : _userPlots = userPlots,
+        _userPlotMoistureData = userPlotMoistureData,
+        _userPlotNutrientData = userPlotNutrientData,
+        _nutrientWarnings = nutrientWarnings,
+        _plotsSuggestion = plotsSuggestion,
+        _deviceWarnings = deviceWarnings;
+
+  final List<Map<String, dynamic>> _userPlots;
+  @override
+  @JsonKey()
+  List<Map<String, dynamic>> get userPlots {
+    if (_userPlots is EqualUnmodifiableListView) return _userPlots;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_userPlots);
+  }
+
+  final List<Map<String, dynamic>> _userPlotMoistureData;
+  @override
+  @JsonKey()
+  List<Map<String, dynamic>> get userPlotMoistureData {
+    if (_userPlotMoistureData is EqualUnmodifiableListView)
+      return _userPlotMoistureData;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_userPlotMoistureData);
+  }
+
+  final List<Map<String, dynamic>> _userPlotNutrientData;
+  @override
+  @JsonKey()
+  List<Map<String, dynamic>> get userPlotNutrientData {
+    if (_userPlotNutrientData is EqualUnmodifiableListView)
+      return _userPlotNutrientData;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_userPlotNutrientData);
+  }
+
+  final List<Map<String, dynamic>> _nutrientWarnings;
+  @override
+  @JsonKey()
+  List<Map<String, dynamic>> get nutrientWarnings {
+    if (_nutrientWarnings is EqualUnmodifiableListView)
+      return _nutrientWarnings;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_nutrientWarnings);
+  }
+
+  final List<Map<String, dynamic>> _plotsSuggestion;
+  @override
+  @JsonKey()
+  List<Map<String, dynamic>> get plotsSuggestion {
+    if (_plotsSuggestion is EqualUnmodifiableListView) return _plotsSuggestion;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_plotsSuggestion);
+  }
+
+  final List<Map<String, dynamic>> _deviceWarnings;
+  @override
+  @JsonKey()
+  List<Map<String, dynamic>> get deviceWarnings {
+    if (_deviceWarnings is EqualUnmodifiableListView) return _deviceWarnings;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_deviceWarnings);
+  }
+
+  @override
+  @JsonKey()
+  final bool isFetchingUserPlots;
+  @override
+  @JsonKey()
+  final bool isFetchingUserPlotData;
+  @override
+  @JsonKey()
+  final int selectedPlotId;
+  @override
+  @JsonKey()
+  final int loadedPlotId;
+  @override
+  final String? error;
+  @override
+  final String? userPlotDataError;
+  @override
+  final DateTime? selectedTimeRange;
+  @override
+  @JsonKey()
+  final bool isEditingUserPlot;
+  @override
+  @JsonKey()
+  final bool isSavingNewCrop;
+  @override
+  @JsonKey()
+  final bool isSavingNewSoilType;
+  @override
+  @JsonKey()
+  final bool isSavingNewSoilMoistureSensor;
+  @override
+  @JsonKey()
+  final bool isSavingNewSoilNutrientSensor;
+
+  @override
+  String toString() {
+    return 'SoilDashboardState(userPlots: $userPlots, userPlotMoistureData: $userPlotMoistureData, userPlotNutrientData: $userPlotNutrientData, nutrientWarnings: $nutrientWarnings, plotsSuggestion: $plotsSuggestion, deviceWarnings: $deviceWarnings, isFetchingUserPlots: $isFetchingUserPlots, isFetchingUserPlotData: $isFetchingUserPlotData, selectedPlotId: $selectedPlotId, loadedPlotId: $loadedPlotId, error: $error, userPlotDataError: $userPlotDataError, selectedTimeRange: $selectedTimeRange, isEditingUserPlot: $isEditingUserPlot, isSavingNewCrop: $isSavingNewCrop, isSavingNewSoilType: $isSavingNewSoilType, isSavingNewSoilMoistureSensor: $isSavingNewSoilMoistureSensor, isSavingNewSoilNutrientSensor: $isSavingNewSoilNutrientSensor)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$SoilDashboardStateImpl &&
+            const DeepCollectionEquality()
+                .equals(other._userPlots, _userPlots) &&
+            const DeepCollectionEquality()
+                .equals(other._userPlotMoistureData, _userPlotMoistureData) &&
+            const DeepCollectionEquality()
+                .equals(other._userPlotNutrientData, _userPlotNutrientData) &&
+            const DeepCollectionEquality()
+                .equals(other._nutrientWarnings, _nutrientWarnings) &&
+            const DeepCollectionEquality()
+                .equals(other._plotsSuggestion, _plotsSuggestion) &&
+            const DeepCollectionEquality()
+                .equals(other._deviceWarnings, _deviceWarnings) &&
+            (identical(other.isFetchingUserPlots, isFetchingUserPlots) ||
+                other.isFetchingUserPlots == isFetchingUserPlots) &&
+            (identical(other.isFetchingUserPlotData, isFetchingUserPlotData) ||
+                other.isFetchingUserPlotData == isFetchingUserPlotData) &&
+            (identical(other.selectedPlotId, selectedPlotId) ||
+                other.selectedPlotId == selectedPlotId) &&
+            (identical(other.loadedPlotId, loadedPlotId) ||
+                other.loadedPlotId == loadedPlotId) &&
+            (identical(other.error, error) || other.error == error) &&
+            (identical(other.userPlotDataError, userPlotDataError) ||
+                other.userPlotDataError == userPlotDataError) &&
+            (identical(other.selectedTimeRange, selectedTimeRange) ||
+                other.selectedTimeRange == selectedTimeRange) &&
+            (identical(other.isEditingUserPlot, isEditingUserPlot) ||
+                other.isEditingUserPlot == isEditingUserPlot) &&
+            (identical(other.isSavingNewCrop, isSavingNewCrop) ||
+                other.isSavingNewCrop == isSavingNewCrop) &&
+            (identical(other.isSavingNewSoilType, isSavingNewSoilType) ||
+                other.isSavingNewSoilType == isSavingNewSoilType) &&
+            (identical(other.isSavingNewSoilMoistureSensor,
+                    isSavingNewSoilMoistureSensor) ||
+                other.isSavingNewSoilMoistureSensor ==
+                    isSavingNewSoilMoistureSensor) &&
+            (identical(other.isSavingNewSoilNutrientSensor,
+                    isSavingNewSoilNutrientSensor) ||
+                other.isSavingNewSoilNutrientSensor ==
+                    isSavingNewSoilNutrientSensor));
+  }
+
+  @override
+  int get hashCode => Object.hash(
+      runtimeType,
+      const DeepCollectionEquality().hash(_userPlots),
+      const DeepCollectionEquality().hash(_userPlotMoistureData),
+      const DeepCollectionEquality().hash(_userPlotNutrientData),
+      const DeepCollectionEquality().hash(_nutrientWarnings),
+      const DeepCollectionEquality().hash(_plotsSuggestion),
+      const DeepCollectionEquality().hash(_deviceWarnings),
+      isFetchingUserPlots,
+      isFetchingUserPlotData,
+      selectedPlotId,
+      loadedPlotId,
+      error,
+      userPlotDataError,
+      selectedTimeRange,
+      isEditingUserPlot,
+      isSavingNewCrop,
+      isSavingNewSoilType,
+      isSavingNewSoilMoistureSensor,
+      isSavingNewSoilNutrientSensor);
+
+  /// Create a copy of SoilDashboardState
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$SoilDashboardStateImplCopyWith<_$SoilDashboardStateImpl> get copyWith =>
+      __$$SoilDashboardStateImplCopyWithImpl<_$SoilDashboardStateImpl>(
+          this, _$identity);
+}
+
+abstract class _SoilDashboardState implements SoilDashboardState {
+  factory _SoilDashboardState(
+      {final List<Map<String, dynamic>> userPlots,
+      final List<Map<String, dynamic>> userPlotMoistureData,
+      final List<Map<String, dynamic>> userPlotNutrientData,
+      final List<Map<String, dynamic>> nutrientWarnings,
+      final List<Map<String, dynamic>> plotsSuggestion,
+      final List<Map<String, dynamic>> deviceWarnings,
+      final bool isFetchingUserPlots,
+      final bool isFetchingUserPlotData,
+      final int selectedPlotId,
+      final int loadedPlotId,
+      final String? error,
+      final String? userPlotDataError,
+      final DateTime? selectedTimeRange,
+      final bool isEditingUserPlot,
+      final bool isSavingNewCrop,
+      final bool isSavingNewSoilType,
+      final bool isSavingNewSoilMoistureSensor,
+      final bool isSavingNewSoilNutrientSensor}) = _$SoilDashboardStateImpl;
+
+  @override
+  List<Map<String, dynamic>> get userPlots;
+  @override
+  List<Map<String, dynamic>> get userPlotMoistureData;
+  @override
+  List<Map<String, dynamic>> get userPlotNutrientData;
+  @override
+  List<Map<String, dynamic>> get nutrientWarnings;
+  @override
+  List<Map<String, dynamic>> get plotsSuggestion;
+  @override
+  List<Map<String, dynamic>> get deviceWarnings;
+  @override
+  bool get isFetchingUserPlots;
+  @override
+  bool get isFetchingUserPlotData;
+  @override
+  int get selectedPlotId;
+  @override
+  int get loadedPlotId;
+  @override
+  String? get error;
+  @override
+  String? get userPlotDataError;
+  @override
+  DateTime? get selectedTimeRange;
+  @override
+  bool get isEditingUserPlot;
+  @override
+  bool get isSavingNewCrop;
+  @override
+  bool get isSavingNewSoilType;
+  @override
+  bool get isSavingNewSoilMoistureSensor;
+  @override
+  bool get isSavingNewSoilNutrientSensor;
+
+  /// Create a copy of SoilDashboardState
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$SoilDashboardStateImplCopyWith<_$SoilDashboardStateImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
