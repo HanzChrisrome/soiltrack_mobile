@@ -17,10 +17,14 @@ final _privateConstructorUsedError = UnsupportedError(
 /// @nodoc
 mixin _$UserAuthState {
   User? get user => throw _privateConstructorUsedError;
+  String? get userId => throw _privateConstructorUsedError;
   String? get userName => throw _privateConstructorUsedError;
   String? get userLastName => throw _privateConstructorUsedError;
   String? get userEmail => throw _privateConstructorUsedError;
+  String? get userPassword => throw _privateConstructorUsedError;
   String? get macAddress => throw _privateConstructorUsedError;
+  int? get failedAttempts => throw _privateConstructorUsedError;
+  DateTime? get lockoutTime => throw _privateConstructorUsedError;
   bool get isAuthenticated => throw _privateConstructorUsedError;
   bool get isLoggingIn => throw _privateConstructorUsedError;
   bool get isRegistering => throw _privateConstructorUsedError;
@@ -40,10 +44,14 @@ abstract class $UserAuthStateCopyWith<$Res> {
   @useResult
   $Res call(
       {User? user,
+      String? userId,
       String? userName,
       String? userLastName,
       String? userEmail,
+      String? userPassword,
       String? macAddress,
+      int? failedAttempts,
+      DateTime? lockoutTime,
       bool isAuthenticated,
       bool isLoggingIn,
       bool isRegistering});
@@ -65,10 +73,14 @@ class _$UserAuthStateCopyWithImpl<$Res, $Val extends UserAuthState>
   @override
   $Res call({
     Object? user = freezed,
+    Object? userId = freezed,
     Object? userName = freezed,
     Object? userLastName = freezed,
     Object? userEmail = freezed,
+    Object? userPassword = freezed,
     Object? macAddress = freezed,
+    Object? failedAttempts = freezed,
+    Object? lockoutTime = freezed,
     Object? isAuthenticated = null,
     Object? isLoggingIn = null,
     Object? isRegistering = null,
@@ -78,6 +90,10 @@ class _$UserAuthStateCopyWithImpl<$Res, $Val extends UserAuthState>
           ? _value.user
           : user // ignore: cast_nullable_to_non_nullable
               as User?,
+      userId: freezed == userId
+          ? _value.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as String?,
       userName: freezed == userName
           ? _value.userName
           : userName // ignore: cast_nullable_to_non_nullable
@@ -90,10 +106,22 @@ class _$UserAuthStateCopyWithImpl<$Res, $Val extends UserAuthState>
           ? _value.userEmail
           : userEmail // ignore: cast_nullable_to_non_nullable
               as String?,
+      userPassword: freezed == userPassword
+          ? _value.userPassword
+          : userPassword // ignore: cast_nullable_to_non_nullable
+              as String?,
       macAddress: freezed == macAddress
           ? _value.macAddress
           : macAddress // ignore: cast_nullable_to_non_nullable
               as String?,
+      failedAttempts: freezed == failedAttempts
+          ? _value.failedAttempts
+          : failedAttempts // ignore: cast_nullable_to_non_nullable
+              as int?,
+      lockoutTime: freezed == lockoutTime
+          ? _value.lockoutTime
+          : lockoutTime // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
       isAuthenticated: null == isAuthenticated
           ? _value.isAuthenticated
           : isAuthenticated // ignore: cast_nullable_to_non_nullable
@@ -120,10 +148,14 @@ abstract class _$$UserAuthStateImplCopyWith<$Res>
   @useResult
   $Res call(
       {User? user,
+      String? userId,
       String? userName,
       String? userLastName,
       String? userEmail,
+      String? userPassword,
       String? macAddress,
+      int? failedAttempts,
+      DateTime? lockoutTime,
       bool isAuthenticated,
       bool isLoggingIn,
       bool isRegistering});
@@ -143,10 +175,14 @@ class __$$UserAuthStateImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? user = freezed,
+    Object? userId = freezed,
     Object? userName = freezed,
     Object? userLastName = freezed,
     Object? userEmail = freezed,
+    Object? userPassword = freezed,
     Object? macAddress = freezed,
+    Object? failedAttempts = freezed,
+    Object? lockoutTime = freezed,
     Object? isAuthenticated = null,
     Object? isLoggingIn = null,
     Object? isRegistering = null,
@@ -156,6 +192,10 @@ class __$$UserAuthStateImplCopyWithImpl<$Res>
           ? _value.user
           : user // ignore: cast_nullable_to_non_nullable
               as User?,
+      userId: freezed == userId
+          ? _value.userId
+          : userId // ignore: cast_nullable_to_non_nullable
+              as String?,
       userName: freezed == userName
           ? _value.userName
           : userName // ignore: cast_nullable_to_non_nullable
@@ -168,10 +208,22 @@ class __$$UserAuthStateImplCopyWithImpl<$Res>
           ? _value.userEmail
           : userEmail // ignore: cast_nullable_to_non_nullable
               as String?,
+      userPassword: freezed == userPassword
+          ? _value.userPassword
+          : userPassword // ignore: cast_nullable_to_non_nullable
+              as String?,
       macAddress: freezed == macAddress
           ? _value.macAddress
           : macAddress // ignore: cast_nullable_to_non_nullable
               as String?,
+      failedAttempts: freezed == failedAttempts
+          ? _value.failedAttempts
+          : failedAttempts // ignore: cast_nullable_to_non_nullable
+              as int?,
+      lockoutTime: freezed == lockoutTime
+          ? _value.lockoutTime
+          : lockoutTime // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
       isAuthenticated: null == isAuthenticated
           ? _value.isAuthenticated
           : isAuthenticated // ignore: cast_nullable_to_non_nullable
@@ -193,10 +245,14 @@ class __$$UserAuthStateImplCopyWithImpl<$Res>
 class _$UserAuthStateImpl implements _UserAuthState {
   _$UserAuthStateImpl(
       {this.user,
+      this.userId,
       this.userName,
       this.userLastName,
       this.userEmail,
+      this.userPassword,
       this.macAddress,
+      this.failedAttempts,
+      this.lockoutTime,
       this.isAuthenticated = false,
       this.isLoggingIn = false,
       this.isRegistering = false});
@@ -204,13 +260,21 @@ class _$UserAuthStateImpl implements _UserAuthState {
   @override
   final User? user;
   @override
+  final String? userId;
+  @override
   final String? userName;
   @override
   final String? userLastName;
   @override
   final String? userEmail;
   @override
+  final String? userPassword;
+  @override
   final String? macAddress;
+  @override
+  final int? failedAttempts;
+  @override
+  final DateTime? lockoutTime;
   @override
   @JsonKey()
   final bool isAuthenticated;
@@ -223,7 +287,7 @@ class _$UserAuthStateImpl implements _UserAuthState {
 
   @override
   String toString() {
-    return 'UserAuthState(user: $user, userName: $userName, userLastName: $userLastName, userEmail: $userEmail, macAddress: $macAddress, isAuthenticated: $isAuthenticated, isLoggingIn: $isLoggingIn, isRegistering: $isRegistering)';
+    return 'UserAuthState(user: $user, userId: $userId, userName: $userName, userLastName: $userLastName, userEmail: $userEmail, userPassword: $userPassword, macAddress: $macAddress, failedAttempts: $failedAttempts, lockoutTime: $lockoutTime, isAuthenticated: $isAuthenticated, isLoggingIn: $isLoggingIn, isRegistering: $isRegistering)';
   }
 
   @override
@@ -232,14 +296,21 @@ class _$UserAuthStateImpl implements _UserAuthState {
         (other.runtimeType == runtimeType &&
             other is _$UserAuthStateImpl &&
             (identical(other.user, user) || other.user == user) &&
+            (identical(other.userId, userId) || other.userId == userId) &&
             (identical(other.userName, userName) ||
                 other.userName == userName) &&
             (identical(other.userLastName, userLastName) ||
                 other.userLastName == userLastName) &&
             (identical(other.userEmail, userEmail) ||
                 other.userEmail == userEmail) &&
+            (identical(other.userPassword, userPassword) ||
+                other.userPassword == userPassword) &&
             (identical(other.macAddress, macAddress) ||
                 other.macAddress == macAddress) &&
+            (identical(other.failedAttempts, failedAttempts) ||
+                other.failedAttempts == failedAttempts) &&
+            (identical(other.lockoutTime, lockoutTime) ||
+                other.lockoutTime == lockoutTime) &&
             (identical(other.isAuthenticated, isAuthenticated) ||
                 other.isAuthenticated == isAuthenticated) &&
             (identical(other.isLoggingIn, isLoggingIn) ||
@@ -249,8 +320,20 @@ class _$UserAuthStateImpl implements _UserAuthState {
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, user, userName, userLastName,
-      userEmail, macAddress, isAuthenticated, isLoggingIn, isRegistering);
+  int get hashCode => Object.hash(
+      runtimeType,
+      user,
+      userId,
+      userName,
+      userLastName,
+      userEmail,
+      userPassword,
+      macAddress,
+      failedAttempts,
+      lockoutTime,
+      isAuthenticated,
+      isLoggingIn,
+      isRegistering);
 
   /// Create a copy of UserAuthState
   /// with the given fields replaced by the non-null parameter values.
@@ -264,10 +347,14 @@ class _$UserAuthStateImpl implements _UserAuthState {
 abstract class _UserAuthState implements UserAuthState {
   factory _UserAuthState(
       {final User? user,
+      final String? userId,
       final String? userName,
       final String? userLastName,
       final String? userEmail,
+      final String? userPassword,
       final String? macAddress,
+      final int? failedAttempts,
+      final DateTime? lockoutTime,
       final bool isAuthenticated,
       final bool isLoggingIn,
       final bool isRegistering}) = _$UserAuthStateImpl;
@@ -275,13 +362,21 @@ abstract class _UserAuthState implements UserAuthState {
   @override
   User? get user;
   @override
+  String? get userId;
+  @override
   String? get userName;
   @override
   String? get userLastName;
   @override
   String? get userEmail;
   @override
+  String? get userPassword;
+  @override
   String? get macAddress;
+  @override
+  int? get failedAttempts;
+  @override
+  DateTime? get lockoutTime;
   @override
   bool get isAuthenticated;
   @override

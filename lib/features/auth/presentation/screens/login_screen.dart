@@ -40,13 +40,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         children: [
           AnimatedPositioned(
             duration: const Duration(milliseconds: 0), // No animation
-            top: keyboardHeight > 0 ? topPadding : 100.0,
+            top: keyboardHeight > 0 ? topPadding : 70.0,
             bottom: keyboardHeight > 0 ? bottomPadding : 40.0,
             left: 0,
             right: 0,
             child: Column(
               children: [
-                // Show logo only when the keyboard is not visible
                 if (keyboardHeight == 0)
                   Image.asset(
                     'assets/logo/DARK HORIZONTAL.png',
@@ -106,10 +105,16 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(20.0),
                               ),
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.onPrimary,
+                              backgroundColor: authState.lockoutTime != null &&
+                                      DateTime.now()
+                                          .isBefore(authState.lockoutTime!)
+                                  ? Colors.grey // Gray color when locked out
+                                  : Theme.of(context).colorScheme.onPrimary,
                             ),
-                            onPressed: authState.isLoggingIn
+                            onPressed: authState.isLoggingIn ||
+                                    (authState.lockoutTime != null &&
+                                        DateTime.now()
+                                            .isBefore(authState.lockoutTime!))
                                 ? null
                                 : () {
                                     loginController.signIn(emailController.text,
@@ -126,7 +131,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                     ),
                                   )
                                 : Text(
-                                    'Sign in',
+                                    (authState.lockoutTime != null &&
+                                            DateTime.now().isBefore(
+                                                authState.lockoutTime!))
+                                        ? "Locked (Try later)"
+                                        : "Sign in",
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleSmall
@@ -170,10 +179,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       style: Theme.of(context).textTheme.bodyMedium),
                   GestureDetector(
                     onTap: () {
-                      context.pushNamed('register');
+                      context.pushNamed('get-started');
                     },
                     child: Text(
-                      "Create an Account",
+                      "Get Started",
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Theme.of(context).colorScheme.onPrimary,
                             fontWeight: FontWeight.w700,

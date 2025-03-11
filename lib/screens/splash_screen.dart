@@ -6,36 +6,25 @@ import 'package:go_router/go_router.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
-import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
-import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
-import 'package:soiltrack_mobile/provider/weather_provider.dart';
 
 class SplashScreen extends ConsumerWidget {
   const SplashScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final sensorNotifier = ref.read(sensorsProvider.notifier);
-    final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
-    final weatherNotifier = ref.read(weatherProvider.notifier);
-    final cropNotifier = ref.read(cropProvider.notifier);
+    final authNotifier = ref.read(authProvider.notifier);
 
     Future.microtask(() async {
-      await sensorNotifier.fetchSensors();
-      await soilDashboardNotifier.fetchUserPlots();
-      await weatherNotifier.fetchWeather('Baliuag');
-      await cropNotifier.fetchAllCrops();
-
+      await authNotifier.initializeAuth();
       final prefs = await SharedPreferences.getInstance();
       final isSetupCompleted = prefs.getBool('device_setup_completed') ?? false;
 
       if (context.mounted) {
-        final authState = ref.read(authProvider);
+        final authState = ref.watch(authProvider);
         final isAuth = authState.isAuthenticated;
 
         if (!isAuth) {
-          context.go('/login');
+          context.go('/get-started');
         } else if (!isSetupCompleted) {
           context.go('/setup');
         } else {

@@ -30,16 +30,21 @@ class DeviceNotifier extends Notifier<DeviceState> {
 
     try {
       await WiFiScan.instance.startScan();
-      await Future.delayed(const Duration(seconds: 10));
+      await Future.delayed(const Duration(seconds: 5));
       final accessPoints = await WiFiScan.instance.getScannedResults();
       final esp32Devices = accessPoints
           .where((ap) => ap.ssid.startsWith("ESP32_Config"))
           .toList();
 
+      if (esp32Devices.isEmpty) {
+        throw ('No ESP32 devices found.');
+      }
+
       await connectToESP32(esp32Devices.first.ssid);
       state = state.copyWith(availableDevices: esp32Devices);
     } catch (e) {
       NotifierHelper.logError(e);
+      rethrow;
     } finally {
       state = state.copyWith(isScanning: false);
     }
@@ -448,6 +453,14 @@ class DeviceNotifier extends Notifier<DeviceState> {
 
   void selectDevice(String ssid) {
     state = state.copyWith(selectedDeviceSSID: ssid);
+  }
+
+  void resetPreferences() {
+    final prefs = SharedPreferences.getInstance();
+    prefs.then((value) {
+      value.remove('device_setup_completed');
+      value.remove('mac_address');
+    });
   }
 }
 

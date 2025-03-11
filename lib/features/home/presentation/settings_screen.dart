@@ -54,7 +54,7 @@ class SettingsScreen extends ConsumerWidget {
                               fontSize: 20),
                           const SizedBox(height: 1),
                           Text(
-                            authState.userEmail!,
+                            authState.userEmail?.toLowerCase() ?? '',
                             style: Theme.of(context)
                                 .textTheme
                                 .bodySmall!
@@ -134,7 +134,7 @@ class SettingsScreen extends ConsumerWidget {
                         settingsText: 'Device Information',
                         settingsIcon: Icons.device_unknown_outlined,
                         onTap: () {
-                          soilDashboardNotifier.fetchUserPlots();
+                          deviceNotifier.resetPreferences();
                         },
                       ),
                       const DividerWidget(verticalHeight: 0),
@@ -190,7 +190,7 @@ class SettingsScreen extends ConsumerWidget {
                       icon: Icons.logout,
                       buttonText: 'Sign out',
                       onPressed: () {
-                        authNotifier.signOut();
+                        authNotifier.signOut(context);
                       },
                     );
                   },

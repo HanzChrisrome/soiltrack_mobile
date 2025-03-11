@@ -21,7 +21,6 @@ class _WifiScanScreenState extends ConsumerState<WifiScanScreen> {
   void initState() {
     super.initState();
     deviceController = DeviceController(context, ref);
-
     Future.microtask(() => deviceController.scanForDevice());
   }
 

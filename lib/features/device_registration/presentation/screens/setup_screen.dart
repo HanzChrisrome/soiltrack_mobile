@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/features/device_registration/controller/device_controller.dart';
 import 'package:soiltrack_mobile/features/device_registration/presentation/widgets/steps_widget.dart';
 import 'package:soiltrack_mobile/widgets/outline_button.dart';
@@ -11,12 +12,12 @@ class SetupScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final deviceController = DeviceController(context, ref);
+    final authNotifier = ref.watch(authProvider.notifier);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.onPrimary,
       body: Container(
         width: double.infinity,
-        margin: const EdgeInsets.only(top: 40),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
           borderRadius: const BorderRadius.only(
@@ -26,14 +27,29 @@ class SetupScreen extends ConsumerWidget {
         ),
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 10, bottom: 10),
-              child: Container(
-                width: 50,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10),
+            const SizedBox(height: 80),
+            Center(
+              child: GestureDetector(
+                onTap: () {
+                  authNotifier.signOut(context);
+                },
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.logout,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 5),
+                    Text(
+                      'Log Out',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontSize: 16,
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),

@@ -1,52 +1,58 @@
-// ignore_for_file: avoid_print
-
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/widgets.dart';
+import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
+import 'package:soiltrack_mobile/provider/weather_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider_state.dart';
 
 class AuthNotifier extends Notifier<UserAuthState> {
   @override
   UserAuthState build() {
-    final session = supabase.auth.currentSession;
-    if (session != null) {
-      _fetchUserName(session.user.id);
-      return UserAuthState(
-        user: session.user,
-        isAuthenticated: true,
-      );
-    }
-
-    return UserAuthState(isAuthenticated: false);
+    return UserAuthState();
   }
 
-  Future<void> _fetchUserName(String userId) async {
+  Future<void> initializeAuth() async {
+    final session = supabase.auth.currentSession;
+    if (session != null) {
+      await fetchUserRecord(session.user.id);
+      await fetchRelatedData();
+    } else {
+      state = state.copyWith(isAuthenticated: false);
+    }
+  }
+
+  Future<void> fetchUserRecord(String userId) async {
     try {
       final userRecord = await supabase.from('users').select('''
       user_fname,
       user_lname,
-      user_email,
+      user_email
     ''').eq('user_id', userId).maybeSingle();
 
       final userIotDevice = await supabase
-          .from('iot_devices')
+          .from('iot_device')
           .select(
             'mac_address',
           )
           .eq('user_id', userId)
           .maybeSingle();
 
-      NotifierHelper.logMessage('User Device: $userIotDevice');
+      final macAddress = userIotDevice?['mac_address'] ?? '';
+      NotifierHelper.logMessage('User Device: $macAddress');
 
       state = state.copyWith(
+          userId: userId,
           userName: userRecord?['user_fname'],
           userLastName: userRecord?['user_lname'],
           userEmail: userRecord?['user_email'],
+          macAddress: macAddress,
           isAuthenticated: true);
+
+      NotifierHelper.logMessage('Set mac address: ${state.macAddress}');
 
       NotifierHelper.logMessage('User: ${state.userName}');
     } catch (e) {
@@ -54,39 +60,59 @@ class AuthNotifier extends Notifier<UserAuthState> {
     }
   }
 
-  Future<void> signIn(String email, String password) async {
-    final dashboardNotifier = ref.read(soilDashboardProvider.notifier);
-    final sensorNotifier = ref.read(sensorsProvider.notifier);
+  Future<void> signIn(
+      BuildContext context, String email, String password) async {
+    if (state.lockoutTime != null &&
+        DateTime.now().isBefore(state.lockoutTime!)) {
+      NotifierHelper.showErrorToast(
+          context, 'Too many failed attempts. Try again later!');
+      return;
+    }
 
-    state = state.copyWith(isLoggingIn: true);
     try {
+      state = state.copyWith(isLoggingIn: true);
       final response = await supabase.auth.signInWithPassword(
         email: email,
         password: password,
       );
 
       if (response.user != null) {
-        await Future.wait([
-          _fetchUserName(response.user!.id),
-          dashboardNotifier.fetchUserPlots(),
-          sensorNotifier.fetchSensors(),
-        ]);
+        await fetchUserRecord(response.user!.id);
+        await fetchRelatedData();
+        state = state.copyWith(
+            user: response.user,
+            isAuthenticated: true,
+            failedAttempts: 0,
+            lockoutTime: null);
 
-        state = state.copyWith(user: response.user, isAuthenticated: true);
+        if (state.isRegistering) {
+          context.go('/setup');
+        } else {
+          context.go('/home');
+        }
       }
     } catch (e) {
-      String errorMessage = e.toString();
-      if (e is AuthException) {
-        errorMessage = e.message;
+      int newFailedAttempts = (state.failedAttempts ?? 0) + 1;
+      DateTime? newLockoutTime;
+
+      if (newFailedAttempts >= 5) {
+        newLockoutTime = DateTime.now().add(Duration(minutes: 5));
+        NotifierHelper.showErrorToast(
+            context, 'Too many attempts. Locked for 5 minutes');
+      } else {
+        NotifierHelper.showErrorToast(
+            context, "Invalid credentials. Attempt $newFailedAttempts/5.");
       }
-      throw (errorMessage);
+
+      state = state.copyWith(
+          failedAttempts: newFailedAttempts, lockoutTime: newLockoutTime);
     } finally {
       state = state.copyWith(isLoggingIn: false);
     }
   }
 
-  Future<void> signUp(
-      String email, String password, String firstName, String lastName) async {
+  Future<void> signUp(String email, String password, String firstName,
+      String lastName, String municipality, String city) async {
     state = state.copyWith(isRegistering: true);
     try {
       final existingUser = await supabase
@@ -96,6 +122,8 @@ class AuthNotifier extends Notifier<UserAuthState> {
           .maybeSingle();
 
       if (existingUser != null) {
+        NotifierHelper.logMessage('Saving user preferences');
+        state = state.copyWith(userEmail: email, userPassword: password);
         return;
       }
 
@@ -108,8 +136,12 @@ class AuthNotifier extends Notifier<UserAuthState> {
           'user_email': email,
           'user_fname': firstName,
           'user_lname': lastName,
+          'user_municipality': municipality,
+          'user_city': city,
         });
       }
+
+      state = state.copyWith(userEmail: email, userPassword: password);
     } catch (e) {
       String errorMessage = e.toString();
       if (e is AuthException) {
@@ -121,13 +153,23 @@ class AuthNotifier extends Notifier<UserAuthState> {
     }
   }
 
-  Future<void> signOut() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      prefs.remove('mac_address');
+  Future<void> fetchRelatedData() async {
+    final sensorNotifier = ref.read(sensorsProvider.notifier);
+    final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
+    final weatherNotifier = ref.read(weatherProvider.notifier);
 
+    await Future.wait([
+      sensorNotifier.fetchSensors(),
+      soilDashboardNotifier.fetchUserPlots(),
+      weatherNotifier.fetchWeather('Baliuag'),
+    ]);
+  }
+
+  Future<void> signOut(BuildContext context) async {
+    try {
       await supabase.auth.signOut();
-      state = state.copyWith(isAuthenticated: false, user: null, userName: '');
+      state = UserAuthState();
+      context.go('/login');
     } catch (e) {
       NotifierHelper.logError(e);
     }

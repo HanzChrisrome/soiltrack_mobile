@@ -7,10 +7,14 @@ part 'auth_provider_state.freezed.dart';
 class UserAuthState with _$UserAuthState {
   factory UserAuthState({
     User? user,
+    String? userId,
     String? userName,
     String? userLastName,
     String? userEmail,
+    String? userPassword,
     String? macAddress,
+    int? failedAttempts,
+    DateTime? lockoutTime,
     @Default(false) bool isAuthenticated,
     @Default(false) bool isLoggingIn,
     @Default(false) bool isRegistering,

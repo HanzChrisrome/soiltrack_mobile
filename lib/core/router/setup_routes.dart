@@ -1,6 +1,7 @@
 // setup_routes.dart
 import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/features/device_registration/presentation/screens/config_setup.dart';
+import 'package:soiltrack_mobile/features/device_registration/presentation/screens/get_started.dart';
 import 'package:soiltrack_mobile/features/device_registration/presentation/screens/setup_screen.dart';
 import 'package:soiltrack_mobile/features/device_registration/presentation/screens/wifi_password.dart';
 import 'package:soiltrack_mobile/features/device_registration/presentation/screens/wifi_scan.dart';
@@ -8,6 +9,11 @@ import 'package:soiltrack_mobile/features/device_registration/presentation/scree
 import 'package:soiltrack_mobile/core/utils/page_transition.dart';
 
 final setupRoutes = [
+  GoRoute(
+    path: '/get-started',
+    name: 'get-started',
+    builder: (context, state) => const GetStartedScreen(),
+  ),
   GoRoute(
     path: '/setup',
     name: 'setup',

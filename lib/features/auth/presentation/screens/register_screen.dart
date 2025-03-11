@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
+import 'package:philippines_rpcmb/philippines_rpcmb.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
   const RegisterScreen({super.key});
@@ -24,6 +25,12 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
+  final TextEditingController municipalityController = TextEditingController();
+  final TextEditingController cityController = TextEditingController();
+
+  Region? region;
+  Province? province;
+  Municipality? municipality;
 
   @override
   void dispose() {
@@ -50,7 +57,7 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         children: [
           AnimatedPositioned(
             duration: const Duration(milliseconds: 0), // No animation
-            top: keyboardHeight > 0 ? topPadding : 60.0,
+            top: keyboardHeight > 0 ? topPadding : 70.0,
             bottom: keyboardHeight > 0 ? bottomPadding : 40.0,
             left: 0,
             right: 0,
@@ -59,11 +66,25 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               child: Column(
                 children: [
                   if (keyboardHeight == 0)
-                    Positioned(
-                      child: Image.asset(
-                        'assets/logo/DARK HORIZONTAL.png',
-                        width: 150,
-                      ),
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        Positioned(
+                          left: 0,
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back),
+                            onPressed: () {
+                              context.pop();
+                            },
+                          ),
+                        ),
+                        Center(
+                          child: Image.asset(
+                            'assets/logo/DARK HORIZONTAL.png',
+                            width: 150,
+                          ),
+                        ),
+                      ],
                     ),
                   const Spacer(),
                   Padding(
@@ -71,7 +92,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const SizedBox(height: 24.0),
                         if (keyboardHeight == 0)
                           const TextGradient(
                             text: 'Create an\nAccount',
@@ -100,15 +120,20 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                           prefixIcon: Icons.email,
                         ),
                         TextFieldWidget(
-                          label: 'Password',
-                          controller: passwordController,
-                          isPasswordField: true,
-                          validator: Validators.validatePassword,
-                          prefixIcon: Icons.lock,
+                          label: 'Municipality',
+                          controller: municipalityController,
+                          validator: Validators.validateUsername,
+                          prefixIcon: Icons.location_city,
                         ),
                         TextFieldWidget(
-                          label: 'Confirm Password',
-                          controller: confirmPasswordController,
+                          label: 'City',
+                          controller: cityController,
+                          validator: Validators.validateUsername,
+                          prefixIcon: Icons.location_pin,
+                        ),
+                        TextFieldWidget(
+                          label: 'Password',
+                          controller: passwordController,
                           isPasswordField: true,
                           validator: Validators.validatePassword,
                           prefixIcon: Icons.lock,
@@ -135,7 +160,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                         userLname.text,
                                         emailController.text,
                                         passwordController.text,
-                                        confirmPasswordController.text,
+                                        municipalityController.text,
+                                        cityController.text,
                                       );
                                     },
                               child: authState.isRegistering
@@ -176,24 +202,15 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
               bottom: 30.0,
               left: 0,
               right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text("Already have an account? ",
-                      style: Theme.of(context).textTheme.bodyMedium),
-                  GestureDetector(
-                    onTap: () {
-                      context.go('/login');
-                    },
-                    child: Text(
-                      "Go back to login",
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Theme.of(context).colorScheme.onPrimary,
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
+              child: Center(
+                child: SizedBox(
+                  width: 350,
+                  child: Text(
+                    "By creating an account, you agree to our\nterms and conditions",
+                    style: Theme.of(context).textTheme.bodyMedium,
+                    textAlign: TextAlign.center,
                   ),
-                ],
+                ),
               ),
             ),
         ],

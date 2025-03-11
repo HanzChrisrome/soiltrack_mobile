@@ -35,6 +35,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: TextFormField(
+        cursorColor: Theme.of(context).colorScheme.onPrimary,
         controller: widget.controller,
         focusNode: widget.focusNode,
         obscureText: widget.isPasswordField ? _isObscured : false,

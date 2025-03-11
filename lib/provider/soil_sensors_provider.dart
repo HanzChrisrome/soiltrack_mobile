@@ -1,8 +1,9 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
+import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
+import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 
 class SensorsState {
   final List<Map<String, dynamic>> moistureSensors;
@@ -41,36 +42,33 @@ class SensorsNotifier extends Notifier<SensorsState> {
   Future<void> fetchSensors() async {
     if (state.isFetchingSensors) return;
     state = state.copyWith(isFetchingSensors: true);
+    final authState = ref.watch(authProvider);
+    final macAddress = authState.macAddress;
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final macAddress = prefs.getString('mac_address') ?? '';
-
-      if (macAddress.isEmpty) {
-        print('No device registered');
-        state = state.copyWith(error: 'No device registered');
+      if (macAddress == null) {
+        NotifierHelper.logMessage('Mac Address is nullings');
         return;
       }
 
       final sensors = await supabase.from('soil_sensors').select('''
-      sensor_id,
-      sensor_name,
-      sensor_status,
-      is_assigned,
-      sensor_type,
-      sensor_category,
-      user_plot_sensors(
-        plot_id,
-        user_plots (
-          plot_name,
-          user_crops (
-            crop_name
+        sensor_id,
+        sensor_name,
+        sensor_status,
+        is_assigned,
+        sensor_type,
+        sensor_category,
+        user_plot_sensors(
+          plot_id,
+          user_plots (
+            plot_name,
+            user_crops (
+              crop_name
+            )
           )
         )
-      )
-    ''').eq('mac_address', macAddress);
+      ''').eq('mac_address', macAddress);
 
-      // SEPARATE SENSORS BASED ON CATEGORY IF NEEDED
       final moistureSensors = sensors
           .where((s) => s['sensor_category'] == 'Moisture Sensor')
           .toList();
