@@ -23,6 +23,8 @@ mixin _$DeviceState {
   String? get selectedDeviceSSID => throw _privateConstructorUsedError;
   String? get selectedWifiSSID => throw _privateConstructorUsedError;
   String? get macAddress => throw _privateConstructorUsedError;
+  bool get isEspConnected => throw _privateConstructorUsedError;
+  bool get isNanoConnected => throw _privateConstructorUsedError;
   bool get isScanning => throw _privateConstructorUsedError;
   bool get isConnecting => throw _privateConstructorUsedError;
   bool get isSaving => throw _privateConstructorUsedError;
@@ -50,6 +52,8 @@ abstract class $DeviceStateCopyWith<$Res> {
       String? selectedDeviceSSID,
       String? selectedWifiSSID,
       String? macAddress,
+      bool isEspConnected,
+      bool isNanoConnected,
       bool isScanning,
       bool isConnecting,
       bool isSaving,
@@ -79,6 +83,8 @@ class _$DeviceStateCopyWithImpl<$Res, $Val extends DeviceState>
     Object? selectedDeviceSSID = freezed,
     Object? selectedWifiSSID = freezed,
     Object? macAddress = freezed,
+    Object? isEspConnected = null,
+    Object? isNanoConnected = null,
     Object? isScanning = null,
     Object? isConnecting = null,
     Object? isSaving = null,
@@ -108,6 +114,14 @@ class _$DeviceStateCopyWithImpl<$Res, $Val extends DeviceState>
           ? _value.macAddress
           : macAddress // ignore: cast_nullable_to_non_nullable
               as String?,
+      isEspConnected: null == isEspConnected
+          ? _value.isEspConnected
+          : isEspConnected // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isNanoConnected: null == isNanoConnected
+          ? _value.isNanoConnected
+          : isNanoConnected // ignore: cast_nullable_to_non_nullable
+              as bool,
       isScanning: null == isScanning
           ? _value.isScanning
           : isScanning // ignore: cast_nullable_to_non_nullable
@@ -154,6 +168,8 @@ abstract class _$$DeviceStateImplCopyWith<$Res>
       String? selectedDeviceSSID,
       String? selectedWifiSSID,
       String? macAddress,
+      bool isEspConnected,
+      bool isNanoConnected,
       bool isScanning,
       bool isConnecting,
       bool isSaving,
@@ -181,6 +197,8 @@ class __$$DeviceStateImplCopyWithImpl<$Res>
     Object? selectedDeviceSSID = freezed,
     Object? selectedWifiSSID = freezed,
     Object? macAddress = freezed,
+    Object? isEspConnected = null,
+    Object? isNanoConnected = null,
     Object? isScanning = null,
     Object? isConnecting = null,
     Object? isSaving = null,
@@ -210,6 +228,14 @@ class __$$DeviceStateImplCopyWithImpl<$Res>
           ? _value.macAddress
           : macAddress // ignore: cast_nullable_to_non_nullable
               as String?,
+      isEspConnected: null == isEspConnected
+          ? _value.isEspConnected
+          : isEspConnected // ignore: cast_nullable_to_non_nullable
+              as bool,
+      isNanoConnected: null == isNanoConnected
+          ? _value.isNanoConnected
+          : isNanoConnected // ignore: cast_nullable_to_non_nullable
+              as bool,
       isScanning: null == isScanning
           ? _value.isScanning
           : isScanning // ignore: cast_nullable_to_non_nullable
@@ -251,6 +277,8 @@ class _$DeviceStateImpl implements _DeviceState {
       this.selectedDeviceSSID,
       this.selectedWifiSSID,
       this.macAddress,
+      this.isEspConnected = false,
+      this.isNanoConnected = false,
       this.isScanning = false,
       this.isConnecting = false,
       this.isSaving = false,
@@ -290,6 +318,12 @@ class _$DeviceStateImpl implements _DeviceState {
   final String? macAddress;
   @override
   @JsonKey()
+  final bool isEspConnected;
+  @override
+  @JsonKey()
+  final bool isNanoConnected;
+  @override
+  @JsonKey()
   final bool isScanning;
   @override
   @JsonKey()
@@ -317,7 +351,7 @@ class _$DeviceStateImpl implements _DeviceState {
 
   @override
   String toString() {
-    return 'DeviceState(availableDevices: $availableDevices, availableNetworks: $availableNetworks, selectedDeviceSSID: $selectedDeviceSSID, selectedWifiSSID: $selectedWifiSSID, macAddress: $macAddress, isScanning: $isScanning, isConnecting: $isConnecting, isSaving: $isSaving, isResetting: $isResetting, valveStates: $valveStates, isPumpOpen: $isPumpOpen, savingError: $savingError)';
+    return 'DeviceState(availableDevices: $availableDevices, availableNetworks: $availableNetworks, selectedDeviceSSID: $selectedDeviceSSID, selectedWifiSSID: $selectedWifiSSID, macAddress: $macAddress, isEspConnected: $isEspConnected, isNanoConnected: $isNanoConnected, isScanning: $isScanning, isConnecting: $isConnecting, isSaving: $isSaving, isResetting: $isResetting, valveStates: $valveStates, isPumpOpen: $isPumpOpen, savingError: $savingError)';
   }
 
   @override
@@ -335,6 +369,10 @@ class _$DeviceStateImpl implements _DeviceState {
                 other.selectedWifiSSID == selectedWifiSSID) &&
             (identical(other.macAddress, macAddress) ||
                 other.macAddress == macAddress) &&
+            (identical(other.isEspConnected, isEspConnected) ||
+                other.isEspConnected == isEspConnected) &&
+            (identical(other.isNanoConnected, isNanoConnected) ||
+                other.isNanoConnected == isNanoConnected) &&
             (identical(other.isScanning, isScanning) ||
                 other.isScanning == isScanning) &&
             (identical(other.isConnecting, isConnecting) ||
@@ -359,6 +397,8 @@ class _$DeviceStateImpl implements _DeviceState {
       selectedDeviceSSID,
       selectedWifiSSID,
       macAddress,
+      isEspConnected,
+      isNanoConnected,
       isScanning,
       isConnecting,
       isSaving,
@@ -383,6 +423,8 @@ abstract class _DeviceState implements DeviceState {
       final String? selectedDeviceSSID,
       final String? selectedWifiSSID,
       final String? macAddress,
+      final bool isEspConnected,
+      final bool isNanoConnected,
       final bool isScanning,
       final bool isConnecting,
       final bool isSaving,
@@ -401,6 +443,10 @@ abstract class _DeviceState implements DeviceState {
   String? get selectedWifiSSID;
   @override
   String? get macAddress;
+  @override
+  bool get isEspConnected;
+  @override
+  bool get isNanoConnected;
   @override
   bool get isScanning;
   @override

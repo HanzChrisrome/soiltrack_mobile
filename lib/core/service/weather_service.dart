@@ -14,7 +14,6 @@ class WeatherService {
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
-      print('Weather fetched ${response.body}');
       return jsonDecode(response.body);
     } else {
       print('Error in fetching');

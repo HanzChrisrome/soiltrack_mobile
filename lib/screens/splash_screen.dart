@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 
 class SplashScreen extends ConsumerWidget {
@@ -16,19 +16,20 @@ class SplashScreen extends ConsumerWidget {
 
     Future.microtask(() async {
       await authNotifier.initializeAuth();
-      final prefs = await SharedPreferences.getInstance();
-      final isSetupCompleted = prefs.getBool('device_setup_completed') ?? false;
 
       if (context.mounted) {
-        final authState = ref.watch(authProvider);
+        final authState = ref.read(authProvider);
         final isAuth = authState.isAuthenticated;
+
+        NotifierHelper.logMessage(
+            'Setup Completed: ${authState.isSetupComplete}');
 
         if (!isAuth) {
           context.go('/get-started');
-        } else if (!isSetupCompleted) {
+        } else if (!authState.isSetupComplete) {
           context.go('/setup');
         } else {
-          context.go('/home');
+          context.go('/device-exists');
         }
       }
     });

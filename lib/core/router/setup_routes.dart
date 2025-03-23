@@ -1,6 +1,7 @@
 // setup_routes.dart
 import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/features/device_registration/presentation/screens/config_setup.dart';
+import 'package:soiltrack_mobile/features/device_registration/presentation/screens/existing_device_screen.dart';
 import 'package:soiltrack_mobile/features/device_registration/presentation/screens/get_started.dart';
 import 'package:soiltrack_mobile/features/device_registration/presentation/screens/setup_screen.dart';
 import 'package:soiltrack_mobile/features/device_registration/presentation/screens/wifi_password.dart';
@@ -49,5 +50,10 @@ final setupRoutes = [
         builder: (context, state) => const ConfigurationScreen(),
       ),
     ],
+  ),
+  GoRoute(
+    path: '/device-exists',
+    name: 'device-exists',
+    builder: (context, state) => const ExistingDeviceScreen(),
   ),
 ];

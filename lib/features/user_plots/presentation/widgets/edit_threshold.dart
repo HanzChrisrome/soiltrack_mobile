@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:soiltrack_mobile/core/utils/toast_service.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/widgets/customizable_bottom_sheet.dart';
 import 'package:soiltrack_mobile/widgets/text_field.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';

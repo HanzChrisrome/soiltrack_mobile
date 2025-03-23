@@ -102,7 +102,7 @@ class MQTTService {
 
   Future<String> publishAndWaitForResponse(
       String requestTopic, String responseTopic, String message,
-      {String? expectedResponse, int timeoutMs = 10000}) async {
+      {String? expectedResponse, int timeoutMs = 5000}) async {
     await connect();
     subscribe(responseTopic);
     publish(requestTopic, message);
@@ -111,7 +111,8 @@ class MQTTService {
       return await waitForResponse(responseTopic,
           expectedMessage: expectedResponse, timeoutMs: timeoutMs);
     } catch (e) {
-      return Future.error(e);
+      print('❌ Error: $e');
+      return '';
     }
   }
 }

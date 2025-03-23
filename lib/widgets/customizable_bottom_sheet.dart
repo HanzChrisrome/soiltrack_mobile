@@ -27,78 +27,74 @@ void showCustomizableBottomSheet({
             duration: const Duration(milliseconds: 1), // No animation lag
             padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              child: Container(
-                height:
-                    height, // Keeps base height but moves up when keyboard opens
-                padding: const EdgeInsets.only(left: 30, right: 30, top: 15),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
-                      blurRadius: 10,
-                      spreadRadius: 2,
-                      offset: const Offset(0, 4),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Drag handle
-                    Center(
-                      child: Container(
-                        width: 80,
-                        height: 5,
-                        decoration: BoxDecoration(
-                          color: const Color.fromARGB(255, 202, 202, 202),
-                          borderRadius: BorderRadius.circular(2.5),
-                        ),
+            child: Container(
+              height: height,
+              padding: const EdgeInsets.only(left: 30, right: 30, top: 15),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 10,
+                    spreadRadius: 2,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Drag handle
+                  Center(
+                    child: Container(
+                      width: 80,
+                      height: 5,
+                      decoration: BoxDecoration(
+                        color: const Color.fromARGB(255, 202, 202, 202),
+                        borderRadius: BorderRadius.circular(2.5),
                       ),
                     ),
-                    const SizedBox(height: 30),
+                  ),
+                  const SizedBox(height: 30),
 
-                    Expanded(
-                      child: Column(
-                        children: [
-                          Center(child: centerContent),
-                          const SizedBox(height: 20),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        Center(child: centerContent),
+                        const SizedBox(height: 20),
 
-                          // Conditionally show buttons
-                          if (showCancelButton || showActionButton)
-                            Row(
-                              children: [
-                                if (showCancelButton)
-                                  Expanded(
-                                    child: OutlineCustomButton(
-                                      buttonText: 'Cancel',
-                                      onPressed: () {
-                                        Navigator.of(context).pop();
-                                        if (onCancelPressed != null) {
-                                          onCancelPressed();
-                                        }
-                                      },
-                                    ),
+                        // Conditionally show buttons
+                        if (showCancelButton || showActionButton)
+                          Row(
+                            children: [
+                              if (showCancelButton)
+                                Expanded(
+                                  child: OutlineCustomButton(
+                                    buttonText: 'Cancel',
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                      if (onCancelPressed != null) {
+                                        onCancelPressed();
+                                      }
+                                    },
                                   ),
-                                if (showCancelButton && showActionButton)
-                                  const SizedBox(width: 10),
-                                if (showActionButton)
-                                  Expanded(
-                                    child: FilledCustomButton(
-                                      buttonText: buttonText,
-                                      onPressed: onPressed,
-                                    ),
+                                ),
+                              if (showCancelButton && showActionButton)
+                                const SizedBox(width: 10),
+                              if (showActionButton)
+                                Expanded(
+                                  child: FilledCustomButton(
+                                    buttonText: buttonText,
+                                    onPressed: onPressed,
                                   ),
-                              ],
-                            ),
-                        ],
-                      ),
+                                ),
+                            ],
+                          ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           );

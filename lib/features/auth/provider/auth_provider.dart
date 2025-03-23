@@ -3,7 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/provider/weather_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -31,30 +32,27 @@ class AuthNotifier extends Notifier<UserAuthState> {
       user_fname,
       user_lname,
       user_email
-    ''').eq('user_id', userId).maybeSingle();
+    ''').eq('user_id', userId).single();
 
       final userIotDevice = await supabase
           .from('iot_device')
           .select(
             'mac_address',
           )
-          .eq('user_id', userId)
-          .maybeSingle();
+          .eq('user_id', userId);
 
-      final macAddress = userIotDevice?['mac_address'] ?? '';
+      final macAddress =
+          userIotDevice.isNotEmpty ? userIotDevice.first['mac_address'] : '';
       NotifierHelper.logMessage('User Device: $macAddress');
 
       state = state.copyWith(
           userId: userId,
-          userName: userRecord?['user_fname'],
-          userLastName: userRecord?['user_lname'],
-          userEmail: userRecord?['user_email'],
+          userName: userRecord['user_fname'],
+          userLastName: userRecord['user_lname'],
+          userEmail: userRecord['user_email'],
           macAddress: macAddress,
-          isAuthenticated: true);
-
-      NotifierHelper.logMessage('Set mac address: ${state.macAddress}');
-
-      NotifierHelper.logMessage('User: ${state.userName}');
+          isAuthenticated: true,
+          isSetupComplete: macAddress.isNotEmpty);
     } catch (e) {
       NotifierHelper.logError(e);
     }
@@ -80,32 +78,45 @@ class AuthNotifier extends Notifier<UserAuthState> {
         await fetchUserRecord(response.user!.id);
         await fetchRelatedData();
         state = state.copyWith(
-            user: response.user,
-            isAuthenticated: true,
-            failedAttempts: 0,
-            lockoutTime: null);
+          user: response.user,
+          isAuthenticated: true,
+          failedAttempts: 0,
+          lockoutTime: null,
+        );
 
-        if (state.isRegistering) {
+        NotifierHelper.logMessage(
+            'Device setup completed: ${state.isSetupComplete}');
+        if (state.isRegistering || !state.isSetupComplete) {
           context.go('/setup');
         } else {
           context.go('/home');
         }
       }
     } catch (e) {
+      NotifierHelper.logError(e);
       int newFailedAttempts = (state.failedAttempts ?? 0) + 1;
       DateTime? newLockoutTime;
 
-      if (newFailedAttempts >= 5) {
-        newLockoutTime = DateTime.now().add(Duration(minutes: 5));
+      if (newFailedAttempts >= 3) {
+        newLockoutTime = DateTime.now().add(Duration(minutes: 1));
         NotifierHelper.showErrorToast(
-            context, 'Too many attempts. Locked for 5 minutes');
+            context, 'Too many attempts. Locked for 1 minute');
+
+        Future.delayed(Duration(minutes: 1), () {
+          if (state.lockoutTime != null &&
+              DateTime.now().isAfter(state.lockoutTime!)) {
+            state = state.copyWith(failedAttempts: 0, lockoutTime: null);
+          }
+        });
       } else {
         NotifierHelper.showErrorToast(
-            context, "Invalid credentials. Attempt $newFailedAttempts/5.");
+            context, "Invalid credentials. Attempt $newFailedAttempts/3.");
       }
 
       state = state.copyWith(
-          failedAttempts: newFailedAttempts, lockoutTime: newLockoutTime);
+        failedAttempts: newFailedAttempts,
+        lockoutTime: newLockoutTime,
+      );
     } finally {
       state = state.copyWith(isLoggingIn: false);
     }
@@ -156,13 +167,13 @@ class AuthNotifier extends Notifier<UserAuthState> {
   Future<void> fetchRelatedData() async {
     final sensorNotifier = ref.read(sensorsProvider.notifier);
     final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
+    final deviceNotifier = ref.read(deviceProvider.notifier);
     final weatherNotifier = ref.read(weatherProvider.notifier);
 
-    await Future.wait([
-      sensorNotifier.fetchSensors(),
-      soilDashboardNotifier.fetchUserPlots(),
-      weatherNotifier.fetchWeather('Baliuag'),
-    ]);
+    await sensorNotifier.fetchSensors();
+    await soilDashboardNotifier.fetchUserPlots();
+    await weatherNotifier.fetchWeather('Baliuag');
+    await deviceNotifier.checkDeviceStatus();
   }
 
   Future<void> signOut(BuildContext context) async {

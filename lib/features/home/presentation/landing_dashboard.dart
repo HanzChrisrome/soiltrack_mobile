@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
+import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/greeting_widget.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/weather_widget.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/weather_provider.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
@@ -17,6 +18,7 @@ class LandingDashboard extends ConsumerWidget {
     final authState = ref.watch(authProvider);
     final weatherState = ref.watch(weatherProvider);
     final userPlotState = ref.watch(soilDashboardProvider);
+    final deviceState = ref.watch(deviceProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -140,6 +142,39 @@ class LandingDashboard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const TextGradient(text: 'Device Warnings', fontSize: 20),
+                      if (!deviceState.isEspConnected)
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const DividerWidget(verticalHeight: 5),
+                            Text(
+                              'Device Connection Warning',
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyLarge!
+                                  .copyWith(
+                                    fontWeight: FontWeight.w600,
+                                    height: 0.8,
+                                    color:
+                                        const Color.fromARGB(255, 141, 19, 10),
+                                  ),
+                            ),
+                            const SizedBox(height: 10),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 2),
+                              child: Text(
+                                'Your SoilTracker Device might not be connected to the internet. Please check the device connection.',
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodySmall!
+                                    .copyWith(
+                                      color:
+                                          const Color.fromARGB(255, 97, 97, 97),
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
                       if (userPlotState.deviceWarnings.isNotEmpty)
                         ...userPlotState.deviceWarnings.map((deviceWarning) {
                           final plotName = deviceWarning['plot_name'];

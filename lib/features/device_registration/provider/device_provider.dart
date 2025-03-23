@@ -11,7 +11,7 @@ import 'package:soiltrack_mobile/core/utils/toast_service.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/features/device_registration/helper/device_helper.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider_state.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:wifi_iot/wifi_iot.dart';
 import 'package:wifi_scan/wifi_scan.dart';
@@ -72,8 +72,9 @@ class DeviceNotifier extends Notifier<DeviceState> {
 
     await WiFiScan.instance.startScan();
     final accessPoints = await WiFiScan.instance.getScannedResults();
-    final wifiNetworks =
-        accessPoints.where((ap) => ap.ssid.startsWith('')).toList();
+    final wifiNetworks = accessPoints
+        .where((ap) => !ap.ssid.startsWith('ESP32_Config'))
+        .toList();
 
     state = state.copyWith(availableNetworks: wifiNetworks, isScanning: false);
   }
@@ -154,6 +155,8 @@ class DeviceNotifier extends Notifier<DeviceState> {
           state = state.copyWith(isSaving: false);
           return;
         }
+
+        //IF THE MAC ADDRESS IS ASSOCIATED WITH OTHER USER, ALERT THE USER THAT THE MAC ADDRESS IS ALREADY ASSOCIATED WITH ANOTHER USER
       }
 
       final responseSaving = await supabase.from('iot_device').insert({
@@ -166,8 +169,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
         throw Exception(responseSaving.error!.message);
       }
 
-      // await getSensorCount();
-
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool('device_setup_completed', true);
       await prefs.setString('mac_address', macAddress);
@@ -179,83 +180,57 @@ class DeviceNotifier extends Notifier<DeviceState> {
     }
   }
 
-  Future<void> getSensorCount() async {
+  Future<void> checkDeviceStatus() async {
     final authState = ref.read(authProvider);
-    final firstName = authState.userName;
-    final macAddress = DeviceHelper.getMacAddress();
-    await mqttService.connect();
+    final macAddress = authState.macAddress;
 
-    final responseTopic = "soiltrack/device/$macAddress/get-sensors/response";
-    final publishTopic = "soiltrack/device/$macAddress/get-sensors";
+    final responseTopic = "soiltrack/device/$macAddress/check-device/response";
+    final publishTopic = "soiltrack/device/$macAddress/check-device";
 
     try {
       final response = await mqttService.publishAndWaitForResponse(
-          publishTopic, responseTopic, "GET SENSORS");
-      final parsedResponse = jsonDecode(response);
-
-      final int moistureSensors = parsedResponse['moistureSensors'] ?? 0;
-      final int npkSensors = parsedResponse['npkSensors'] ?? 0;
-
-      if (moistureSensors == 0 || npkSensors == 0) {
-        debugPrint("❌ No active sensors found.");
-        return;
-      }
-
-      List<Map<String, dynamic>> sensorRecords = [];
-
-      for (int i = 1; i <= moistureSensors; i++) {
-        sensorRecords.add({
-          'mac_address': macAddress,
-          'sensor_name': "$firstName Moisture Sensor $i",
-          'sensor_status': 'ACTIVE',
-          'sensor_type': 'moisture$i',
-          'sensor_category': 'Moisture Sensor'
-        });
-      }
-
-      for (int i = 1; i <= npkSensors; i++) {
-        sensorRecords.add({
-          'mac_address': macAddress,
-          'sensor_name': '$firstName NPK Sensor $i',
-          'sensor_status': 'ACTIVE',
-          'sensor_type': 'npk$i',
-          'sensor_category': 'NPK Sensor'
-        });
-      }
-
-      debugPrint('🌱 Sensors saved to database.');
-    } catch (e) {
-      throw e.toString();
-    }
-  }
-
-  Future<void> checkDeviceStatus() async {
-    await mqttService.connect();
-    final macAddress = await DeviceHelper.getMacAddress();
-
-    final String pingTopic = "soiltrack/device/$macAddress/ping";
-    final String responseTopic = "$pingTopic/status";
-
-    try {
-      String response = await mqttService.publishAndWaitForResponse(
-          pingTopic, responseTopic, "PING",
+          publishTopic, responseTopic, "CHECK DEVICE",
           expectedResponse: "PONG");
 
       if (response != "PONG") {
         NotifierHelper.logError('Device did not respond.');
+        state = state.copyWith(isEspConnected: false);
         return;
       }
 
-      NotifierHelper.logMessage('Device did not respond.');
+      state = state.copyWith(isEspConnected: true);
     } catch (e) {
       NotifierHelper.logError(e);
     }
   }
 
+  Future<void> checkSensorsStatus() async {
+    //Check the number of devices associated with the user account first
+
+    //If the user has no device, then return
+
+    //If the user has a device, check the number of moisture sensors associated with the account
+
+    //If the user has a device, check the number of nutrient sensors associated with the account
+
+    //Request to the ESP32 to get the number of soil moisture devices connected to it
+
+    //Request to the ESP32 to get the number of soil nutrient devices connected to it
+
+    //If the number of devices connected to the ESP32 is not equal to the number of devices associated with the user account, then add a warning
+  }
+
+  Future<void> checkValveStatus() async {}
+
   Future<bool> _openPump(BuildContext context) async {
     NotifierHelper.showLoadingToast(context, 'Opening pump');
     await mqttService.connect();
     final macAddress = await DeviceHelper.getMacAddress();
+
+    if (!state.isEspConnected) {
+      NotifierHelper.showErrorToast(context, 'No device connected.');
+      return false;
+    }
 
     final pumpControlTopic = "soiltrack/device/$macAddress/pump";
     final responseTopic = "$pumpControlTopic/status";
@@ -381,6 +356,11 @@ class DeviceNotifier extends Notifier<DeviceState> {
 
   Future<void> openPump(BuildContext context, String action,
       String valveTagging, int plotId) async {
+    if (!state.isEspConnected) {
+      NotifierHelper.showErrorToast(
+          context, 'Your SoilTracker is not connected.');
+      return;
+    }
     final isValveOpening = action == 'VLVE ON';
     final newValveState = isValveOpening;
     final activeValves = state.valveStates.values.where((v) => v).length;

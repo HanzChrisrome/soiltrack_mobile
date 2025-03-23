@@ -7,8 +7,11 @@ class FilledCustomButton extends StatelessWidget {
     required this.buttonText,
     this.onPressed,
     this.icon,
-    this.isLoading = false, // Added isLoading parameter
-    this.loadingText = "Loading...", // Added customizable loading text
+    this.isLoading = false,
+    this.loadingText = "Loading...",
+    this.backgroundColor, // ✅ Customizable background color
+    this.textColor, // ✅ Customizable text color
+    this.iconColor, // ✅ Customizable icon color
   });
 
   final String buttonText;
@@ -16,9 +19,14 @@ class FilledCustomButton extends StatelessWidget {
   final IconData? icon;
   final bool isLoading;
   final String loadingText;
+  final Color? backgroundColor; // Optional background color
+  final Color? textColor; // Optional text color
+  final Color? iconColor; // Optional icon color
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context).colorScheme;
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8.0),
       child: SizedBox(
@@ -29,10 +37,10 @@ class FilledCustomButton extends StatelessWidget {
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(15.0),
             ),
-            backgroundColor: Theme.of(context).colorScheme.onPrimary,
+            backgroundColor: backgroundColor ??
+                theme.onPrimary, // ✅ Use custom color or default
           ),
-          onPressed:
-              isLoading ? null : onPressed, // Disable button when loading
+          onPressed: isLoading ? null : onPressed,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: isLoading
@@ -41,7 +49,8 @@ class FilledCustomButton extends StatelessWidget {
                       width: 18,
                       height: 18,
                       child: LoadingAnimationWidget.beat(
-                        color: Theme.of(context).colorScheme.primary,
+                        color: textColor ??
+                            theme.primary, // ✅ Custom or default color
                         size: 18,
                       ),
                     ),
@@ -49,7 +58,8 @@ class FilledCustomButton extends StatelessWidget {
                     Text(
                       loadingText,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
+                            color: textColor ??
+                                theme.primary, // ✅ Custom or default
                           ),
                     ),
                   ]
@@ -57,12 +67,17 @@ class FilledCustomButton extends StatelessWidget {
                     Text(
                       buttonText,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                            color: Theme.of(context).colorScheme.primary,
+                            color: textColor ??
+                                theme.primary, // ✅ Custom or default
                           ),
                     ),
                     const SizedBox(width: 8.0),
                     if (icon != null) ...[
-                      Icon(icon, color: Theme.of(context).colorScheme.primary),
+                      Icon(
+                        icon,
+                        color:
+                            iconColor ?? theme.primary, // ✅ Custom or default
+                      ),
                     ],
                   ],
           ),

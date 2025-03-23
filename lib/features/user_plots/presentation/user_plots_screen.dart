@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/crop_threshold.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/line_chart.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_details.dart';
@@ -82,7 +82,7 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
     final assignedNutrientSensor =
         soilNutrientSensors?['soil_sensors']?['sensor_name'] ?? 'No sensor';
 
-    final moistureData = userPlot.userPlotMoistureData
+    final moistureData = userPlot.rawPlotMoistureData
         .where((moisture) => moisture['plot_id'] == userPlot.selectedPlotId)
         .map((moisture) => {
               'plot_id': moisture['plot_id'],
@@ -92,7 +92,7 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
             })
         .toList();
 
-    final nitrogenData = userPlot.userPlotNutrientData
+    final nitrogenData = userPlot.rawPlotNutrientData
         .where((nutrient) => nutrient['plot_id'] == userPlot.selectedPlotId)
         .map((nutrient) => {
               'plot_id': nutrient['plot_id'],
@@ -102,7 +102,7 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
             })
         .toList();
 
-    final phosphorusData = userPlot.userPlotNutrientData
+    final phosphorusData = userPlot.rawPlotNutrientData
         .where((nutrient) => nutrient['plot_id'] == userPlot.selectedPlotId)
         .map((nutrient) => {
               'plot_id': nutrient['plot_id'],
@@ -112,7 +112,7 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
             })
         .toList();
 
-    final potassiumData = userPlot.userPlotNutrientData
+    final potassiumData = userPlot.rawPlotNutrientData
         .where((nutrient) => nutrient['plot_id'] == userPlot.selectedPlotId)
         .map((nutrient) => {
               'plot_id': nutrient['plot_id'],
@@ -126,6 +126,10 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
       (warning) => warning['plot_id'] == userPlot.selectedPlotId,
       orElse: () => {},
     );
+
+    final plotSuggestions = userPlot.plotsSuggestion.firstWhere(
+        (s) => s['plot_id'] == userPlot.selectedPlotId,
+        orElse: () => {});
 
     String formatTimestamp(String timestamp) {
       try {
@@ -394,43 +398,79 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                                   ],
                                 ),
                               ),
-                            if (moistureData.isEmpty ||
-                                nitrogenData.isEmpty ||
-                                phosphorusData.isEmpty ||
-                                potassiumData.isEmpty)
+                            if (plotSuggestions.isNotEmpty)
                               Container(
-                                padding: const EdgeInsets.all(20),
+                                margin: const EdgeInsets.only(bottom: 15),
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 20, vertical: 10),
                                 decoration: BoxDecoration(
-                                  color: Colors.red.withOpacity(0.1),
-                                  border: Border.all(color: Colors.red),
+                                  color: Theme.of(context).colorScheme.surface,
                                   borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                      color: Colors.green,
+                                      width: 1), // Red border
                                 ),
-                                child: const Center(
-                                  child: Text(
-                                    'No sensors are assigned',
-                                    style: TextStyle(color: Colors.red),
-                                  ),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Row(
+                                      children: [
+                                        Icon(Icons.warning_amber_outlined,
+                                            color: Colors.green, size: 20),
+                                        SizedBox(width: 5),
+                                        Text(
+                                          'Suggestions',
+                                          style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.green),
+                                        ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 15),
+                                    ...plotSuggestions['suggestions']
+                                        .map((suggestions) {
+                                      return Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            suggestions,
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyMedium!,
+                                          ),
+                                          if (plotSuggestions['suggestions']
+                                                  .indexOf(suggestions) !=
+                                              plotSuggestions['suggestions']
+                                                      .length -
+                                                  1)
+                                            DividerWidget(
+                                                verticalHeight: 1,
+                                                color: Colors.grey[300]!),
+                                        ],
+                                      );
+                                    }),
+                                  ],
                                 ),
                               ),
-                            if (moistureData.isNotEmpty)
-                              Column(
-                                children: [
-                                  NutrientProgressChart(
-                                    nitrogenData: nitrogenData,
-                                    phosphorusData: phosphorusData,
-                                    potassiumData: potassiumData,
-                                    moistureData: moistureData,
-                                  ),
-                                  const SizedBox(height: 5),
-                                  FilledCustomButton(
-                                    buttonText: 'View Analytics',
-                                    icon: Icons.remove_red_eye_outlined,
-                                    onPressed: () {
-                                      context.pushNamed('plot-analytics');
-                                    },
-                                  ),
-                                ],
-                              ),
+                            Column(
+                              children: [
+                                NutrientProgressChart(
+                                  nitrogenData: nitrogenData,
+                                  phosphorusData: phosphorusData,
+                                  potassiumData: potassiumData,
+                                  moistureData: moistureData,
+                                ),
+                                const SizedBox(height: 5),
+                                FilledCustomButton(
+                                  buttonText: 'View Analytics',
+                                  icon: Icons.remove_red_eye_outlined,
+                                  onPressed: () {
+                                    context.pushNamed('plot-analytics');
+                                  },
+                                ),
+                              ],
+                            ),
                             const SizedBox(height: 10),
                             if (irrigationLogs.isNotEmpty)
                               Container(

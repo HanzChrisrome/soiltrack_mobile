@@ -11,6 +11,8 @@ class DeviceState with _$DeviceState {
     String? selectedDeviceSSID,
     String? selectedWifiSSID,
     String? macAddress,
+    @Default(false) bool isEspConnected,
+    @Default(false) bool isNanoConnected,
     @Default(false) bool isScanning,
     @Default(false) bool isConnecting,
     @Default(false) bool isSaving,

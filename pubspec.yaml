@@ -64,6 +64,9 @@ flutter:
     #ELEMENTS
     - assets/elements/microchip.png
     - assets/elements/handphone.png
+    - assets/elements/power.png
+    - assets/elements/no_power.png
+    - assets/elements/sad_icon.png
 
     #SOIL PICTURES
     - assets/soil_images/clay_soil.png
@@ -84,3 +87,13 @@ flutter:
     - assets/weather/normal_night.png
     - assets/weather/SUNNY DAY.png
     - assets/weather/CLOUDY DAY.png
+
+    #HARDWARE
+    - assets/hardware/nano_colored.png
+    - assets/hardware/nano_not_connected.png
+    - assets/hardware/esp_colored.png
+    - assets/hardware/esp_not_connected.png
+    - assets/hardware/esp32_with_shadow.png
+    - assets/hardware/esp_not_connected_with_shadow.png
+    - assets/hardware/nano_not_connected_with_shadow.png
+    - assets/hardware/nano_with_shadow.png

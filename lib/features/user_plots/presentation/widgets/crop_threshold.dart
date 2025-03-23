@@ -3,7 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/specific_details.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/edit_threshold.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';

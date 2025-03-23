@@ -6,7 +6,7 @@ import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/registered_plots.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/soil_dashboard/unassigned_sensor.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
 import 'package:soiltrack_mobile/widgets/text_header.dart';
@@ -28,20 +28,6 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
     plotNameFocusNode.dispose();
     super.dispose();
   }
-
-  // @override
-  // void initState() {
-  //   super.initState();
-  //   WidgetsBinding.instance.addPostFrameCallback((_) {
-  //     ref.read(weatherProvider.notifier).fetchWeather('Baliuag');
-
-  //     final userPlots = ref.read(soilDashboardProvider).userPlots;
-  //     if (userPlots.isEmpty) {
-  //       ref.read(soilDashboardProvider.notifier).fetchUserPlots();
-  //       ref.read(soilDashboardProvider.notifier).fetchUserPlotData();
-  //     }
-  //   });
-  // }
 
   @override
   Widget build(BuildContext context) {

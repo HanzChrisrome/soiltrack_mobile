@@ -6,6 +6,8 @@ part 'soil_dashboard_state.freezed.dart';
 class SoilDashboardState with _$SoilDashboardState {
   factory SoilDashboardState({
     @Default([]) List<Map<String, dynamic>> userPlots,
+    @Default([]) List<Map<String, dynamic>> rawPlotMoistureData,
+    @Default([]) List<Map<String, dynamic>> rawPlotNutrientData,
     @Default([]) List<Map<String, dynamic>> userPlotMoistureData,
     @Default([]) List<Map<String, dynamic>> userPlotNutrientData,
     @Default([]) List<Map<String, dynamic>> nutrientWarnings,
@@ -18,6 +20,9 @@ class SoilDashboardState with _$SoilDashboardState {
     String? error,
     String? userPlotDataError,
     DateTime? selectedTimeRange,
+    DateTime? customStartDate,
+    DateTime? customEndDate,
+    @Default("1D") String selectedTimeRangeFilter,
     @Default(false) bool isEditingUserPlot,
     @Default(false) bool isSavingNewCrop,
     @Default(false) bool isSavingNewSoilType,

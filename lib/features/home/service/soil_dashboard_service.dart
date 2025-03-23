@@ -2,6 +2,7 @@
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
+import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 
 class SoilDashboardService {
   Future<List<Map<String, dynamic>>> userPlots(String userId) async {
@@ -81,37 +82,110 @@ class SoilDashboardService {
   }
 
   Future<List<Map<String, dynamic>>> userPlotMoistureData(
-      List<String> plotIds) async {
+      List<String> plotIds, DateTime startDate, DateTime endDate) async {
     try {
-      final userPlotsData = await supabase.from('moisture_readings').select('''
-        plot_id,
-        sensor_id,
-        soil_moisture,
-        read_time
-    ''').inFilter('plot_id', plotIds).order('read_time', ascending: true);
+      // Get the date 3 months ago
+      final String formattedStartDate = startDate.toUtc().toIso8601String();
+      final String formattedEndDate = endDate.toUtc().toIso8601String();
+
+      final userPlotsData = await supabase
+          .from('moisture_readings')
+          .select('''
+          plot_id,
+          sensor_id,
+          soil_moisture,
+          read_time
+        ''')
+          .inFilter('plot_id', plotIds)
+          .gte('read_time', formattedStartDate)
+          .lte('read_time', formattedEndDate)
+          .order('read_time', ascending: true);
 
       return userPlotsData;
     } catch (e) {
-      print('Error fetching user plot data: $e');
+      print('Error fetching user plot moisture data: $e');
       rethrow;
     }
   }
 
   Future<List<Map<String, dynamic>>> userPlotNutrientData(
-      List<String> plotIds) async {
+      List<String> plotIds, DateTime startDate, DateTime endDate) async {
     try {
-      final userPlotsData = await supabase.from('nutrient_readings').select('''
-        plot_id,
-        sensor_id,
-        read_time,
-        readed_nitrogen,
-        readed_phosphorus, 
-        readed_potassium
-    ''').inFilter('plot_id', plotIds).order('read_time', ascending: true);
+      // Get the date 3 months ago
+      final String formattedStartDate = startDate.toUtc().toIso8601String();
+      final String formattedEndDate = endDate.toUtc().toIso8601String();
+
+      final userPlotsData = await supabase
+          .from('nutrient_readings')
+          .select('''
+          plot_id,
+          sensor_id,
+          read_time,
+          readed_nitrogen,
+          readed_phosphorus, 
+          readed_potassium
+        ''')
+          .inFilter('plot_id', plotIds)
+          .gte('read_time', formattedStartDate)
+          .lte('read_time', formattedEndDate)
+          .order('read_time', ascending: true);
 
       return userPlotsData;
     } catch (e) {
       print('Error fetching user plot nutrient data: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchLatestMoistureReadings(
+      List<String> plotIds) async {
+    try {
+      final userPlotsData = await supabase.from('moisture_readings').select('''
+          plot_id,
+          sensor_id,
+          soil_moisture,
+          read_time
+        ''').inFilter('plot_id', plotIds).order('read_time', ascending: false);
+
+      final Map<String, Map<String, dynamic>> latestReadings = {};
+      for (var reading in userPlotsData) {
+        final plotId = reading['plot_id'].toString();
+        if (!latestReadings.containsKey(plotId)) {
+          latestReadings[plotId] = reading;
+        }
+      }
+
+      return latestReadings.values.toList();
+    } catch (e) {
+      NotifierHelper.logError('Error fetching latest moisture readings: $e');
+      rethrow;
+    }
+  }
+
+  Future<List<Map<String, dynamic>>> fetchLatestNutrientsReadings(
+      List<String> plotIds) async {
+    try {
+      final userPlotsData = await supabase.from('nutrient_readings').select('''
+          plot_id,
+          sensor_id,
+          read_time,
+          readed_nitrogen,
+          readed_phosphorus,
+          readed_potassium
+        ''').inFilter('plot_id', plotIds).order('read_time', ascending: false);
+
+      final Map<String, Map<String, dynamic>> latestReadings = {};
+
+      for (var reading in userPlotsData) {
+        final plotId = reading['plot_id'].toString();
+        if (!latestReadings.containsKey(plotId)) {
+          latestReadings[plotId] = reading;
+        }
+      }
+
+      return latestReadings.values.toList();
+    } catch (e) {
+      NotifierHelper.logError('Error fetching latest moisture readings: $e');
       rethrow;
     }
   }

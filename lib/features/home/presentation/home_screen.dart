@@ -2,12 +2,13 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soiltrack_mobile/features/home/presentation/device_screen.dart';
 import 'package:soiltrack_mobile/features/home/presentation/landing_dashboard.dart';
 import 'package:soiltrack_mobile/features/home/presentation/settings_screen.dart';
 import 'package:soiltrack_mobile/features/home/presentation/soil_dashboard.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
-  final int initialIndex; // Allow initial tab index to be passed in
+  final int initialIndex;
 
   const HomeScreen({super.key, this.initialIndex = 0});
 
@@ -20,9 +21,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   // Navigation bar icons
   final List<IconData> navIcons = [
-    Icons.dashboard_customize_outlined,
-    Icons.grass,
-    // Icons.cloud,
+    Icons.space_dashboard,
+    Icons.layers_rounded,
+    Icons.electrical_services_rounded,
     Icons.settings,
   ];
 
@@ -30,7 +31,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<String> navTitle = [
     'Home',
     'Soil',
-    // 'Weather',
+    'Devices',
     'Settings',
   ];
 
@@ -43,7 +44,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // Navigation bar widget
   Widget _navBar() {
     return Container(
-      width: 250,
+      width: 300,
       height: 65,
       margin: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -111,6 +112,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       case 1:
         return const SoilDashboardScreen();
       case 2:
+        return const DeviceScreen();
+      case 3:
         return const SettingsScreen();
       default:
         return const LandingDashboard();
