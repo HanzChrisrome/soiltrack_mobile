@@ -2,6 +2,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:soiltrack_mobile/core/constants/device_constants.dart';
@@ -116,7 +117,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
     }
   }
 
-  Future<void> saveToDatabase() async {
+  Future<void> saveToDatabase(BuildContext context) async {
     if (state.isSaving) return;
     final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
     final sensorProvider = ref.read(sensorsProvider.notifier);
@@ -150,13 +151,15 @@ class DeviceNotifier extends Notifier<DeviceState> {
           // await getSensorCount();
           await soilDashboardNotifier.fetchUserPlots();
           await sensorProvider.fetchSensors();
+          await mqttService.connect();
 
+          await checkDeviceStatus();
           NotifierHelper.logMessage('Device already saved to database.');
           state = state.copyWith(isSaving: false);
           return;
+        } else {
+          context.pushNamed('device-exists');
         }
-
-        //IF THE MAC ADDRESS IS ASSOCIATED WITH OTHER USER, ALERT THE USER THAT THE MAC ADDRESS IS ALREADY ASSOCIATED WITH ANOTHER USER
       }
 
       final responseSaving = await supabase.from('iot_device').insert({
@@ -169,9 +172,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
         throw Exception(responseSaving.error!.message);
       }
 
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool('device_setup_completed', true);
-      await prefs.setString('mac_address', macAddress);
+      await checkDeviceStatus();
       NotifierHelper.logMessage('Device saved to database.');
       state = state.copyWith(isSaving: false);
     } catch (e) {
@@ -180,7 +181,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
     }
   }
 
-  Future<void> checkDeviceStatus() async {
+  Future<bool> checkDeviceStatus() async {
     final authState = ref.read(authProvider);
     final macAddress = authState.macAddress;
 
@@ -195,12 +196,14 @@ class DeviceNotifier extends Notifier<DeviceState> {
       if (response != "PONG") {
         NotifierHelper.logError('Device did not respond.');
         state = state.copyWith(isEspConnected: false);
-        return;
+        return false;
       }
 
       state = state.copyWith(isEspConnected: true);
+      return true;
     } catch (e) {
       NotifierHelper.logError(e);
+      return false;
     }
   }
 
@@ -429,6 +432,60 @@ class DeviceNotifier extends Notifier<DeviceState> {
 
       NotifierHelper.logMessage('Valve states: $updatedValveStates');
     }
+  }
+
+  Future<void> changeWifi(BuildContext context) async {
+    final userMacAddress = ref.watch(authProvider).macAddress;
+
+    NotifierHelper.showLoadingToast(context, 'Resetting device. Please wait');
+
+    await mqttService.connect();
+    final resetDeviceTopic = "soiltrack/device/$userMacAddress/reset";
+    final responseTopic = "$resetDeviceTopic/status";
+
+    final success = await DeviceHelper.sendMqttCommand(
+        context,
+        resetDeviceTopic,
+        responseTopic,
+        'RESET DEVICE',
+        'Device reset successfully.',
+        'Failed to reset device',
+        expectedResponse: 'DEVICE RESET');
+
+    if (success) {
+      NotifierHelper.closeToast(context);
+      state = state.copyWith(isEspConnected: false, isNanoConnected: false);
+      context.pushNamed('wifi-scan');
+    }
+  }
+
+  Future<void> disconnectWifi(BuildContext context) async {
+    final userMacAddress = ref.watch(authProvider).macAddress;
+
+    NotifierHelper.showLoadingToast(
+        context, 'Disconnecting device. Please wait');
+
+    await mqttService.connect();
+    final resetDeviceTopic = "soiltrack/device/$userMacAddress/reset";
+    final responseTopic = "$resetDeviceTopic/status";
+
+    final success = await DeviceHelper.sendMqttCommand(
+        context,
+        resetDeviceTopic,
+        responseTopic,
+        'RESET DEVICE',
+        'Device reset successfully.',
+        'Failed to reset device',
+        expectedResponse: 'DEVICE RESET');
+
+    if (!success) {
+      NotifierHelper.showSuccessToast(context, 'Device error');
+      return;
+    }
+
+    NotifierHelper.showSuccessToast(
+        context, 'Device disconnected successfully.');
+    state = state.copyWith(isEspConnected: false, isNanoConnected: false);
   }
 
   void selectDevice(String ssid) {

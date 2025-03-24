@@ -49,11 +49,13 @@ final setupRoutes = [
         name: 'setup-config',
         builder: (context, state) => const ConfigurationScreen(),
       ),
+      GoRoute(
+        path: 'device-exists',
+        name: 'device-exists',
+        pageBuilder: (context, state) {
+          return customPageTransition(context, const ExistingDeviceScreen());
+        },
+      ),
     ],
-  ),
-  GoRoute(
-    path: '/device-exists',
-    name: 'device-exists',
-    builder: (context, state) => const ExistingDeviceScreen(),
   ),
 ];

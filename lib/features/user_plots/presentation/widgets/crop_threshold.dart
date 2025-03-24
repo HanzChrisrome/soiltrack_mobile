@@ -6,6 +6,7 @@ import 'package:soiltrack_mobile/features/crops_registration/presentation/widget
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/edit_threshold.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
+import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
 class CropThresholdWidget extends ConsumerStatefulWidget {
@@ -57,18 +58,7 @@ class _CropThresholdWidgetState extends ConsumerState<CropThresholdWidget> {
         widget.plotDetails['user_crops']?['phosphorus_max'] ?? 0;
     final selectedCrop = widget.plotDetails['user_crops']?['crop_name'] ?? '';
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      margin: const EdgeInsets.symmetric(vertical: 5),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: Colors.grey[100]!,
-          width: 1,
-        ),
-      ),
+    return DynamicContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

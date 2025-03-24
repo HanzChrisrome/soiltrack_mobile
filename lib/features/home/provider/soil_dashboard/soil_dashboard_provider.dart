@@ -52,8 +52,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         customStartDate ?? DateTime.now().subtract(const Duration(days: 90));
     final DateTime endDate = customEndDate ?? DateTime.now();
 
-    NotifierHelper.logMessage('Fetching data from: $startDate to $endDate');
-
     try {
       final rawMoistureData = await soilDashboardService.userPlotMoistureData(
           plotIds, startDate, endDate);
@@ -66,38 +64,51 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       final latestNutrientData =
           await soilDashboardService.fetchLatestNutrientsReadings(plotIds);
 
+      DateTime? latestMoistureTimestamp =
+          soilDashboardHelper.getLatestTimestamp(latestMoistureData);
+      DateTime? latestNutrientTimestamp =
+          soilDashboardHelper.getLatestTimestamp(latestNutrientData);
+
+      DateTime? latestReadingDate;
+      if (latestMoistureTimestamp != null && latestNutrientTimestamp != null) {
+        latestReadingDate =
+            latestMoistureTimestamp.isAfter(latestNutrientTimestamp)
+                ? latestMoistureTimestamp
+                : latestNutrientTimestamp;
+      } else {
+        latestReadingDate = latestMoistureTimestamp ?? latestNutrientTimestamp;
+      }
+
       final messages = soilDashboardService.generateNutrientWarnings(
           state.userPlots, latestMoistureData, latestNutrientData);
+
+      final nutrientWarnings =
+          soilDashboardHelper.extractMessagesByType(messages, 'Warning');
+
+      final summary = soilDashboardHelper.generateOverallCondition(
+          nutrientWarnings, state.userPlots.length);
 
       state = state.copyWith(
         rawPlotMoistureData: rawMoistureData,
         rawPlotNutrientData: rawNutrientData,
-        nutrientWarnings: extractMessagesByType(messages, 'Warning'),
-        plotsSuggestion: extractMessagesByType(messages, 'Suggestion'),
-        deviceWarnings: extractMessagesByType(messages, 'Device Warning'),
+        overallCondition: summary,
+        nutrientWarnings:
+            soilDashboardHelper.extractMessagesByType(messages, 'Warning'),
+        plotsSuggestion:
+            soilDashboardHelper.extractMessagesByType(messages, 'Suggestion'),
+        deviceWarnings: soilDashboardHelper.extractMessagesByType(
+            messages, 'Device Warning'),
+        lastReadingTime: latestReadingDate,
       );
+
+      NotifierHelper.logMessage('Device warnings: ${state.deviceWarnings}');
+
       await filterPlotData();
     } catch (e) {
       NotifierHelper.logError(e);
     } finally {
       state = state.copyWith(isFetchingUserPlotData: false);
     }
-  }
-
-  List<Map<String, dynamic>> extractMessagesByType(
-      List<Map<String, dynamic>> messages, String type) {
-    return messages.map((plot) {
-      final filteredMessages = (plot['messages'] as List)
-          .where((message) => message['type'] == type)
-          .map((msg) => msg['message'])
-          .toList();
-
-      return {
-        'plot_id': plot['plot_id'],
-        'plot_name': plot['plot_name'],
-        type == 'Suggestion' ? 'suggestions' : 'warnings': filteredMessages,
-      };
-    }).toList();
   }
 
   Future<void> filterPlotData() async {

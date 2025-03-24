@@ -33,8 +33,6 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
   Widget build(BuildContext context) {
     final userPlot = ref.watch(soilDashboardProvider);
     final sensorState = ref.watch(sensorsProvider);
-    final deviceState = ref.watch(deviceProvider);
-    final deviceNotifier = ref.read(deviceProvider.notifier);
 
     final unassignedNutrientSensors = sensorState.nutrientSensors
         .where((sensor) => sensor['is_assigned'] == false)
@@ -57,7 +55,7 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                       backgroundColor: Colors.white,
                       surfaceTintColor: Colors.transparent,
                       leading: null,
-                      expandedHeight: 250,
+                      expandedHeight: 200,
                       flexibleSpace: FlexibleSpaceBar(
                         collapseMode: CollapseMode.parallax,
                         background: Padding(
@@ -180,57 +178,57 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                                   ).toList(),
                                 ),
                                 const SizedBox(height: 5),
-                                GestureDetector(
-                                  onTap: () {
-                                    showCustomBottomSheet(
-                                      context: context,
-                                      title: deviceState.isPumpOpen
-                                          ? 'Close Pump and All Valves'
-                                          : 'Open Pump and Valves',
-                                      description:
-                                          'Are you sure you want to do this action?',
-                                      icon: Icons.arrow_forward_ios_outlined,
-                                      buttonText: 'Proceed',
-                                      onPressed: () {
-                                        if (deviceState.isPumpOpen) {
-                                          deviceNotifier.closeAll(context);
-                                        } else {
-                                          deviceNotifier.openAll(context);
-                                        }
-                                        Navigator.of(context).pop();
-                                      },
-                                    );
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 15, vertical: 20),
-                                    decoration: BoxDecoration(
-                                      color: deviceState.isPumpOpen
-                                          ? Colors.red.withOpacity(0.1)
-                                          : Colors.green.withOpacity(0.1),
-                                      borderRadius: BorderRadius.circular(15),
-                                      border: Border.all(
-                                        color: deviceState.isPumpOpen
-                                            ? Colors.red
-                                            : Colors.green,
-                                        width: 1,
-                                      ),
-                                    ),
-                                    child: Center(
-                                      child: Text(
-                                        deviceState.isPumpOpen
-                                            ? 'Close pump and all valves'
-                                            : 'Open pump and all valves',
-                                        style: TextStyle(
-                                          color: deviceState.isPumpOpen
-                                              ? Colors.red
-                                              : Colors.green,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ),
+                                // GestureDetector(
+                                //   onTap: () {
+                                //     showCustomBottomSheet(
+                                //       context: context,
+                                //       title: deviceState.isPumpOpen
+                                //           ? 'Close Pump and All Valves'
+                                //           : 'Open Pump and Valves',
+                                //       description:
+                                //           'Are you sure you want to do this action?',
+                                //       icon: Icons.arrow_forward_ios_outlined,
+                                //       buttonText: 'Proceed',
+                                //       onPressed: () {
+                                //         if (deviceState.isPumpOpen) {
+                                //           deviceNotifier.closeAll(context);
+                                //         } else {
+                                //           deviceNotifier.openAll(context);
+                                //         }
+                                //         Navigator.of(context).pop();
+                                //       },
+                                //     );
+                                //   },
+                                //   child: Container(
+                                //     padding: const EdgeInsets.symmetric(
+                                //         horizontal: 15, vertical: 20),
+                                //     decoration: BoxDecoration(
+                                //       color: deviceState.isPumpOpen
+                                //           ? Colors.red.withOpacity(0.1)
+                                //           : Colors.green.withOpacity(0.1),
+                                //       borderRadius: BorderRadius.circular(15),
+                                //       border: Border.all(
+                                //         color: deviceState.isPumpOpen
+                                //             ? Colors.red
+                                //             : Colors.green,
+                                //         width: 1,
+                                //       ),
+                                //     ),
+                                //     child: Center(
+                                //       child: Text(
+                                //         deviceState.isPumpOpen
+                                //             ? 'Close pump and all valves'
+                                //             : 'Open pump and all valves',
+                                //         style: TextStyle(
+                                //           color: deviceState.isPumpOpen
+                                //               ? Colors.red
+                                //               : Colors.green,
+                                //           fontWeight: FontWeight.bold,
+                                //         ),
+                                //       ),
+                                //     ),
+                                //   ),
+                                // ),
                               ],
                             ),
                             const SizedBox(height: 100),

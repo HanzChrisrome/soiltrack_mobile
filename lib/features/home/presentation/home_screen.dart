@@ -21,82 +21,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   // Navigation bar icons
   final List<IconData> navIcons = [
-    Icons.space_dashboard,
+    Icons.home,
     Icons.layers_rounded,
-    Icons.electrical_services_rounded,
+    Icons.developer_board_rounded,
     Icons.settings,
-  ];
-
-  // Navigation bar titles
-  final List<String> navTitle = [
-    'Home',
-    'Soil',
-    'Devices',
-    'Settings',
   ];
 
   @override
   void initState() {
     super.initState();
-    _selectedIndex = widget.initialIndex; // Set initial index from widget
+    _selectedIndex = widget.initialIndex;
   }
 
   // Navigation bar widget
   Widget _navBar() {
     return Container(
-      width: 300,
+      width: double.infinity,
       height: 65,
-      margin: const EdgeInsets.all(20),
+      padding: const EdgeInsets.symmetric(horizontal: 2),
+      margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            Theme.of(context).colorScheme.onPrimary,
-            const Color.fromARGB(255, 34, 121, 37)
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Theme.of(context).colorScheme.onPrimary,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List.generate(navIcons.length, (index) {
           final isSelected = _selectedIndex == index;
           return Container(
-            margin: const EdgeInsets.symmetric(horizontal: 5),
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
             decoration: BoxDecoration(
               color: isSelected
                   ? const Color.fromARGB(255, 153, 228, 118)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(25),
             ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: Icon(
-                    navIcons[index],
-                    size: 23,
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.onPrimary
-                        : Colors.white.withOpacity(0.4),
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _selectedIndex = index; // Update selected index on tap
-                    });
-                  },
-                ),
-                if (isSelected)
-                  Text(
-                    navTitle[index],
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      fontSize: 12,
-                    ),
-                  ),
-                if (isSelected) const SizedBox(width: 15),
-              ],
+            child: IconButton(
+              icon: Icon(
+                navIcons[index],
+                size: 30,
+                color: isSelected
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Colors.white.withOpacity(0.9),
+              ),
+              onPressed: () {
+                setState(() {
+                  _selectedIndex = index;
+                });
+              },
             ),
           );
         }),
@@ -104,7 +77,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  // Determine which screen to display based on the selected index
   Widget _getSelectedScreen() {
     switch (_selectedIndex) {
       case 0:

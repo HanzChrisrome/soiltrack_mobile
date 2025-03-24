@@ -53,10 +53,6 @@ flutter:
   assets:
     - .env
     #LIST OF LOGO
-    - assets/logo/DARK HORIZONTAL.png
-    - assets/logo/DARK VERTICAL.png
-    - assets/logo/LIGHT HORIZONTAL.png
-    - assets/logo/LIGHT VERTICAL.png
     - assets/logo/GREEN OUTLINE.png
     - assets/logo/soiltrack main.png
     - assets/logo/soiltrack gradient.png
@@ -67,6 +63,7 @@ flutter:
     - assets/elements/power.png
     - assets/elements/no_power.png
     - assets/elements/sad_icon.png
+    - assets/elements/no_notification.png
 
     #SOIL PICTURES
     - assets/soil_images/clay_soil.png

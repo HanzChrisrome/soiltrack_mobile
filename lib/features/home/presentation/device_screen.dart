@@ -75,20 +75,25 @@ class DeviceScreen extends ConsumerWidget {
                     [
                       Column(
                         children: [
-                          DeviceCard(
-                            deviceName: 'Espressif32',
-                            description: 'Soil Data Transmitter',
-                            imagePath: 'assets/hardware/esp_colored.png',
-                            imagePathDisconnected:
-                                'assets/hardware/esp_not_connected.png',
-                            isConnected: dashboardState.isEspConnected,
-                            onTap: () {
-                              showModalBottomSheet<void>(
-                                context: context,
-                                isScrollControlled: true,
-                                builder: (BuildContext context) {
-                                  return Esp32Card(
-                                    isConnected: dashboardState.isEspConnected,
+                          Consumer(
+                            builder: (context, ref, child) {
+                              final isConnected =
+                                  ref.watch(deviceProvider).isEspConnected;
+                              return DeviceCard(
+                                deviceName: 'Espressif32',
+                                description: 'Soil Data Transmitter',
+                                imagePath: 'assets/hardware/esp_colored.png',
+                                imagePathDisconnected:
+                                    'assets/hardware/esp_not_connected.png',
+                                isConnected:
+                                    isConnected, // <-- This now updates correctly
+                                onTap: () {
+                                  showModalBottomSheet<void>(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    builder: (BuildContext context) {
+                                      return Esp32Card();
+                                    },
                                   );
                                 },
                               );

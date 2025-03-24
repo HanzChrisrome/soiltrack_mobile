@@ -27,8 +27,8 @@ class FilledCustomButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context).colorScheme;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
       child: SizedBox(
         width: double.infinity,
         child: TextButton(

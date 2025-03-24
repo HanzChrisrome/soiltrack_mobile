@@ -33,6 +33,10 @@ class NotifierHelper {
     );
   }
 
+  static void closeToast(BuildContext context) {
+    ToastService.dismissLoadingToastOnly();
+  }
+
   static void logMessage(String message) {
     if (kDebugMode) debugPrint(message);
   }

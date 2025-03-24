@@ -283,7 +283,7 @@ class SoilDashboardService {
           if (phosphorus < phosphorusMin) {
             plotMessages.add({
               "type": "Warning",
-              "message": "Phosphorus is too low ($phosphorus mg/L)"
+              "message": "• Phosphorus is too low ($phosphorus mg/L)"
             });
             plotMessages.add({
               "type": "Suggestion",

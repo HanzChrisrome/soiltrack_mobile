@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
+import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
@@ -169,11 +170,13 @@ class AuthNotifier extends Notifier<UserAuthState> {
     final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
     final deviceNotifier = ref.read(deviceProvider.notifier);
     final weatherNotifier = ref.read(weatherProvider.notifier);
+    final cropsNotifier = ref.read(cropProvider.notifier);
 
     await sensorNotifier.fetchSensors();
     await soilDashboardNotifier.fetchUserPlots();
     await weatherNotifier.fetchWeather('Baliuag');
     await deviceNotifier.checkDeviceStatus();
+    await cropsNotifier.fetchAllCrops();
   }
 
   Future<void> signOut(BuildContext context) async {

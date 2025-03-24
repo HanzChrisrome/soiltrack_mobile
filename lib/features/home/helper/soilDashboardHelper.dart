@@ -1,3 +1,5 @@
+import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
+
 class SoilDashboardHelper {
   List<Map<String, dynamic>> aggregatedDataByInterval(
       List<Map<String, dynamic>> data, String interval, String key1,
@@ -48,6 +50,33 @@ class SoilDashboardHelper {
     });
 
     return aggregatedData;
+  }
+
+  List<Map<String, dynamic>> extractMessagesByType(
+      List<Map<String, dynamic>> messages, String type) {
+    return messages
+        .map((plot) {
+          final filteredMessages = (plot['messages'] as List)
+              .where((message) => message['type'] == type)
+              .map((msg) => msg['message'])
+              .toList();
+
+          if (filteredMessages.isEmpty) return null;
+
+          return {
+            'plot_id': plot['plot_id'],
+            'plot_name': plot['plot_name'],
+            if (type == 'Suggestion')
+              'suggestions': filteredMessages
+            else if (type == 'Device Warning')
+              'device_warnings': filteredMessages
+            else
+              'warnings': filteredMessages,
+          };
+        })
+        .where((plot) => plot != null)
+        .cast<Map<String, dynamic>>()
+        .toList();
   }
 
   String getDateKeyByInterval(DateTime readTime, String interval) {
@@ -109,5 +138,47 @@ class SoilDashboardHelper {
     }
 
     return startDate;
+  }
+
+  String generateOverallCondition(
+      List<Map<String, dynamic>> warningsList, int totalPlots) {
+    if (warningsList.isEmpty) {
+      return "Optimal Condtion";
+    }
+
+    int warningsCount = warningsList.fold(0, (sum, plot) {
+      List messages = plot['warnings'] ?? [];
+      return sum + messages.length;
+    });
+
+    NotifierHelper.logMessage('Warnings count: $warningsCount');
+
+    double averageWarnings = warningsCount / totalPlots;
+
+    if (averageWarnings < 1) {
+      return "in optimal condition";
+    } else if (averageWarnings < 3) {
+      return "showing signs that need attention";
+    } else {
+      return "in critical conditions";
+    }
+  }
+
+  DateTime? getLatestTimestamp(List<dynamic> data) {
+    if (data.isEmpty) return null;
+
+    List<DateTime> timestamps = data
+        .map<DateTime?>((entry) {
+          final timestamp = entry['read_time'];
+          return timestamp != null
+              ? DateTime.tryParse(timestamp.toString())
+              : null;
+        })
+        .whereType<DateTime>() // Remove null values
+        .toList();
+
+    return timestamps.isNotEmpty
+        ? timestamps.reduce((a, b) => a.isAfter(b) ? a : b)
+        : null;
   }
 }

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/greeting_widget.dart';
+import 'package:soiltrack_mobile/features/home/presentation/widgets/home/soil_condition.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/weather_widget.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/weather_provider.dart';
@@ -31,23 +33,85 @@ class LandingDashboard extends ConsumerWidget {
               children: [
                 Row(
                   children: [
-                    Image.asset(
-                      'assets/logo/DARK HORIZONTAL.png',
-                      height: 30,
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Text(
+                              'Hello, ',
+                              style: TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -0.5,
+                                height: 1.0,
+                                color: Theme.of(context).colorScheme.secondary,
+                              ),
+                            ),
+                            Text(
+                              '${authState.userName} ${authState.userLastName}',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w600,
+                                letterSpacing: -0.5,
+                                height: 1.0,
+                                color: Theme.of(context).colorScheme.onPrimary,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Text(
+                          'Manage your soil with care.',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            letterSpacing: -0.5,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .secondary
+                                .withOpacity(0.7),
+                          ),
+                        ),
+                      ],
                     ),
                     const Spacer(),
-                    IconButton(
-                      icon: Icon(
-                        Icons.notifications_rounded,
-                        size: 30,
-                        color: Theme.of(context).colorScheme.onPrimary,
+                    GestureDetector(
+                      onTap: () {
+                        context.pushNamed('notifications');
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 5,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.grey[300]!,
+                            width: 1.0,
+                          ),
+                          borderRadius: BorderRadius.circular(15),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.notifications_none_rounded,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              size: 30,
+                            ),
+                            Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: Theme.of(context).colorScheme.onPrimary,
+                              size: 20,
+                            ),
+                          ],
+                        ),
                       ),
-                      onPressed: () {},
                     ),
                   ],
                 ),
-                const SizedBox(height: 20),
-                GreetingWidget(userName: authState.userName ?? ''),
+                const SizedBox(height: 15),
+                SoilCondition(),
                 const SizedBox(height: 10),
                 const WeatherWidget(),
                 const SizedBox(height: 10),
@@ -126,69 +190,32 @@ class LandingDashboard extends ConsumerWidget {
                     ],
                   ),
                 ),
-                const SizedBox(height: 10),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(25),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.grey[100]!,
-                      width: 1.0,
+                if (userPlotState.deviceWarnings.isNotEmpty ||
+                    deviceState.isEspConnected == false)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(25),
+                    margin: const EdgeInsets.only(top: 10),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.grey[100]!,
+                        width: 1.0,
+                      ),
                     ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const TextGradient(text: 'Device Warnings', fontSize: 20),
-                      if (!deviceState.isEspConnected)
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const DividerWidget(verticalHeight: 5),
-                            Text(
-                              'Device Connection Warning',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyLarge!
-                                  .copyWith(
-                                    fontWeight: FontWeight.w600,
-                                    height: 0.8,
-                                    color:
-                                        const Color.fromARGB(255, 141, 19, 10),
-                                  ),
-                            ),
-                            const SizedBox(height: 10),
-                            Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 2),
-                              child: Text(
-                                'Your SoilTracker Device might not be connected to the internet. Please check the device connection.',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodySmall!
-                                    .copyWith(
-                                      color:
-                                          const Color.fromARGB(255, 97, 97, 97),
-                                    ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      if (userPlotState.deviceWarnings.isNotEmpty)
-                        ...userPlotState.deviceWarnings.map((deviceWarning) {
-                          final plotName = deviceWarning['plot_name'];
-                          final warnings =
-                              List<String>.from(deviceWarning['warnings']);
-
-                          if (warnings.isEmpty) return const SizedBox();
-
-                          return Column(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const TextGradient(
+                            text: 'Device Warnings', fontSize: 20),
+                        if (!deviceState.isEspConnected)
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const DividerWidget(verticalHeight: 5),
                               Text(
-                                '$plotName Warning',
+                                'Device Connection Warning',
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodyLarge!
@@ -200,55 +227,96 @@ class LandingDashboard extends ConsumerWidget {
                                     ),
                               ),
                               const SizedBox(height: 10),
-                              ...warnings.map((warning) {
-                                return Padding(
-                                  padding:
-                                      const EdgeInsets.symmetric(vertical: 2),
-                                  child: Text(
-                                    warning,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodySmall!
-                                        .copyWith(
-                                          color: const Color.fromARGB(
-                                              255, 97, 97, 97),
-                                        ),
-                                  ),
-                                );
-                              }),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 2),
+                                child: Text(
+                                  'Your SoilTracker Device might not be connected to the internet. Please check the device connection.',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall!
+                                      .copyWith(
+                                        color: const Color.fromARGB(
+                                            255, 97, 97, 97),
+                                      ),
+                                ),
+                              ),
                             ],
-                          );
-                        }),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(25),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.grey[100]!,
-                      width: 1.0,
+                          ),
+                        if (userPlotState.deviceWarnings.isNotEmpty)
+                          ...userPlotState.deviceWarnings.map((deviceWarning) {
+                            final plotName = deviceWarning['plot_name'];
+                            final warnings = List<String>.from(
+                                deviceWarning['device_warnings']);
+
+                            if (warnings.isEmpty) return const SizedBox();
+
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const DividerWidget(verticalHeight: 5),
+                                Text(
+                                  '$plotName Warning',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        height: 0.8,
+                                        color: const Color.fromARGB(
+                                            255, 141, 19, 10),
+                                      ),
+                                ),
+                                const SizedBox(height: 10),
+                                ...warnings.map((warning) {
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 2),
+                                    child: Text(
+                                      warning,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall!
+                                          .copyWith(
+                                            color: const Color.fromARGB(
+                                                255, 97, 97, 97),
+                                          ),
+                                    ),
+                                  );
+                                }),
+                              ],
+                            );
+                          }),
+                      ],
                     ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const TextGradient(
-                              text: 'Plot Warnings', fontSize: 20),
-                          TextRoundedEnclose(
-                              text: 'Farm Related Warnings',
-                              color: Colors.white,
-                              textColor: Colors.grey[500]!),
-                        ],
+                const SizedBox(height: 10),
+                if (userPlotState.nutrientWarnings.isNotEmpty)
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(25),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: Colors.grey[100]!,
+                        width: 1.0,
                       ),
-                      if (userPlotState.nutrientWarnings.isNotEmpty)
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const TextGradient(
+                                text: 'Plot Warnings', fontSize: 20),
+                            TextRoundedEnclose(
+                                text: 'Farm Related Warnings',
+                                color: Colors.white,
+                                textColor: Colors.grey[500]!),
+                          ],
+                        ),
                         ...userPlotState.nutrientWarnings.map((plotWarning) {
                           final plotName = plotWarning['plot_name'];
                           final warnings =
@@ -292,9 +360,9 @@ class LandingDashboard extends ConsumerWidget {
                             ],
                           );
                         }),
-                    ],
+                      ],
+                    ),
                   ),
-                ),
                 const SizedBox(height: 80),
               ],
             ),

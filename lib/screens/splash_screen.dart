@@ -29,7 +29,7 @@ class SplashScreen extends ConsumerWidget {
         } else if (!authState.isSetupComplete) {
           context.go('/setup');
         } else {
-          context.go('/device-exists');
+          context.go('/home');
         }
       }
     });

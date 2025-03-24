@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/specific_details.dart';
+import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
 class PlotDetailsWidget extends ConsumerWidget {
@@ -16,18 +17,7 @@ class PlotDetailsWidget extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      margin: const EdgeInsets.symmetric(vertical: 5),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: Colors.grey[100]!,
-          width: 1,
-        ),
-      ),
+    return DynamicContainer(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

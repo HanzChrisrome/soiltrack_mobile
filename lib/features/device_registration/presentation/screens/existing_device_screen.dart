@@ -2,8 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
 class ExistingDeviceScreen extends ConsumerWidget {
@@ -11,7 +11,7 @@ class ExistingDeviceScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final deviceState = ref.watch(deviceProvider);
+    final authState = ref.watch(authProvider);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -32,14 +32,15 @@ class ExistingDeviceScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   Image.asset(
-                    'assets/elements/handphone.png',
-                    height: 250,
+                    'assets/elements/sad_icon.png',
+                    height: 230,
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 50),
                   const TextGradient(
                     text: 'This device is connected to someone else.',
                     fontSize: 35,
                     letterSpacing: -2.5,
+                    heightSpacing: 1,
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 10),
@@ -57,7 +58,11 @@ class ExistingDeviceScreen extends ConsumerWidget {
                   const SizedBox(height: 30),
                   SizedBox(
                     child: OutlinedButton.icon(
-                      onPressed: deviceState.isScanning ? null : () {},
+                      onPressed: () {
+                        authState.isAuthenticated
+                            ? context.go('/home')
+                            : context.go('/setup');
+                      },
                       label: Text(
                         'Return to setup screen',
                         style: TextStyle(

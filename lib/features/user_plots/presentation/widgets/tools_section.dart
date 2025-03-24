@@ -5,6 +5,7 @@ import 'package:soiltrack_mobile/features/device_registration/provider/device_pr
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/tools_button.dart';
 import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
+import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 
 class ToolsSectionWidget extends ConsumerWidget {
   const ToolsSectionWidget({super.key, required this.assignedSensor});
@@ -28,18 +29,7 @@ class ToolsSectionWidget extends ConsumerWidget {
     final isValveOpen =
         deviceState.valveStates[selectedPlot['plot_id']] ?? false;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      margin: const EdgeInsets.symmetric(vertical: 5),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(
-          color: Colors.grey[100]!,
-          width: 1,
-        ),
-      ),
+    return DynamicContainer(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: [

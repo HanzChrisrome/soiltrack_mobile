@@ -105,10 +105,10 @@ class DeviceController {
     final deviceNotifier = ref.read(deviceProvider.notifier);
 
     if (!deviceState.isSaving && deviceState.savingError == null) {
-      await deviceNotifier.saveToDatabase();
+      await deviceNotifier.saveToDatabase(context);
       if (!ref.read(deviceProvider).isSaving &&
           ref.read(deviceProvider).savingError == null) {
-        context.pushNamed('home');
+        context.go('/home');
       }
     }
   }

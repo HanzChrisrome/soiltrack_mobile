@@ -38,9 +38,11 @@ mixin _$SoilDashboardState {
   int get loadedPlotId => throw _privateConstructorUsedError;
   String? get error => throw _privateConstructorUsedError;
   String? get userPlotDataError => throw _privateConstructorUsedError;
+  String? get overallCondition => throw _privateConstructorUsedError;
   DateTime? get selectedTimeRange => throw _privateConstructorUsedError;
   DateTime? get customStartDate => throw _privateConstructorUsedError;
   DateTime? get customEndDate => throw _privateConstructorUsedError;
+  DateTime? get lastReadingTime => throw _privateConstructorUsedError;
   String get selectedTimeRangeFilter => throw _privateConstructorUsedError;
   bool get isEditingUserPlot => throw _privateConstructorUsedError;
   bool get isSavingNewCrop => throw _privateConstructorUsedError;
@@ -76,9 +78,11 @@ abstract class $SoilDashboardStateCopyWith<$Res> {
       int loadedPlotId,
       String? error,
       String? userPlotDataError,
+      String? overallCondition,
       DateTime? selectedTimeRange,
       DateTime? customStartDate,
       DateTime? customEndDate,
+      DateTime? lastReadingTime,
       String selectedTimeRangeFilter,
       bool isEditingUserPlot,
       bool isSavingNewCrop,
@@ -116,9 +120,11 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
     Object? loadedPlotId = null,
     Object? error = freezed,
     Object? userPlotDataError = freezed,
+    Object? overallCondition = freezed,
     Object? selectedTimeRange = freezed,
     Object? customStartDate = freezed,
     Object? customEndDate = freezed,
+    Object? lastReadingTime = freezed,
     Object? selectedTimeRangeFilter = null,
     Object? isEditingUserPlot = null,
     Object? isSavingNewCrop = null,
@@ -183,6 +189,10 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
           ? _value.userPlotDataError
           : userPlotDataError // ignore: cast_nullable_to_non_nullable
               as String?,
+      overallCondition: freezed == overallCondition
+          ? _value.overallCondition
+          : overallCondition // ignore: cast_nullable_to_non_nullable
+              as String?,
       selectedTimeRange: freezed == selectedTimeRange
           ? _value.selectedTimeRange
           : selectedTimeRange // ignore: cast_nullable_to_non_nullable
@@ -194,6 +204,10 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
       customEndDate: freezed == customEndDate
           ? _value.customEndDate
           : customEndDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      lastReadingTime: freezed == lastReadingTime
+          ? _value.lastReadingTime
+          : lastReadingTime // ignore: cast_nullable_to_non_nullable
               as DateTime?,
       selectedTimeRangeFilter: null == selectedTimeRangeFilter
           ? _value.selectedTimeRangeFilter
@@ -246,9 +260,11 @@ abstract class _$$SoilDashboardStateImplCopyWith<$Res>
       int loadedPlotId,
       String? error,
       String? userPlotDataError,
+      String? overallCondition,
       DateTime? selectedTimeRange,
       DateTime? customStartDate,
       DateTime? customEndDate,
+      DateTime? lastReadingTime,
       String selectedTimeRangeFilter,
       bool isEditingUserPlot,
       bool isSavingNewCrop,
@@ -284,9 +300,11 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
     Object? loadedPlotId = null,
     Object? error = freezed,
     Object? userPlotDataError = freezed,
+    Object? overallCondition = freezed,
     Object? selectedTimeRange = freezed,
     Object? customStartDate = freezed,
     Object? customEndDate = freezed,
+    Object? lastReadingTime = freezed,
     Object? selectedTimeRangeFilter = null,
     Object? isEditingUserPlot = null,
     Object? isSavingNewCrop = null,
@@ -351,6 +369,10 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
           ? _value.userPlotDataError
           : userPlotDataError // ignore: cast_nullable_to_non_nullable
               as String?,
+      overallCondition: freezed == overallCondition
+          ? _value.overallCondition
+          : overallCondition // ignore: cast_nullable_to_non_nullable
+              as String?,
       selectedTimeRange: freezed == selectedTimeRange
           ? _value.selectedTimeRange
           : selectedTimeRange // ignore: cast_nullable_to_non_nullable
@@ -362,6 +384,10 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
       customEndDate: freezed == customEndDate
           ? _value.customEndDate
           : customEndDate // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      lastReadingTime: freezed == lastReadingTime
+          ? _value.lastReadingTime
+          : lastReadingTime // ignore: cast_nullable_to_non_nullable
               as DateTime?,
       selectedTimeRangeFilter: null == selectedTimeRangeFilter
           ? _value.selectedTimeRangeFilter
@@ -409,9 +435,11 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
       this.loadedPlotId = 0,
       this.error,
       this.userPlotDataError,
+      this.overallCondition,
       this.selectedTimeRange,
       this.customStartDate,
       this.customEndDate,
+      this.lastReadingTime,
       this.selectedTimeRangeFilter = "1D",
       this.isEditingUserPlot = false,
       this.isSavingNewCrop = false,
@@ -521,11 +549,15 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
   @override
   final String? userPlotDataError;
   @override
+  final String? overallCondition;
+  @override
   final DateTime? selectedTimeRange;
   @override
   final DateTime? customStartDate;
   @override
   final DateTime? customEndDate;
+  @override
+  final DateTime? lastReadingTime;
   @override
   @JsonKey()
   final String selectedTimeRangeFilter;
@@ -547,7 +579,7 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
 
   @override
   String toString() {
-    return 'SoilDashboardState(userPlots: $userPlots, rawPlotMoistureData: $rawPlotMoistureData, rawPlotNutrientData: $rawPlotNutrientData, userPlotMoistureData: $userPlotMoistureData, userPlotNutrientData: $userPlotNutrientData, nutrientWarnings: $nutrientWarnings, plotsSuggestion: $plotsSuggestion, deviceWarnings: $deviceWarnings, isFetchingUserPlots: $isFetchingUserPlots, isFetchingUserPlotData: $isFetchingUserPlotData, selectedPlotId: $selectedPlotId, loadedPlotId: $loadedPlotId, error: $error, userPlotDataError: $userPlotDataError, selectedTimeRange: $selectedTimeRange, customStartDate: $customStartDate, customEndDate: $customEndDate, selectedTimeRangeFilter: $selectedTimeRangeFilter, isEditingUserPlot: $isEditingUserPlot, isSavingNewCrop: $isSavingNewCrop, isSavingNewSoilType: $isSavingNewSoilType, isSavingNewSoilMoistureSensor: $isSavingNewSoilMoistureSensor, isSavingNewSoilNutrientSensor: $isSavingNewSoilNutrientSensor)';
+    return 'SoilDashboardState(userPlots: $userPlots, rawPlotMoistureData: $rawPlotMoistureData, rawPlotNutrientData: $rawPlotNutrientData, userPlotMoistureData: $userPlotMoistureData, userPlotNutrientData: $userPlotNutrientData, nutrientWarnings: $nutrientWarnings, plotsSuggestion: $plotsSuggestion, deviceWarnings: $deviceWarnings, isFetchingUserPlots: $isFetchingUserPlots, isFetchingUserPlotData: $isFetchingUserPlotData, selectedPlotId: $selectedPlotId, loadedPlotId: $loadedPlotId, error: $error, userPlotDataError: $userPlotDataError, overallCondition: $overallCondition, selectedTimeRange: $selectedTimeRange, customStartDate: $customStartDate, customEndDate: $customEndDate, lastReadingTime: $lastReadingTime, selectedTimeRangeFilter: $selectedTimeRangeFilter, isEditingUserPlot: $isEditingUserPlot, isSavingNewCrop: $isSavingNewCrop, isSavingNewSoilType: $isSavingNewSoilType, isSavingNewSoilMoistureSensor: $isSavingNewSoilMoistureSensor, isSavingNewSoilNutrientSensor: $isSavingNewSoilNutrientSensor)';
   }
 
   @override
@@ -582,12 +614,16 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
             (identical(other.error, error) || other.error == error) &&
             (identical(other.userPlotDataError, userPlotDataError) ||
                 other.userPlotDataError == userPlotDataError) &&
+            (identical(other.overallCondition, overallCondition) ||
+                other.overallCondition == overallCondition) &&
             (identical(other.selectedTimeRange, selectedTimeRange) ||
                 other.selectedTimeRange == selectedTimeRange) &&
             (identical(other.customStartDate, customStartDate) ||
                 other.customStartDate == customStartDate) &&
             (identical(other.customEndDate, customEndDate) ||
                 other.customEndDate == customEndDate) &&
+            (identical(other.lastReadingTime, lastReadingTime) ||
+                other.lastReadingTime == lastReadingTime) &&
             (identical(
                     other.selectedTimeRangeFilter, selectedTimeRangeFilter) ||
                 other.selectedTimeRangeFilter == selectedTimeRangeFilter) &&
@@ -624,9 +660,11 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
         loadedPlotId,
         error,
         userPlotDataError,
+        overallCondition,
         selectedTimeRange,
         customStartDate,
         customEndDate,
+        lastReadingTime,
         selectedTimeRangeFilter,
         isEditingUserPlot,
         isSavingNewCrop,
@@ -661,9 +699,11 @@ abstract class _SoilDashboardState implements SoilDashboardState {
       final int loadedPlotId,
       final String? error,
       final String? userPlotDataError,
+      final String? overallCondition,
       final DateTime? selectedTimeRange,
       final DateTime? customStartDate,
       final DateTime? customEndDate,
+      final DateTime? lastReadingTime,
       final String selectedTimeRangeFilter,
       final bool isEditingUserPlot,
       final bool isSavingNewCrop,
@@ -700,11 +740,15 @@ abstract class _SoilDashboardState implements SoilDashboardState {
   @override
   String? get userPlotDataError;
   @override
+  String? get overallCondition;
+  @override
   DateTime? get selectedTimeRange;
   @override
   DateTime? get customStartDate;
   @override
   DateTime? get customEndDate;
+  @override
+  DateTime? get lastReadingTime;
   @override
   String get selectedTimeRangeFilter;
   @override
