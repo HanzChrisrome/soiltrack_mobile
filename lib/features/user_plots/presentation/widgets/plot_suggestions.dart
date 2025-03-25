@@ -17,6 +17,7 @@ class PlotSuggestions extends StatelessWidget {
 
     return DynamicContainer(
       borderColor: Colors.green,
+      backgroundColor: Colors.green.withOpacity(0.1),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

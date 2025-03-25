@@ -5,12 +5,21 @@ import 'package:soiltrack_mobile/features/device_registration/provider/device_pr
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/tools_button.dart';
 import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
+import 'package:soiltrack_mobile/widgets/customizable_bottom_sheet.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
+import 'package:soiltrack_mobile/widgets/text_field.dart';
+import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
 class ToolsSectionWidget extends ConsumerWidget {
-  const ToolsSectionWidget({super.key, required this.assignedSensor});
+  const ToolsSectionWidget(
+      {super.key,
+      required this.assignedSensor,
+      required this.plotName,
+      required this.plotNameController});
 
   final String assignedSensor;
+  final String plotName;
+  final TextEditingController plotNameController;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -79,9 +88,33 @@ class ToolsSectionWidget extends ConsumerWidget {
           ),
           const SizedBox(width: 5),
           ToolsButton(
-            buttonName: 'Placeholder',
-            icon: Icons.stay_primary_landscape_outlined,
-            action: () {},
+            buttonName: 'Rename Plot',
+            icon: Icons.published_with_changes_rounded,
+            action: () {
+              showCustomizableBottomSheet(
+                height: 300,
+                context: context,
+                centerContent: Column(
+                  children: [
+                    const TextGradient(text: 'Edit Plot', fontSize: 40),
+                    const SizedBox(height: 20),
+                    TextFieldWidget(
+                      label: plotName,
+                      controller: plotNameController,
+                    ),
+                  ],
+                ),
+                buttonText: 'Proceed',
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  userPlotNotifier.editPlotName(
+                    context,
+                    plotNameController.text,
+                  );
+                  plotNameController.clear();
+                },
+              );
+            },
           ),
           const SizedBox(width: 5),
           ToolsButton(

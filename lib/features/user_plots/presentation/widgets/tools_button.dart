@@ -28,7 +28,7 @@ class ToolsButton extends ConsumerWidget {
             child: Icon(
               icon,
               size: 35,
-              color: const Color.fromARGB(255, 100, 247, 105),
+              color: Theme.of(context).colorScheme.onSecondary,
             ),
           ),
           const SizedBox(height: 5),
