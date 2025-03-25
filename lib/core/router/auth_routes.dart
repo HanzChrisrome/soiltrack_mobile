@@ -1,9 +1,11 @@
 // auth_routes.dart
 import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/features/auth/presentation/screens/email_verification_screen.dart';
+import 'package:soiltrack_mobile/features/auth/presentation/screens/forgot_password.dart';
 import 'package:soiltrack_mobile/features/auth/presentation/screens/login_screen.dart';
 import 'package:soiltrack_mobile/features/auth/presentation/screens/register_screen.dart';
 import 'package:soiltrack_mobile/core/utils/page_transition.dart';
+import 'package:soiltrack_mobile/features/auth/presentation/screens/reset_password.dart';
 
 final authRoutes = [
   GoRoute(
@@ -27,6 +29,20 @@ final authRoutes = [
     name: 'email-verification',
     pageBuilder: (context, state) {
       return customPageTransition(context, const EmailVerificationScreen());
+    },
+  ),
+  GoRoute(
+    path: '/forgot-password',
+    name: 'forgot-password',
+    pageBuilder: (context, state) {
+      return customPageTransition(context, const ForgotPasswordScreen());
+    },
+  ),
+  GoRoute(
+    path: '/reset-password',
+    name: 'reset-password',
+    pageBuilder: (context, state) {
+      return customPageTransition(context, const ResetPasswordScreen());
     },
   ),
 ];

@@ -165,6 +165,18 @@ class AuthNotifier extends Notifier<UserAuthState> {
     }
   }
 
+  Future<void> requestResetPassword(BuildContext context) async {
+    try {
+      await supabase.auth.resetPasswordForEmail(state.userEmail!,
+          redirectTo: 'soiltrack://reset-password');
+
+      NotifierHelper.showSuccessToast(
+          context, 'Password reset link sent to your email.');
+    } catch (e) {
+      NotifierHelper.showErrorToast(context, 'Error: ${e.toString()}');
+    }
+  }
+
   Future<void> fetchRelatedData() async {
     final sensorNotifier = ref.read(sensorsProvider.notifier);
     final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);

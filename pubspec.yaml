@@ -36,6 +36,7 @@ dependencies:
   intl: ^0.20.2
   flutter_dotenv: ^5.2.1
   philippines_rpcmb: ^0.0.3
+  uni_links: ^0.5.1
 
 dev_dependencies:
   flutter_test:
@@ -53,6 +54,7 @@ flutter:
   assets:
     - .env
     #LIST OF LOGO
+    - assets/logo/DARK HORIZONTAL.png
     - assets/logo/GREEN OUTLINE.png
     - assets/logo/soiltrack main.png
     - assets/logo/soiltrack gradient.png

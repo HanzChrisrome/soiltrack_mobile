@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
-import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/settings/settings_card.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/settings/settings_item.dart';
 import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
@@ -17,7 +15,6 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final authNotifier = ref.watch(authProvider.notifier);
-    final deviceNotifier = ref.watch(deviceProvider.notifier);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -77,7 +74,7 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                 ),
                 const SizedBox(height: 10),
-                const SettingsCard(
+                SettingsCard(
                   child: Column(
                     children: [
                       SettingsItem(
@@ -85,8 +82,23 @@ class SettingsScreen extends ConsumerWidget {
                           settingsIcon: Icons.person_2_outlined),
                       DividerWidget(verticalHeight: 0),
                       SettingsItem(
-                          settingsText: 'Change Password',
-                          settingsIcon: Icons.lock_outline),
+                        settingsText: 'Change Password',
+                        settingsIcon: Icons.lock_outline,
+                        onTap: () {
+                          showCustomBottomSheet(
+                            context: context,
+                            title: 'Changing of Password',
+                            description:
+                                'Send a request to change your password?',
+                            icon: Icons.arrow_forward_ios_outlined,
+                            buttonText: 'Proceed',
+                            onPressed: () {
+                              authNotifier.requestResetPassword(context);
+                              Navigator.of(context).pop();
+                            },
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),
