@@ -13,8 +13,6 @@ class DeviceScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final dashboardState = ref.watch(deviceProvider);
-
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Stack(

@@ -10,8 +10,8 @@ class OutlineCustomButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.0),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
       child: SizedBox(
         width: double.infinity,
         child: OutlinedButton(

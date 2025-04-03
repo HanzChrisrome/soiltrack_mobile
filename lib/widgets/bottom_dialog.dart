@@ -6,10 +6,11 @@ import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 void showCustomBottomSheet({
   required BuildContext context,
   required String title,
-  required String description,
+  String description = '',
   required IconData icon,
   required String buttonText,
-  required VoidCallback onPressed,
+  required VoidCallback? onPressed,
+  VoidCallback? onCancel,
 }) {
   showModalBottomSheet(
     context: context,
@@ -90,22 +91,25 @@ void showCustomBottomSheet({
                       fontSize: 32,
                       textAlign: TextAlign.center,
                     ),
-                    const SizedBox(height: 10),
-                    Text(
-                      description,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        color: Color.fromARGB(255, 110, 110, 110),
+                    if (description.isNotEmpty) ...[
+                      const SizedBox(height: 10),
+                      Text(
+                        description,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          color: Color.fromARGB(255, 110, 110, 110),
+                        ),
                       ),
-                    ),
+                    ],
                     const SizedBox(height: 20),
                     Row(
                       children: [
                         Expanded(
                           child: OutlineCustomButton(
                             buttonText: 'Cancel',
-                            onPressed: () => Navigator.of(context).pop(),
+                            onPressed:
+                                onCancel ?? () => Navigator.of(context).pop(),
                           ),
                         ),
                         const SizedBox(width: 10),

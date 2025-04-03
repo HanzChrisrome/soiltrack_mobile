@@ -21,7 +21,7 @@ class PlotChart extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedRange =
-        ref.watch(soilDashboardProvider).selectedTimeRangeFilter;
+        ref.watch(soilDashboardProvider).customTimeRangeFilter;
 
     final filteredReadings = readings
         .where((reading) => reading['plot_id'] == selectedPlotId)
@@ -150,6 +150,9 @@ class PlotChart extends ConsumerWidget {
                       bottomTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
+                          interval:
+                              selectedRange == '1D' ? 2 * 60 * 60 * 1000 : null,
+                          reservedSize: 22,
                           getTitlesWidget: (value, meta) {
                             DateTime actualTime =
                                 DateTime.fromMillisecondsSinceEpoch(
@@ -177,9 +180,8 @@ class PlotChart extends ConsumerWidget {
                                 spots.any((spot) => spot.x == value);
 
                             Set<String> displayedLabels = {};
-                            if (isActualDataPoint &&
-                                !displayedLabels.contains(formattedDate)) {
-                              displayedLabels.add(formattedDate);
+                            if (selectedRange == '1D') {
+                              // Show times at 2-hour intervals
                               return Padding(
                                 padding: const EdgeInsets.only(top: 12.0),
                                 child: Text(
@@ -188,6 +190,19 @@ class PlotChart extends ConsumerWidget {
                                       color: Colors.black, fontSize: 8),
                                 ),
                               );
+                            } else {
+                              if (isActualDataPoint &&
+                                  !displayedLabels.contains(formattedDate)) {
+                                displayedLabels.add(formattedDate);
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 12.0),
+                                  child: Text(
+                                    formattedDate,
+                                    style: const TextStyle(
+                                        color: Colors.black, fontSize: 8),
+                                  ),
+                                );
+                              }
                             }
 
                             return const SizedBox.shrink();

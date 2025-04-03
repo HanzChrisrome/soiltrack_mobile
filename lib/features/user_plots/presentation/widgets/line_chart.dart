@@ -18,15 +18,17 @@ class NutrientProgressChart extends ConsumerWidget {
     final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
 
     final moistureData = plotHelper.filterData(
-      userPlot.rawPlotMoistureData,
+      userPlot.latestPlotMoistureData,
       userPlot.selectedPlotId,
       'soil_moisture',
     );
-    final nitrogenData = plotHelper.filterData(userPlot.rawPlotNutrientData,
+    final nitrogenData = plotHelper.filterData(userPlot.latestPlotNutrientData,
         userPlot.selectedPlotId, 'readed_nitrogen');
-    final phosphorusData = plotHelper.filterData(userPlot.rawPlotNutrientData,
-        userPlot.selectedPlotId, 'readed_phosphorus');
-    final potassiumData = plotHelper.filterData(userPlot.rawPlotNutrientData,
+    final phosphorusData = plotHelper.filterData(
+        userPlot.latestPlotNutrientData,
+        userPlot.selectedPlotId,
+        'readed_phosphorus');
+    final potassiumData = plotHelper.filterData(userPlot.latestPlotNutrientData,
         userPlot.selectedPlotId, 'readed_potassium');
 
     String lastUpdated = plotHelper.getLatestTimestamp(

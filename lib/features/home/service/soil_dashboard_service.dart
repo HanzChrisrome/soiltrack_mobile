@@ -1,5 +1,6 @@
 // ignore_for_file: avoid_print
 
+import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
@@ -84,9 +85,11 @@ class SoilDashboardService {
   Future<List<Map<String, dynamic>>> userPlotMoistureData(
       List<String> plotIds, DateTime startDate, DateTime endDate) async {
     try {
-      // Get the date 3 months ago
-      final String formattedStartDate = startDate.toUtc().toIso8601String();
-      final String formattedEndDate = endDate.toUtc().toIso8601String();
+      final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+      final String formattedStartDate = formatter.format(startDate.toUtc());
+      final DateTime adjustedEndDate =
+          endDate.add(Duration(days: 1)).subtract(Duration(seconds: 1));
+      final String formattedEndDate = formatter.format(adjustedEndDate.toUtc());
 
       final userPlotsData = await supabase
           .from('moisture_readings')
@@ -111,9 +114,11 @@ class SoilDashboardService {
   Future<List<Map<String, dynamic>>> userPlotNutrientData(
       List<String> plotIds, DateTime startDate, DateTime endDate) async {
     try {
-      // Get the date 3 months ago
-      final String formattedStartDate = startDate.toUtc().toIso8601String();
-      final String formattedEndDate = endDate.toUtc().toIso8601String();
+      final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+      final String formattedStartDate = formatter.format(startDate.toUtc());
+      final DateTime adjustedEndDate =
+          endDate.add(Duration(days: 1)).subtract(Duration(seconds: 1));
+      final String formattedEndDate = formatter.format(adjustedEndDate.toUtc());
 
       final userPlotsData = await supabase
           .from('nutrient_readings')
@@ -183,6 +188,7 @@ class SoilDashboardService {
         }
       }
 
+      NotifierHelper.logMessage('Latest Nutrient Readings: $latestReadings');
       return latestReadings.values.toList();
     } catch (e) {
       NotifierHelper.logError('Error fetching latest moisture readings: $e');

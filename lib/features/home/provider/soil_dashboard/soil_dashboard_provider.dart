@@ -1,5 +1,3 @@
-// ignore_for_file: use_build_context_synchronously, constant_pattern_never_matches_value_type
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,12 +6,14 @@ import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
 import 'package:soiltrack_mobile/features/home/helper/soilDashboardHelper.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_state.dart';
+import 'package:soiltrack_mobile/features/home/service/ai_service.dart';
 import 'package:soiltrack_mobile/features/home/service/soil_dashboard_service.dart';
 import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
 
 class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
   final SoilDashboardService soilDashboardService = SoilDashboardService();
   final SoilDashboardHelper soilDashboardHelper = SoilDashboardHelper();
+  final AiService aiService = AiService();
 
   @override
   SoilDashboardState build() {
@@ -45,24 +45,87 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     if (state.isFetchingUserPlotData) return;
     state = state.copyWith(isFetchingUserPlotData: true);
 
-    final List<String> plotIds =
-        state.userPlots.map((plot) => plot['plot_id'].toString()).toList();
+    try {
+      final List<String> plotIds =
+          state.userPlots.map((plot) => plot['plot_id'].toString()).toList();
 
-    final DateTime startDate =
-        customStartDate ?? DateTime.now().subtract(const Duration(days: 90));
-    final DateTime endDate = customEndDate ?? DateTime.now();
+      final DateTime startDate =
+          customStartDate ?? DateTime.now().subtract(const Duration(days: 90));
+      final DateTime endDate = customEndDate ?? DateTime.now();
+
+      //FETCH DATA
+      final results = await Future.wait([
+        soilDashboardService.userPlotMoistureData(plotIds, startDate, endDate),
+        soilDashboardService.userPlotNutrientData(plotIds, startDate, endDate),
+      ]);
+
+      final rawMoistureData = results[0];
+      final rawNutrientData = results[1];
+
+      state = state.copyWith(
+        rawPlotMoistureData: rawMoistureData,
+        rawPlotNutrientData: rawNutrientData,
+      );
+
+      await fetchLatestData(plotIds);
+      await filterPlotData();
+    } catch (e) {
+      NotifierHelper.logError(e);
+    } finally {
+      state = state.copyWith(isFetchingUserPlotData: false);
+    }
+  }
+
+  Future<void> fetchLatestData(List<String> plotIds) async {
+    final DateTime now = DateTime.now();
+
+    final DateTime yesterdayStart =
+        soilDashboardHelper.getStartOfDay(now.subtract(Duration(days: 1)));
+
+    final DateTime dayBeforeYesterdayStart =
+        soilDashboardHelper.getStartOfDay(now.subtract(Duration(days: 2)));
 
     try {
-      final rawMoistureData = await soilDashboardService.userPlotMoistureData(
-          plotIds, startDate, endDate);
+      final data = await Future.wait([
+        soilDashboardService.fetchLatestMoistureReadings(plotIds),
+        soilDashboardService.fetchLatestNutrientsReadings(plotIds),
+        soilDashboardService.userPlotMoistureData(
+            plotIds, yesterdayStart, yesterdayStart),
+        soilDashboardService.userPlotMoistureData(
+            plotIds, dayBeforeYesterdayStart, dayBeforeYesterdayStart),
+        soilDashboardService.userPlotNutrientData(
+            plotIds, yesterdayStart, yesterdayStart),
+        soilDashboardService.userPlotNutrientData(
+            plotIds, dayBeforeYesterdayStart, dayBeforeYesterdayStart),
+      ]);
 
-      final rawNutrientData = await soilDashboardService.userPlotNutrientData(
-          plotIds, startDate, endDate);
+      final latestMoistureData = data[0];
+      final latestNutrientData = data[1];
+      final yesterdayMoistureData = data[2];
+      final dayBeforeYesterdayMoistureData = data[3];
+      final yesterdayNutrientData = data[4];
+      final dayBeforeYesterdayNutrientData = data[5];
 
-      final latestMoistureData =
-          await soilDashboardService.fetchLatestMoistureReadings(plotIds);
-      final latestNutrientData =
-          await soilDashboardService.fetchLatestNutrientsReadings(plotIds);
+      final yesterdayNutrientFormatted = soilDashboardHelper
+          .formatNutrientDataForPrompt(yesterdayNutrientData);
+
+      final dayBeforeYesterdayNutrientFormatted = soilDashboardHelper
+          .formatNutrientDataForPrompt(dayBeforeYesterdayNutrientData);
+
+      final yesterdayMoistureFormatted = soilDashboardHelper
+          .formatMoistureDataForPrompt(yesterdayMoistureData);
+      final dayBeforeYesterdayMoistureFormatted = soilDashboardHelper
+          .formatMoistureDataForPrompt(dayBeforeYesterdayMoistureData);
+
+      NotifierHelper.logMessage(
+          'Yesterday moisture data: $yesterdayMoistureFormatted');
+      NotifierHelper.logMessage(
+          'Day before yesterday moisture data: $dayBeforeYesterdayMoistureFormatted');
+
+      NotifierHelper.logMessage(
+          'Yesterday nutrient data: $yesterdayNutrientFormatted');
+      NotifierHelper.logMessage(
+          'Day before yesterday nutrient data: $dayBeforeYesterdayNutrientFormatted');
 
       DateTime? latestMoistureTimestamp =
           soilDashboardHelper.getLatestTimestamp(latestMoistureData);
@@ -85,59 +148,66 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       final nutrientWarnings =
           soilDashboardHelper.extractMessagesByType(messages, 'Warning');
 
+      Map<int, String> plotConditions = {};
+      for (var plot in state.userPlots) {
+        int plotId = plot['plot_id'];
+        plotConditions[plotId] =
+            soilDashboardHelper.generatePlotCondition(plotId, nutrientWarnings);
+      }
+
       final summary = soilDashboardHelper.generateOverallCondition(
           nutrientWarnings, state.userPlots.length);
 
       state = state.copyWith(
-        rawPlotMoistureData: rawMoistureData,
-        rawPlotNutrientData: rawNutrientData,
+        latestPlotMoistureData: latestMoistureData,
+        latestPlotNutrientData: latestNutrientData,
         overallCondition: summary,
-        nutrientWarnings:
-            soilDashboardHelper.extractMessagesByType(messages, 'Warning'),
+        plotConditions: plotConditions,
+        lastReadingTime: latestReadingDate,
+        nutrientWarnings: nutrientWarnings,
         plotsSuggestion:
             soilDashboardHelper.extractMessagesByType(messages, 'Suggestion'),
         deviceWarnings: soilDashboardHelper.extractMessagesByType(
             messages, 'Device Warning'),
-        lastReadingTime: latestReadingDate,
       );
-
-      NotifierHelper.logMessage('Device warnings: ${state.deviceWarnings}');
-
-      await filterPlotData();
     } catch (e) {
       NotifierHelper.logError(e);
-    } finally {
-      state = state.copyWith(isFetchingUserPlotData: false);
     }
   }
 
   Future<void> filterPlotData() async {
     DateTime startDate = soilDashboardHelper
         .getStartDateFromTimeRange(state.selectedTimeRangeFilter);
-    DateTime endDate = DateTime.now();
+
+    DateTime endDate =
+        DateTime.now().add(Duration(days: 1)).subtract(Duration(seconds: 1));
 
     if (state.selectedTimeRangeFilter == 'Custom' &&
         state.customStartDate != null &&
         state.customEndDate != null) {
       startDate = state.customStartDate!;
-      endDate = state.customEndDate!.add(const Duration(days: 1));
+      endDate = state.customEndDate!;
     }
 
-    final aggregationInterval =
-        soilDashboardHelper.determineAggregationInterval(
-            state.selectedTimeRangeFilter, startDate, endDate);
+    final String aggregationInterval = state.selectedTimeRangeFilter == 'Custom'
+        ? soilDashboardHelper.determineAggregationInterval(
+            state.selectedTimeRangeFilter, startDate, endDate)
+        : state.selectedTimeRangeFilter;
 
-    NotifierHelper.logMessage('Aggregation interval: $aggregationInterval');
+    List<Map<String, dynamic>> filteredMoistureData = state.rawPlotMoistureData;
+    List<Map<String, dynamic>> filteredNutrientData = state.rawPlotNutrientData;
 
-    final filteredMoistureData = state.rawPlotMoistureData.where((reading) {
-      DateTime readTime = DateTime.parse(reading['read_time']).toUtc();
-      return readTime.isAfter(startDate) && readTime.isBefore(endDate);
-    }).toList();
+    if (state.selectedTimeRangeFilter != 'Custom') {
+      filteredMoistureData = state.rawPlotMoistureData.where((reading) {
+        DateTime readTime = DateTime.parse(reading['read_time']).toUtc();
+        return readTime.isAfter(startDate) && readTime.isBefore(endDate);
+      }).toList();
 
-    final filteredNutrientData = state.rawPlotNutrientData.where((reading) {
-      DateTime readTime = DateTime.parse(reading['read_time']).toUtc();
-      return readTime.isAfter(startDate) && readTime.isBefore(endDate);
-    }).toList();
+      filteredNutrientData = state.rawPlotNutrientData.where((reading) {
+        DateTime readTime = DateTime.parse(reading['read_time']).toUtc();
+        return readTime.isAfter(startDate) && readTime.isBefore(endDate);
+      }).toList();
+    }
 
     state = state.copyWith(
       userPlotMoistureData: soilDashboardHelper.aggregatedDataByInterval(
@@ -148,13 +218,13 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
           'readed_nitrogen',
           'readed_phosphorus',
           'readed_potassium'),
+      customTimeRangeFilter: aggregationInterval,
     );
   }
 
   void updateTimeSelection(String selectedTimeRange,
       {DateTime? customStartDate, DateTime? customEndDate}) {
     final bool wasCustom = state.selectedTimeRangeFilter == 'Custom';
-    NotifierHelper.logMessage('Is custom: $wasCustom');
 
     state = state.copyWith(
       selectedTimeRangeFilter: selectedTimeRange,
@@ -175,25 +245,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         filterPlotData();
       }
     }
-  }
-
-  void setSelectedPlotId(BuildContext context, plotId) async {
-    NotifierHelper.logMessage('Selected plot id: $plotId');
-    state = state.copyWith(selectedPlotId: plotId);
-    context.pushNamed('user-plot');
-  }
-
-  void setPlotId(plotId) {
-    NotifierHelper.logMessage('Selected plot id: $plotId');
-    state = state.copyWith(selectedPlotId: plotId);
-  }
-
-  void setNutrientSensorId(npkSensorId) {
-    NotifierHelper.logMessage('Selected NPK sensor id: $npkSensorId');
-  }
-
-  void setEditingUserPlot(bool isEditing) {
-    state = state.copyWith(isEditingUserPlot: isEditing);
   }
 
   Future<void> saveNewCrop(BuildContext context) async {
@@ -261,6 +312,37 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     } catch (e) {
       NotifierHelper.logError(e, context, 'Error assigning NPK sensor');
     }
+  }
+
+  Future<void> fetchAi() async {
+    try {
+      // await aiService.fetchAndAnalyze();
+    } catch (e) {
+      NotifierHelper.logError(e);
+    }
+  }
+
+  void setSelectedPlotId(BuildContext context, plotId) async {
+    NotifierHelper.logMessage('Selected plot id: $plotId');
+    state = state.copyWith(selectedPlotId: plotId);
+    String warnings = soilDashboardHelper.generatePlotCondition(
+        state.selectedPlotId, state.nutrientWarnings);
+
+    NotifierHelper.logMessage('Plot warnings: $warnings');
+    context.pushNamed('user-plot');
+  }
+
+  void setPlotId(plotId) {
+    NotifierHelper.logMessage('Selected plot id: $plotId');
+    state = state.copyWith(selectedPlotId: plotId);
+  }
+
+  void setNutrientSensorId(npkSensorId) {
+    NotifierHelper.logMessage('Selected NPK sensor id: $npkSensorId');
+  }
+
+  void setEditingUserPlot(bool isEditing) {
+    state = state.copyWith(isEditingUserPlot: isEditing);
   }
 }
 

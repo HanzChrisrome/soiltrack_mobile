@@ -19,7 +19,7 @@ class PlotCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedRange =
-        ref.watch(soilDashboardProvider).selectedTimeRangeFilter;
+        ref.watch(soilDashboardProvider).customTimeRangeFilter;
 
     final filteredReadings = moistureReadings
         .where((reading) => reading['plot_id'] == selectedPlotId)
@@ -45,10 +45,6 @@ class PlotCard extends ConsumerWidget {
 
       return FlSpot(time, value);
     }).toList();
-
-    if (moistureSpots.length < 2) {
-      return _buildNoDataContainer(context);
-    }
 
     double minY =
         moistureSpots.map((spot) => spot.y).reduce((a, b) => a < b ? a : b);
@@ -152,8 +148,10 @@ class PlotCard extends ConsumerWidget {
                       bottomTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
+                          interval:
+                              selectedRange == '1D' ? 2 * 60 * 60 * 1000 : null,
+                          reservedSize: 22,
                           getTitlesWidget: (value, meta) {
-                            // Convert epoch time to DateTime
                             DateTime actualTime =
                                 DateTime.fromMillisecondsSinceEpoch(
                                     value.toInt());
@@ -172,17 +170,16 @@ class PlotCard extends ConsumerWidget {
                               formattedDate =
                                   intl.DateFormat('MMM').format(actualTime);
                             } else {
-                              formattedDate = intl.DateFormat('MMM d, HH:mm')
-                                  .format(actualTime);
+                              formattedDate =
+                                  intl.DateFormat('MMM d').format(actualTime);
                             }
 
                             bool isActualDataPoint =
                                 spots.any((spot) => spot.x == value);
 
                             Set<String> displayedLabels = {};
-                            if (isActualDataPoint &&
-                                !displayedLabels.contains(formattedDate)) {
-                              displayedLabels.add(formattedDate);
+                            if (selectedRange == '1D') {
+                              // Show times at 2-hour intervals
                               return Padding(
                                 padding: const EdgeInsets.only(top: 12.0),
                                 child: Text(
@@ -191,6 +188,19 @@ class PlotCard extends ConsumerWidget {
                                       color: Colors.black, fontSize: 8),
                                 ),
                               );
+                            } else {
+                              if (isActualDataPoint &&
+                                  !displayedLabels.contains(formattedDate)) {
+                                displayedLabels.add(formattedDate);
+                                return Padding(
+                                  padding: const EdgeInsets.only(top: 12.0),
+                                  child: Text(
+                                    formattedDate,
+                                    style: const TextStyle(
+                                        color: Colors.black, fontSize: 8),
+                                  ),
+                                );
+                              }
                             }
 
                             return const SizedBox.shrink();
@@ -251,21 +261,6 @@ class PlotCard extends ConsumerWidget {
         ),
       ),
     );
-  }
-
-  String formatReadingType(String type) {
-    switch (type.toLowerCase()) {
-      case 'readed_nitrogen':
-        return 'Nitrogen';
-      case 'readed_phosphorus':
-        return 'Phosphorus';
-      case 'readed_potassium':
-        return 'Potassium';
-      case 'soil_moisture':
-        return 'Moisture';
-      default:
-        return type;
-    }
   }
 
   String _getRangeLabel(String range) {

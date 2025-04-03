@@ -4,11 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/registered_plots.dart';
-import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/soil_dashboard/unassigned_sensor.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
-import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
 import 'package:soiltrack_mobile/widgets/text_header.dart';
 
 class SoilDashboardScreen extends ConsumerStatefulWidget {
@@ -178,6 +176,7 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                                   ).toList(),
                                 ),
                                 const SizedBox(height: 5),
+
                                 // GestureDetector(
                                 //   onTap: () {
                                 //     showCustomBottomSheet(

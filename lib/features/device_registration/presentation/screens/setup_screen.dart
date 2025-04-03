@@ -73,7 +73,7 @@ class SetupScreen extends ConsumerWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       const TextGradient(
-                        text: 'SoilTracker',
+                        text: 'Hardware',
                         fontSize: 42,
                         letterSpacing: -2.5,
                       ),

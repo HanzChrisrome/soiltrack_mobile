@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/features/auth/presentation/screens/email_verification_screen.dart';
 import 'package:soiltrack_mobile/features/auth/presentation/screens/forgot_password.dart';
 import 'package:soiltrack_mobile/features/auth/presentation/screens/login_screen.dart';
+import 'package:soiltrack_mobile/features/auth/presentation/screens/password_changed_successfully.dart';
 import 'package:soiltrack_mobile/features/auth/presentation/screens/register_screen.dart';
 import 'package:soiltrack_mobile/core/utils/page_transition.dart';
 import 'package:soiltrack_mobile/features/auth/presentation/screens/reset_password.dart';
@@ -21,28 +22,44 @@ final authRoutes = [
     name: 'register',
     builder: (context, state) => const RegisterScreen(),
     pageBuilder: (context, state) {
-      return slideTransitionBuilder(context, const RegisterScreen());
+      return slideTransitionBuilder(
+        context,
+        const RegisterScreen(),
+      );
     },
   ),
   GoRoute(
     path: '/email-verification',
     name: 'email-verification',
     pageBuilder: (context, state) {
-      return customPageTransition(context, const EmailVerificationScreen());
+      return customPageTransition(context, const EmailVerificationScreen(),
+          transitionType: 'slide');
     },
   ),
   GoRoute(
     path: '/forgot-password',
     name: 'forgot-password',
     pageBuilder: (context, state) {
-      return customPageTransition(context, const ForgotPasswordScreen());
+      return customPageTransition(context, const ForgotPasswordScreen(),
+          transitionType: 'slide');
     },
   ),
   GoRoute(
     path: '/reset-password',
     name: 'reset-password',
+    builder: (context, state) {
+      final token = state.uri.queryParameters['token'] ?? '';
+      final email = state.uri.queryParameters['email'] ?? '';
+      return ResetPasswordScreen(token: token, email: email);
+    },
+  ),
+  GoRoute(
+    path: '/password-changed',
+    name: 'password-changed',
     pageBuilder: (context, state) {
-      return customPageTransition(context, const ResetPasswordScreen());
+      return customPageTransition(
+          context, const PasswordChangedSuccessfullyScreen(),
+          transitionType: 'slide');
     },
   ),
 ];

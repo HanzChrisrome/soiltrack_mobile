@@ -51,10 +51,12 @@ class _MyAppState extends ConsumerState<MyApp> {
   }
 
   void _handleDeepLink(Uri uri) {
-    debugPrint('🔗 Deep link received: $uri');
+    final token = uri.queryParameters['token'] ?? '';
+    final email = uri.queryParameters['email'] ?? '';
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final router = ref.read(routerProvider);
-      router.go('/reset-password');
+      router.go('/reset-password?token=$token&email=$email');
     });
   }
 

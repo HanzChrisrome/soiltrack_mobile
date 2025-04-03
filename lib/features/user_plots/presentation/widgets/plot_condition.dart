@@ -10,8 +10,11 @@ class PlotCondition extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final condition = ref.watch(soilDashboardProvider).overallCondition;
+    final selectedPlotId = ref.watch(soilDashboardProvider).selectedPlotId;
+    final plotConditions = ref.watch(soilDashboardProvider).plotConditions;
     final lastRead = ref.watch(soilDashboardProvider).lastReadingTime;
+
+    final condition = plotConditions[selectedPlotId] ?? 'No data available';
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),

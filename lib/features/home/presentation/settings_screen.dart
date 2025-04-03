@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:soiltrack_mobile/features/auth/presentation/screens/forgot_password.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/settings/settings_card.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/settings/settings_item.dart';
@@ -85,18 +87,8 @@ class SettingsScreen extends ConsumerWidget {
                         settingsText: 'Change Password',
                         settingsIcon: Icons.lock_outline,
                         onTap: () {
-                          showCustomBottomSheet(
-                            context: context,
-                            title: 'Changing of Password',
-                            description:
-                                'Send a request to change your password?',
-                            icon: Icons.arrow_forward_ios_outlined,
-                            buttonText: 'Proceed',
-                            onPressed: () {
-                              authNotifier.requestResetPassword(context);
-                              Navigator.of(context).pop();
-                            },
-                          );
+                          context.pushNamed('reset-password',
+                              extra: authState.userEmail);
                         },
                       ),
                     ],
@@ -134,7 +126,6 @@ class SettingsScreen extends ConsumerWidget {
                     showCustomBottomSheet(
                       context: context,
                       title: 'Sign out?',
-                      description: "Are you sure you want to sign out?",
                       icon: Icons.logout,
                       buttonText: 'Sign out',
                       onPressed: () {

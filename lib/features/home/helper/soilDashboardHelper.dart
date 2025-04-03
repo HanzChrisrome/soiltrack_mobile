@@ -52,6 +52,59 @@ class SoilDashboardHelper {
     return aggregatedData;
   }
 
+  String getDateKeyByInterval(DateTime readTime, String interval) {
+    if (interval == "1D") {
+      return "${readTime.year}-${readTime.month.toString().padLeft(2, '0')}-${readTime.day.toString().padLeft(2, '0')} ${readTime.hour.toString().padLeft(2, '0')}:00";
+    }
+    if (interval == "1M") {
+      return "${readTime.year}-${readTime.month.toString().padLeft(2, '0')}-${readTime.day.toString().padLeft(2, '0')}";
+    }
+    if (interval == "1W") {
+      return getLatestDateInWeek(readTime);
+    }
+    return "${readTime.year}-${readTime.month.toString().padLeft(2, '0')}-01";
+  }
+
+  String determineAggregationInterval(
+      String filterType, DateTime startDate, DateTime endDate) {
+    int daysRange = endDate.difference(startDate).inDays;
+
+    if (daysRange == 0) return "1D";
+    if (daysRange == 1) return "1W";
+    if (daysRange <= 7) return "1W";
+    if (daysRange <= 30) return "1M";
+    return "3M";
+  }
+
+  String getLatestDateInWeek(DateTime readTime) {
+    DateTime latestDate = readTime;
+    return "${latestDate.year}-${latestDate.month.toString().padLeft(2, '0')}-${latestDate.day.toString().padLeft(2, '0')}";
+  }
+
+  DateTime getStartDateFromTimeRange(String timeRange) {
+    final DateTime now = DateTime.now();
+    DateTime startDate;
+
+    switch (timeRange) {
+      case '1D':
+        startDate = DateTime(now.year, now.month, now.day);
+        break;
+      case '1W':
+        startDate = now.subtract(const Duration(days: 7));
+        break;
+      case '1M':
+        startDate = DateTime(now.year, now.month - 1, now.day);
+        break;
+      case '3M':
+        startDate = DateTime(now.year, now.month - 3, now.day);
+        break;
+      default:
+        startDate = now.subtract(const Duration(days: 1));
+    }
+
+    return startDate;
+  }
+
   List<Map<String, dynamic>> extractMessagesByType(
       List<Map<String, dynamic>> messages, String type) {
     return messages
@@ -79,67 +132,6 @@ class SoilDashboardHelper {
         .toList();
   }
 
-  String getDateKeyByInterval(DateTime readTime, String interval) {
-    if (interval == "hourly") {
-      return "${readTime.year}-${readTime.month.toString().padLeft(2, '0')}-${readTime.day.toString().padLeft(2, '0')} ${readTime.hour.toString().padLeft(2, '0')}:00";
-    }
-    if (interval == "daily") {
-      return "${readTime.year}-${readTime.month.toString().padLeft(2, '0')}-${readTime.day.toString().padLeft(2, '0')}";
-    }
-    if (interval == "weekly") {
-      return getStartOfWeek(readTime);
-    }
-    return "${readTime.year}-${readTime.month.toString().padLeft(2, '0')}-01";
-  }
-
-  String determineAggregationInterval(
-      String filterType, DateTime startDate, DateTime endDate) {
-    if (filterType == "1D") {
-      return "hourly";
-    } else if (filterType == "1W") {
-      return "daily";
-    } else if (filterType == "1M") {
-      return "weekly";
-    } else if (filterType == "3M") {
-      return "monthly";
-    } else {
-      int daysRange = endDate.difference(startDate).inDays;
-      if (daysRange <= 7) return "daily";
-      if (daysRange <= 30) return "weekly";
-      return "monthly";
-    }
-  }
-
-  String getStartOfWeek(DateTime date) {
-    int daysToSubtract = date.weekday - DateTime.monday;
-    DateTime weekStart = date.subtract(Duration(days: daysToSubtract));
-    return "${weekStart.year}-${weekStart.month.toString().padLeft(2, '0')}-${weekStart.day.toString().padLeft(2, '0')}";
-  }
-
-  DateTime getStartDateFromTimeRange(String timeRange) {
-    final DateTime now = DateTime.now();
-    DateTime startDate;
-
-    switch (timeRange) {
-      case '1D':
-        startDate = now.subtract(const Duration(days: 1));
-        break;
-      case '1W':
-        startDate = now.subtract(const Duration(days: 7));
-        break;
-      case '1M':
-        startDate = DateTime(now.year, now.month - 1, now.day);
-        break;
-      case '3M':
-        startDate = DateTime(now.year, now.month - 3, now.day);
-        break;
-      default:
-        startDate = now.subtract(const Duration(days: 1));
-    }
-
-    return startDate;
-  }
-
   String generateOverallCondition(
       List<Map<String, dynamic>> warningsList, int totalPlots) {
     if (warningsList.isEmpty) {
@@ -164,6 +156,27 @@ class SoilDashboardHelper {
     }
   }
 
+  String generatePlotCondition(
+      int plotId, List<Map<String, dynamic>> warningsList) {
+    final specificPlot = warningsList.firstWhere(
+      (plot) => plot['plot_id'] == plotId,
+      orElse: () => {},
+    );
+
+    List warnings =
+        specificPlot.isNotEmpty ? (specificPlot['warnings'] ?? []) : [];
+
+    int warningsCount = warnings.length;
+
+    if (warningsCount < 1) {
+      return "in optimal condition";
+    } else if (warningsCount < 3) {
+      return "showing signs that need attention";
+    } else {
+      return "in critical conditions";
+    }
+  }
+
   DateTime? getLatestTimestamp(List<dynamic> data) {
     if (data.isEmpty) return null;
 
@@ -174,11 +187,88 @@ class SoilDashboardHelper {
               ? DateTime.tryParse(timestamp.toString())
               : null;
         })
-        .whereType<DateTime>() // Remove null values
+        .whereType<DateTime>()
         .toList();
 
     return timestamps.isNotEmpty
         ? timestamps.reduce((a, b) => a.isAfter(b) ? a : b)
         : null;
+  }
+
+  DateTime getStartOfDay(DateTime date) {
+    return DateTime(date.year, date.month, date.day);
+  }
+
+  DateTime getEndOfDay(DateTime date) {
+    return DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
+  }
+
+  String formatMoistureDataForPrompt(List<Map<String, dynamic>> moistureData) {
+    Map<int, List<int>> formattedData = {};
+
+    for (var entry in moistureData) {
+      int plotId = entry['plot_id'];
+      int moisture = entry['soil_moisture'] ?? 0;
+
+      if (!formattedData.containsKey(plotId)) {
+        formattedData[plotId] = [];
+      }
+
+      formattedData[plotId]!.add(moisture);
+    }
+
+    List<String> summaries = [];
+
+    formattedData.forEach((plotId, readings) {
+      int minMoisture = readings.reduce((a, b) => a < b ? a : b);
+      int maxMoisture = readings.reduce((a, b) => a > b ? a : b);
+      double avgMoisture =
+          readings.reduce((a, b) => a + b) / readings.length.toDouble();
+
+      String summary =
+          "Plot ID: $plotId | Moisture (Min: $minMoisture, Max: $maxMoisture, Avg: ${avgMoisture.toStringAsFixed(1)})";
+
+      summaries.add(summary);
+    });
+
+    return summaries.join("\n");
+  }
+
+  String formatNutrientDataForPrompt(List<Map<String, dynamic>> nutrientData) {
+    Map<int, List<Map<String, dynamic>>> formattedData = {};
+
+    for (var entry in nutrientData) {
+      int plotId = entry['plot_id'];
+      Map<String, dynamic> nutrientReading = {
+        'timestamp': entry['read_time'],
+        'nitrogen': entry['readed_nitrogen'] ?? 0,
+        'phosphorus': entry['readed_phosphorus'] ?? 0,
+        'potassium': entry['readed_potassium'] ?? 0,
+      };
+
+      if (!formattedData.containsKey(plotId)) {
+        formattedData[plotId] = [];
+      }
+
+      formattedData[plotId]!.add(nutrientReading);
+    }
+
+    List<String> summaries = [];
+
+    formattedData.forEach((plotId, readings) {
+      List<int> nitrogen = readings.map((e) => e['nitrogen'] as int).toList();
+      List<int> phosphorus =
+          readings.map((e) => e['phosphorus'] as int).toList();
+      List<int> potassium = readings.map((e) => e['potassium'] as int).toList();
+
+      String summary =
+          "Plot ID: $plotId | N (Min: ${nitrogen.reduce((a, b) => a < b ? a : b)}, Max: ${nitrogen.reduce((a, b) => a > b ? a : b)}, Avg: ${(nitrogen.reduce((a, b) => a + b) / nitrogen.length).toStringAsFixed(1)}) | "
+          "P (Min: ${phosphorus.reduce((a, b) => a < b ? a : b)}, Max: ${phosphorus.reduce((a, b) => a > b ? a : b)}, Avg: ${(phosphorus.reduce((a, b) => a + b) / phosphorus.length).toStringAsFixed(1)}) | "
+          "K (Min: ${potassium.reduce((a, b) => a < b ? a : b)}, Max: ${potassium.reduce((a, b) => a > b ? a : b)}, Avg: ${(potassium.reduce((a, b) => a + b) / potassium.length).toStringAsFixed(1)})";
+
+      summaries.add(summary);
+    });
+
+    return summaries.join("\n");
   }
 }

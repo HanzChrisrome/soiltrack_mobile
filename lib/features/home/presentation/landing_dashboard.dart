@@ -9,6 +9,7 @@ import 'package:soiltrack_mobile/features/home/presentation/widgets/home/weather
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/weather_provider.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
+import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
@@ -115,17 +116,9 @@ class LandingDashboard extends ConsumerWidget {
                 const SizedBox(height: 10),
                 const WeatherWidget(),
                 const SizedBox(height: 10),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(25),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surface,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: Colors.grey[100]!,
-                      width: 1.0,
-                    ),
-                  ),
+                DynamicContainer(
+                  backgroundColor: Colors.transparent,
+                  borderColor: Colors.black12,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -192,18 +185,7 @@ class LandingDashboard extends ConsumerWidget {
                 ),
                 if (userPlotState.deviceWarnings.isNotEmpty ||
                     deviceState.isEspConnected == false)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(25),
-                    margin: const EdgeInsets.only(top: 10),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.grey[100]!,
-                        width: 1.0,
-                      ),
-                    ),
+                  DynamicContainer(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -290,19 +272,8 @@ class LandingDashboard extends ConsumerWidget {
                       ],
                     ),
                   ),
-                const SizedBox(height: 10),
                 if (userPlotState.nutrientWarnings.isNotEmpty)
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(25),
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.surface,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: Colors.grey[100]!,
-                        width: 1.0,
-                      ),
-                    ),
+                  DynamicContainer(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

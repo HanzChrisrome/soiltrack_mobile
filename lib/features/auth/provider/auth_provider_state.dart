@@ -19,5 +19,6 @@ class UserAuthState with _$UserAuthState {
     @Default(false) bool isLoggingIn,
     @Default(false) bool isRegistering,
     @Default(false) bool isSetupComplete,
+    @Default(false) bool isRequestingChange,
   }) = _UserAuthState;
 }

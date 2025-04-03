@@ -66,6 +66,9 @@ flutter:
     - assets/elements/no_power.png
     - assets/elements/sad_icon.png
     - assets/elements/no_notification.png
+    - assets/elements/security.png
+    - assets/elements/no_ai_reading.png
+    - assets/elements/ai_ready.png
 
     #SOIL PICTURES
     - assets/soil_images/clay_soil.png
@@ -96,3 +99,8 @@ flutter:
     - assets/hardware/esp_not_connected_with_shadow.png
     - assets/hardware/nano_not_connected_with_shadow.png
     - assets/hardware/nano_with_shadow.png
+
+    #MASCOTS AI
+    - assets/ai_mascot/FIRST.png
+    - assets/ai_mascot/SECOND.png
+    - assets/ai_mascot/THIRD.png

@@ -76,17 +76,17 @@ class AuthNotifier extends Notifier<UserAuthState> {
       );
 
       if (response.user != null) {
+        NotifierHelper.showLoadingToast(context, 'Fetching your data');
         await fetchUserRecord(response.user!.id);
+        NotifierHelper.showLoadingToast(context, 'Checking your device');
         await fetchRelatedData();
+        NotifierHelper.closeToast(context);
         state = state.copyWith(
           user: response.user,
           isAuthenticated: true,
           failedAttempts: 0,
           lockoutTime: null,
         );
-
-        NotifierHelper.logMessage(
-            'Device setup completed: ${state.isSetupComplete}');
         if (state.isRegistering || !state.isSetupComplete) {
           context.go('/setup');
         } else {
@@ -165,15 +165,58 @@ class AuthNotifier extends Notifier<UserAuthState> {
     }
   }
 
-  Future<void> requestResetPassword(BuildContext context) async {
+  Future<void> requestResetPassword(BuildContext context,
+      [String? email]) async {
+    final emailToUse = email ?? state.userEmail;
+
+    if (emailToUse == null || emailToUse.isEmpty) {
+      NotifierHelper.showErrorToast(context, 'Email is required.');
+      return;
+    }
+
     try {
-      await supabase.auth.resetPasswordForEmail(state.userEmail!,
+      state = state.copyWith(isRequestingChange: true);
+
+      NotifierHelper.showLoadingToast(context, 'Requesting reset link');
+      await supabase.auth.resetPasswordForEmail(emailToUse,
           redirectTo: 'soiltrack://reset-password');
 
       NotifierHelper.showSuccessToast(
           context, 'Password reset link sent to your email.');
     } catch (e) {
       NotifierHelper.showErrorToast(context, 'Error: ${e.toString()}');
+    } finally {
+      state = state.copyWith(isRequestingChange: false);
+    }
+  }
+
+  Future<void> changePassword(
+    BuildContext context,
+    String newPassword,
+    String email, [
+    String? token,
+  ]) async {
+    try {
+      NotifierHelper.showLoadingToast(context, 'Changing password');
+
+      if (state.isAuthenticated) {
+        await supabase.auth.updateUser(UserAttributes(password: newPassword));
+      } else {
+        await supabase.auth
+            .verifyOTP(email: email, type: OtpType.recovery, token: token);
+        await supabase.auth.updateUser(UserAttributes(password: newPassword));
+      }
+
+      NotifierHelper.closeToast(context);
+      context.go('/password-changed');
+    } catch (e) {
+      if (e is AuthException && e.message.contains('expired')) {
+        NotifierHelper.showErrorToast(context, 'Your reset link has expired.');
+      } else {
+        NotifierHelper.logMessage('Email: $email');
+        NotifierHelper.logMessage('Error: ${e.toString()}');
+        NotifierHelper.showErrorToast(context, 'Error: ${e.toString()}');
+      }
     }
   }
 

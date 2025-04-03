@@ -228,7 +228,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
   Future<bool> _openPump(BuildContext context) async {
     NotifierHelper.showLoadingToast(context, 'Opening pump');
     await mqttService.connect();
-    final macAddress = await DeviceHelper.getMacAddress();
+    final macAddress = ref.watch(authProvider).macAddress;
 
     if (!state.isEspConnected) {
       NotifierHelper.showErrorToast(context, 'No device connected.');
@@ -250,9 +250,9 @@ class DeviceNotifier extends Notifier<DeviceState> {
   }
 
   Future<void> _closePump(BuildContext context) async {
-    NotifierHelper.showSuccessToast(context, 'Closing pump...');
+    NotifierHelper.showLoadingToast(context, 'Closing pump...');
     await mqttService.connect();
-    final macAddress = DeviceHelper.getMacAddress();
+    final macAddress = ref.watch(authProvider).macAddress;
 
     final pumpControlTopic = "soiltrack/device/$macAddress/pump";
     final responseTopic = "$pumpControlTopic/status";
@@ -278,7 +278,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
     ToastService.showLoadingToast(context, message: 'Closing all valves.');
     await mqttService.connect();
 
-    final macAddress = DeviceHelper.getMacAddress();
+    final macAddress = ref.watch(authProvider).macAddress;
     final pumpControlTopic = "soiltrack/device/$macAddress/pump";
     final responseTopic = "$pumpControlTopic/status";
     const expectedResponse = "CLOSE";
@@ -303,7 +303,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
         await supabase
             .from('irrigation_log')
             .update({'time_stopped': DateTime.now().toIso8601String()}).eq(
-                'mac_address', macAddress);
+                'mac_address', macAddress as Object);
       }
 
       state = state.copyWith(valveStates: {}, isPumpOpen: false);
@@ -314,7 +314,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
     final userPlotState = ref.watch(soilDashboardProvider);
     NotifierHelper.showLoadingToast(context, 'Opening all valves...');
 
-    final macAddress = DeviceHelper.getMacAddress();
+    final macAddress = ref.watch(authProvider).macAddress;
     await mqttService.connect();
     final pumpControlTopic = "soiltrack/device/$macAddress/pump";
     final responseTopic = "$pumpControlTopic/status";
@@ -375,7 +375,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
             ? 'Opening Pump for Valve $valveTagging.'
             : 'Closing Pump for Valve $valveTagging.');
 
-    final macAddress = await DeviceHelper.getMacAddress();
+    final macAddress = ref.watch(authProvider).macAddress;
     final pumpControlTopic = "soiltrack/device/$macAddress/pump";
     final responseTopic = "$pumpControlTopic/status";
     final expectedResponse =
@@ -426,7 +426,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
             .update({
               'time_stopped': DateTime.now().toIso8601String(),
             })
-            .eq('mac_address', macAddress)
+            .eq('mac_address', macAddress!)
             .eq('plot_id', plotId);
       }
 

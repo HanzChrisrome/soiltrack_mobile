@@ -33,16 +33,6 @@ class PlotAnalyticsScreen extends ConsumerWidget {
 
     final plotName = selectedPlot['plot_name'] ?? 'No plot name';
 
-    final sensors = selectedPlot['user_plot_sensors'] ?? [];
-
-    final soilNutrientSensors = sensors.firstWhere(
-      (sensor) => sensor['soil_sensors']['sensor_category'] == 'NPK Sensor',
-      orElse: () => {},
-    );
-
-    final assignedNutrientSensor =
-        soilNutrientSensors?['soil_sensors']?['sensor_name'] ?? 'No sensor';
-
     final nitrogenData = userPlot.userPlotNutrientData
         .where(
             (nutrient) => nutrient['plot_id'] as int == userPlot.selectedPlotId)
@@ -111,46 +101,22 @@ class PlotAnalyticsScreen extends ConsumerWidget {
                       PlotCard(
                           selectedPlotId: userPlot.selectedPlotId,
                           moistureReadings: userPlot.userPlotMoistureData),
-                      if (assignedNutrientSensor != 'No sensor')
-                        Column(
-                          children: [
-                            PlotChart(
-                                selectedPlotId: userPlot.selectedPlotId,
-                                readings: nitrogenData,
-                                readingType: 'readed_nitrogen'),
-                            PlotChart(
-                                selectedPlotId: userPlot.selectedPlotId,
-                                readings: phosphorusData,
-                                readingType: 'readed_phosphorus'),
-                            PlotChart(
-                                selectedPlotId: userPlot.selectedPlotId,
-                                readings: potassiumData,
-                                readingType: 'readed_potassium'),
-                          ],
-                        ),
-                      if (assignedNutrientSensor == 'No sensor')
-                        Container(
-                          height: 150,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.surface,
-                            border: Border.all(
-                                color: Colors.grey[100]!,
-                                width: 1), // Red border
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Padding(
-                            padding: EdgeInsets.all(20),
-                            child: Center(
-                              child: Text(
-                                'No NPK Sensor assigned to this plot',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
+                      Column(
+                        children: [
+                          PlotChart(
+                              selectedPlotId: userPlot.selectedPlotId,
+                              readings: nitrogenData,
+                              readingType: 'readed_nitrogen'),
+                          PlotChart(
+                              selectedPlotId: userPlot.selectedPlotId,
+                              readings: phosphorusData,
+                              readingType: 'readed_phosphorus'),
+                          PlotChart(
+                              selectedPlotId: userPlot.selectedPlotId,
+                              readings: potassiumData,
+                              readingType: 'readed_potassium'),
+                        ],
+                      ),
                     ],
                   ),
                 ),

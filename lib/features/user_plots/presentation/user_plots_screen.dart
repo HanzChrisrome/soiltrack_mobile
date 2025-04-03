@@ -4,9 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
+import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/helper/user_plots_helper.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_ready_card.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_unready_card.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/crop_threshold.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/line_chart.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_condition.dart';
@@ -123,6 +126,12 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                           ),
                         ),
                       ),
+                    userPlot.isAiAnalysisReady
+                        ? AiReadyCard(onTap: () {})
+                        : AiUnreadyCard(onTap: () {
+                            NotifierHelper.logMessage('Fetching AI...');
+                            userPlotNotifier.fetchAi();
+                          }),
                     PlotWarnings(plotWarningsData: plotWarningsData),
                     PlotSuggestions(plotSuggestions: plotSuggestions),
                     Column(

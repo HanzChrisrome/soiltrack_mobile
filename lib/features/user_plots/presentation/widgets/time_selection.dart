@@ -3,7 +3,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/widgets/filled_button.dart';
 
@@ -102,8 +101,10 @@ class TimeSelectionWidget extends ConsumerWidget {
   Future<void> _selectDateRange(BuildContext context, WidgetRef ref) async {
     final soilDashboardState = ref.watch(soilDashboardProvider);
     DateTime today = DateTime.now();
-    DateTime? startDate;
-    DateTime? endDate;
+
+    // ✅ Initialize with previously selected range if available
+    DateTime? startDate = soilDashboardState.customStartDate;
+    DateTime? endDate = soilDashboardState.customEndDate;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -125,21 +126,17 @@ class TimeSelectionWidget extends ConsumerWidget {
                   Theme(
                     data: Theme.of(context).copyWith(
                       colorScheme: ColorScheme.light(
-                        primary: Theme.of(context)
-                            .colorScheme
-                            .onPrimary, // Selected date color
-                        onPrimary: Colors.white, // Text color on selected date
-                        surface: Colors.blueGrey, // Background color
+                        primary: Theme.of(context).colorScheme.onPrimary,
+                        onPrimary: Colors.white,
+                        surface: Colors.blueGrey,
                       ),
                       textButtonTheme: TextButtonThemeData(
-                        style: TextButton.styleFrom(
-                          foregroundColor: Colors
-                              .green, // Color of "OK" and "CANCEL" buttons
-                        ),
+                        style:
+                            TextButton.styleFrom(foregroundColor: Colors.green),
                       ),
                     ),
                     child: CalendarDatePicker(
-                      initialDate: null,
+                      initialDate: startDate ?? today,
                       firstDate: DateTime(2000),
                       lastDate: today,
                       onDateChanged: (newDate) {
@@ -148,66 +145,53 @@ class TimeSelectionWidget extends ConsumerWidget {
                               (startDate != null && endDate != null)) {
                             startDate = newDate;
                             endDate = null;
-                          } else if (startDate != null &&
-                              endDate == null &&
-                              newDate.isAfter(startDate!)) {
-                            endDate = newDate;
-                          } else {
-                            startDate = newDate;
-                            endDate = null;
+                          } else if (startDate != null && endDate == null) {
+                            if (newDate.isAfter(startDate!)) {
+                              endDate = newDate;
+                            } else {
+                              startDate = newDate;
+                              endDate = null;
+                            }
                           }
                         });
                       },
                     ),
                   ),
+                  const SizedBox(height: 20),
                   FilledCustomButton(
                     icon: Icons.filter_alt_outlined,
                     buttonText: 'Filter Date',
-                    onPressed: startDate != null && endDate != null
+                    onPressed: startDate != null
                         ? () {
                             ref
                                 .read(soilDashboardProvider.notifier)
                                 .updateTimeSelection(
                                   'Custom',
                                   customStartDate: startDate,
-                                  customEndDate: endDate,
+                                  customEndDate: endDate ?? startDate,
                                 );
                             Navigator.pop(context);
                           }
                         : null,
                   ),
-                  const SizedBox(height: 20),
-                  if (soilDashboardState.customStartDate != null &&
-                      soilDashboardState.customEndDate != null)
-                    Text(
-                      "Current Range: ${DateFormat('MMMM d, y').format(soilDashboardState.customStartDate!)} - "
-                      "${DateFormat('MMMM d, y').format(soilDashboardState.customEndDate!)}",
-                      style: const TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.blue,
-                      ),
-                    ),
                   if (startDate != null)
                     Text(
-                      "Selected Range: ${startDate != null ? DateFormat('MMMM d, y').format(startDate!) : ''} - "
-                      "${endDate != null ? DateFormat('MMMM d, y').format(endDate!) : 'Select End Date'}",
+                      "Selected Range: ${DateFormat('MMMM d, y').format(startDate!)}"
+                      "${(endDate != null) ? ' - ${DateFormat('MMMM d, y').format(endDate!)}' : ''}",
                       style: const TextStyle(
                           fontSize: 12, fontWeight: FontWeight.normal),
                     ),
-                  if (soilDashboardState.customStartDate == null)
-                    Text(
-                        'Select a start date to enable the "Filter Date" button',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.red,
-                        )),
+                  if (startDate == null)
+                    const Text(
+                      'Select a date to enable the "Filter Date" button',
+                      style: TextStyle(fontSize: 12, color: Colors.red),
+                    ),
                 ],
               ),
             );
           },
         );
       },
-    ).then((selectedRange) {});
+    );
   }
 }
