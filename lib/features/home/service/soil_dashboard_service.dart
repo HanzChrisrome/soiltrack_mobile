@@ -368,6 +368,17 @@ class SoilDashboardService {
     return warningsList;
   }
 
+  Future<List<Map<String, dynamic>>> fetchLatestAiAnalyses(
+      List<String> plotIds) async {
+    final response = await supabase
+        .from('ai_analysis')
+        .select()
+        .inFilter('plot_id', plotIds)
+        .order('created_at', ascending: false);
+
+    return response;
+  }
+
   Future<void> cropId(String selectedCrop) async {
     try {
       final getCropId = await supabase

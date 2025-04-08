@@ -20,6 +20,10 @@ class AiUnreadyCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 25),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+            width: 1,
+          ),
           image: DecorationImage(
             image: AssetImage(
                 'assets/elements/no_ai_reading.png'), // Replace with your image path
@@ -30,6 +34,7 @@ class AiUnreadyCard extends StatelessWidget {
           alignment: Alignment.centerLeft,
           padding: const EdgeInsets.symmetric(vertical: 15),
           child: Column(
+            mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(

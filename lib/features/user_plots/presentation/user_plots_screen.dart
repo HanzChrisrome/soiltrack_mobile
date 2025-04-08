@@ -1,5 +1,3 @@
-// ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -8,6 +6,7 @@ import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/helper/user_plots_helper.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_generated.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_ready_card.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_unready_card.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/crop_threshold.dart';
@@ -47,6 +46,9 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
     final userPlotNotifier = ref.read(soilDashboardProvider.notifier);
     final deviceState = ref.watch(deviceProvider);
     final deviceStateNotifier = ref.read(deviceProvider.notifier);
+    final today = DateTime.now().toIso8601String().split('T').first;
+    String aiStatus = 'No generated AI Data yet';
+    String aiPrompt = "";
 
     final selectedPlot = userPlot.userPlots.firstWhere(
       (plot) => plot['plot_id'] == userPlot.selectedPlotId,
@@ -54,7 +56,10 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
     );
 
     final plotName = selectedPlot['plot_name'] ?? 'No plot found';
+    final plotId = selectedPlot['plot_id'] ?? 0;
     final sensors = selectedPlot['user_plot_sensors'] ?? [];
+    final soilType = selectedPlot['soil_type'] ?? null;
+    final cropType = selectedPlot['user_crops']?['crop_name'] ?? null;
 
     final assignedMoistureSensor =
         plotHelper.getSensorName(sensors, 'Moisture Sensor');
@@ -70,18 +75,28 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
         (s) => s['plot_id'] == userPlot.selectedPlotId,
         orElse: () => {});
 
-    final irrigationLogs =
-        (selectedPlot['irrigation_log'] as List<dynamic>? ?? [])
-            .where((log) => log['plot_id'] == userPlot.selectedPlotId)
-            .map((log) => {
-                  'mac_address': log['mac_address'],
-                  'time_started':
-                      plotHelper.formatTimestamp(log['time_started']),
-                  'time_stopped': log['time_stopped'] != null
-                      ? plotHelper.formatTimestamp(log['time_stopped'])
-                      : 'Ongoing',
-                })
-            .toList();
+    final irrigationLogs = plotHelper.getIrrigationLogs(
+        selectedPlot, userPlot.selectedPlotId, plotHelper);
+
+    final aiAnalysisToday = userPlot.aiAnalysis.firstWhere(
+      (entry) => entry['plot_id'] == plotId && entry['analysis_date'] == today,
+      orElse: () => {},
+    );
+
+    if (aiAnalysisToday.isEmpty) {
+      final filtered = plotHelper.getFilteredAiReadyData(
+        selectedPlotId: userPlot.selectedPlotId,
+        rawMoistureData: userPlot.rawPlotMoistureData,
+        rawNutrientData: userPlot.rawPlotNutrientData,
+      );
+
+      if (filtered != null) {
+        aiPrompt = plotHelper.getFormattedAiPrompt(data: filtered);
+        aiStatus = 'AI Ready for analysis';
+      }
+    } else {
+      aiStatus = 'AI is generated';
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -126,19 +141,34 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                           ),
                         ),
                       ),
-                    userPlot.isAiAnalysisReady
-                        ? AiReadyCard(onTap: () {})
-                        : AiUnreadyCard(onTap: () {
-                            NotifierHelper.logMessage('Fetching AI...');
-                            userPlotNotifier.fetchAi();
-                          }),
+                    if (aiStatus == 'AI Ready for analysis')
+                      AiReadyCard(
+                        onTap: userPlot.isGeneratingAi
+                            ? null
+                            : () {
+                                if (aiPrompt != "") {
+                                  userPlotNotifier.fetchAi(aiPrompt, cropType,
+                                      soilType, plotName, plotId);
+                                }
+                              },
+                      ),
+                    if (aiStatus == 'No generated AI Data yet')
+                      AiUnreadyCard(
+                        onTap: () {},
+                      ),
+                    if (aiStatus == 'AI is generated')
+                      AiGeneratedCard(
+                        onTap: () {
+                          context.pushNamed('ai-analytics');
+                        },
+                      ),
                     PlotWarnings(plotWarningsData: plotWarningsData),
                     PlotSuggestions(plotSuggestions: plotSuggestions),
                     Column(
                       children: [
                         NutrientProgressChart(),
                         FilledCustomButton(
-                          buttonText: 'View Detailed Analytics',
+                          buttonText: 'View Statistics',
                           icon: Icons.remove_red_eye_outlined,
                           onPressed: () {
                             context.pushNamed('plot-analytics');
@@ -149,8 +179,7 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                     PlotDetailsWidget(
                         assignedSensor: assignedMoistureSensor,
                         assignedNutrientSensor: assignedNutrientSensor,
-                        soilType:
-                            selectedPlot['soil_type'] ?? 'No soil type found'),
+                        soilType: soilType ?? 'No soil type found'),
                     CropThresholdWidget(plotDetails: selectedPlot),
                     const SizedBox(height: 10),
                     if (irrigationLogs.isNotEmpty)

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 
 class SoilDashboardHelper {
@@ -203,72 +205,21 @@ class SoilDashboardHelper {
     return DateTime(date.year, date.month, date.day, 23, 59, 59, 999);
   }
 
-  String formatMoistureDataForPrompt(List<Map<String, dynamic>> moistureData) {
-    Map<int, List<int>> formattedData = {};
+  Map<String, dynamic> extractCleanAIJson(String rawAIResponse) {
+    String jsonString;
 
-    for (var entry in moistureData) {
-      int plotId = entry['plot_id'];
-      int moisture = entry['soil_moisture'] ?? 0;
-
-      if (!formattedData.containsKey(plotId)) {
-        formattedData[plotId] = [];
-      }
-
-      formattedData[plotId]!.add(moisture);
+    if (rawAIResponse.contains('```json') && rawAIResponse.contains('```')) {
+      final contentStart = rawAIResponse.indexOf('```json');
+      final contentEnd = rawAIResponse.lastIndexOf('```');
+      jsonString = rawAIResponse.substring(contentStart + 7, contentEnd).trim();
+    } else {
+      jsonString = rawAIResponse.trim();
     }
 
-    List<String> summaries = [];
-
-    formattedData.forEach((plotId, readings) {
-      int minMoisture = readings.reduce((a, b) => a < b ? a : b);
-      int maxMoisture = readings.reduce((a, b) => a > b ? a : b);
-      double avgMoisture =
-          readings.reduce((a, b) => a + b) / readings.length.toDouble();
-
-      String summary =
-          "Plot ID: $plotId | Moisture (Min: $minMoisture, Max: $maxMoisture, Avg: ${avgMoisture.toStringAsFixed(1)})";
-
-      summaries.add(summary);
-    });
-
-    return summaries.join("\n");
-  }
-
-  String formatNutrientDataForPrompt(List<Map<String, dynamic>> nutrientData) {
-    Map<int, List<Map<String, dynamic>>> formattedData = {};
-
-    for (var entry in nutrientData) {
-      int plotId = entry['plot_id'];
-      Map<String, dynamic> nutrientReading = {
-        'timestamp': entry['read_time'],
-        'nitrogen': entry['readed_nitrogen'] ?? 0,
-        'phosphorus': entry['readed_phosphorus'] ?? 0,
-        'potassium': entry['readed_potassium'] ?? 0,
-      };
-
-      if (!formattedData.containsKey(plotId)) {
-        formattedData[plotId] = [];
-      }
-
-      formattedData[plotId]!.add(nutrientReading);
+    try {
+      return jsonDecode(jsonString);
+    } catch (e) {
+      throw Exception('Failed to parse JSON: $e');
     }
-
-    List<String> summaries = [];
-
-    formattedData.forEach((plotId, readings) {
-      List<int> nitrogen = readings.map((e) => e['nitrogen'] as int).toList();
-      List<int> phosphorus =
-          readings.map((e) => e['phosphorus'] as int).toList();
-      List<int> potassium = readings.map((e) => e['potassium'] as int).toList();
-
-      String summary =
-          "Plot ID: $plotId | N (Min: ${nitrogen.reduce((a, b) => a < b ? a : b)}, Max: ${nitrogen.reduce((a, b) => a > b ? a : b)}, Avg: ${(nitrogen.reduce((a, b) => a + b) / nitrogen.length).toStringAsFixed(1)}) | "
-          "P (Min: ${phosphorus.reduce((a, b) => a < b ? a : b)}, Max: ${phosphorus.reduce((a, b) => a > b ? a : b)}, Avg: ${(phosphorus.reduce((a, b) => a + b) / phosphorus.length).toStringAsFixed(1)}) | "
-          "K (Min: ${potassium.reduce((a, b) => a < b ? a : b)}, Max: ${potassium.reduce((a, b) => a > b ? a : b)}, Avg: ${(potassium.reduce((a, b) => a + b) / potassium.length).toStringAsFixed(1)})";
-
-      summaries.add(summary);
-    });
-
-    return summaries.join("\n");
   }
 }

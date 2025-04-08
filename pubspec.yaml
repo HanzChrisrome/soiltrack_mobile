@@ -69,6 +69,10 @@ flutter:
     - assets/elements/security.png
     - assets/elements/no_ai_reading.png
     - assets/elements/ai_ready.png
+    - assets/elements/ai_analysis_screen.png
+    - assets/elements/ai_generated.png
+    - assets/elements/ai_is_here.png
+    - assets/elements/ai_analysis.png
 
     #SOIL PICTURES
     - assets/soil_images/clay_soil.png
@@ -81,6 +85,7 @@ flutter:
     - assets/background/background_splash.png
     - assets/background/get_started.png
     - assets/background/email_verification.png
+    - assets/background/ai_background.png
 
     #WEATHER WIDGETS
     - assets/weather/morning.png

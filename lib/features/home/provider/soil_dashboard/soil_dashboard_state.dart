@@ -15,6 +15,7 @@ class SoilDashboardState with _$SoilDashboardState {
     @Default([]) List<Map<String, dynamic>> nutrientWarnings,
     @Default([]) List<Map<String, dynamic>> plotsSuggestion,
     @Default([]) List<Map<String, dynamic>> deviceWarnings,
+    @Default([]) List<Map<String, dynamic>> aiAnalysis,
     @Default(false) bool isFetchingUserPlots,
     @Default(false) bool isFetchingUserPlotData,
     @Default(0) int selectedPlotId,
@@ -23,6 +24,7 @@ class SoilDashboardState with _$SoilDashboardState {
     String? error,
     String? userPlotDataError,
     String? overallCondition,
+    @Default('No analysis generated yet') String aiAnalysisStatus,
     DateTime? selectedTimeRange,
     DateTime? customStartDate,
     DateTime? customEndDate,
@@ -34,6 +36,6 @@ class SoilDashboardState with _$SoilDashboardState {
     @Default(false) bool isSavingNewSoilType,
     @Default(false) bool isSavingNewSoilMoistureSensor,
     @Default(false) bool isSavingNewSoilNutrientSensor,
-    @Default(false) bool isAiAnalysisReady,
+    @Default(false) bool isGeneratingAi,
   }) = _SoilDashboardState;
 }

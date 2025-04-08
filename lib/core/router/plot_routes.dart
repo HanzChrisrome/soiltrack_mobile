@@ -3,6 +3,7 @@ import 'package:soiltrack_mobile/features/crops_registration/presentation/crops_
 import 'package:soiltrack_mobile/features/crops_registration/presentation/crops_assigning.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/crops_screen.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/custom_add.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/ai_analytics_screen.dart';
 
 final plotRoutes = [
   GoRoute(
@@ -24,5 +25,10 @@ final plotRoutes = [
     path: '/add-custom-crops',
     name: 'add-custom-crops',
     builder: (context, state) => const AddCustomCrop(),
+  ),
+  GoRoute(
+    path: '/ai-analytics',
+    name: 'ai-analytics',
+    builder: (context, state) => const AiAnalysisOverview(),
   ),
 ];

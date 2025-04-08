@@ -2,6 +2,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/core/router/plot_routes.dart';
+import 'package:soiltrack_mobile/core/router/settings_routes.dart';
 import 'auth_routes.dart';
 import 'setup_routes.dart';
 import 'home_routes.dart';
@@ -20,6 +21,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       ...setupRoutes,
       ...homeRoutes,
       ...plotRoutes,
+      ...settingsRoutes,
     ],
   );
 });

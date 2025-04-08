@@ -105,12 +105,16 @@ class SettingsScreen extends ConsumerWidget {
                       ),
                 ),
                 const SizedBox(height: 10),
-                const SettingsCard(
+                SettingsCard(
                   child: Column(
                     children: [
                       SettingsItem(
-                          settingsText: 'Help Topics',
-                          settingsIcon: Icons.help_center_outlined),
+                        settingsText: 'Help Topics',
+                        settingsIcon: Icons.help_center_outlined,
+                        onTap: () {
+                          context.pushNamed('help-topics');
+                        },
+                      ),
                       DividerWidget(verticalHeight: 0),
                       SettingsItem(
                           settingsText: 'Ask a Question',

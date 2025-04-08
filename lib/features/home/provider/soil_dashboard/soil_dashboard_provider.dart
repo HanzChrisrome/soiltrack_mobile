@@ -62,13 +62,19 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       final rawMoistureData = results[0];
       final rawNutrientData = results[1];
 
-      state = state.copyWith(
-        rawPlotMoistureData: rawMoistureData,
-        rawPlotNutrientData: rawNutrientData,
-      );
+      NotifierHelper.logMessage(
+          'Range filter: ${state.selectedTimeRangeFilter}');
+
+      if (state.selectedTimeRangeFilter != 'Custom') {
+        state = state.copyWith(
+          rawPlotMoistureData: rawMoistureData,
+          rawPlotNutrientData: rawNutrientData,
+        );
+        NotifierHelper.logMessage('Storing raw data for filtering');
+      }
 
       await fetchLatestData(plotIds);
-      await filterPlotData();
+      await filterPlotData(rawMoistureData, rawNutrientData);
     } catch (e) {
       NotifierHelper.logError(e);
     } finally {
@@ -77,55 +83,16 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
   }
 
   Future<void> fetchLatestData(List<String> plotIds) async {
-    final DateTime now = DateTime.now();
-
-    final DateTime yesterdayStart =
-        soilDashboardHelper.getStartOfDay(now.subtract(Duration(days: 1)));
-
-    final DateTime dayBeforeYesterdayStart =
-        soilDashboardHelper.getStartOfDay(now.subtract(Duration(days: 2)));
-
     try {
       final data = await Future.wait([
         soilDashboardService.fetchLatestMoistureReadings(plotIds),
         soilDashboardService.fetchLatestNutrientsReadings(plotIds),
-        soilDashboardService.userPlotMoistureData(
-            plotIds, yesterdayStart, yesterdayStart),
-        soilDashboardService.userPlotMoistureData(
-            plotIds, dayBeforeYesterdayStart, dayBeforeYesterdayStart),
-        soilDashboardService.userPlotNutrientData(
-            plotIds, yesterdayStart, yesterdayStart),
-        soilDashboardService.userPlotNutrientData(
-            plotIds, dayBeforeYesterdayStart, dayBeforeYesterdayStart),
+        soilDashboardService.fetchLatestAiAnalyses(plotIds),
       ]);
 
       final latestMoistureData = data[0];
       final latestNutrientData = data[1];
-      final yesterdayMoistureData = data[2];
-      final dayBeforeYesterdayMoistureData = data[3];
-      final yesterdayNutrientData = data[4];
-      final dayBeforeYesterdayNutrientData = data[5];
-
-      final yesterdayNutrientFormatted = soilDashboardHelper
-          .formatNutrientDataForPrompt(yesterdayNutrientData);
-
-      final dayBeforeYesterdayNutrientFormatted = soilDashboardHelper
-          .formatNutrientDataForPrompt(dayBeforeYesterdayNutrientData);
-
-      final yesterdayMoistureFormatted = soilDashboardHelper
-          .formatMoistureDataForPrompt(yesterdayMoistureData);
-      final dayBeforeYesterdayMoistureFormatted = soilDashboardHelper
-          .formatMoistureDataForPrompt(dayBeforeYesterdayMoistureData);
-
-      NotifierHelper.logMessage(
-          'Yesterday moisture data: $yesterdayMoistureFormatted');
-      NotifierHelper.logMessage(
-          'Day before yesterday moisture data: $dayBeforeYesterdayMoistureFormatted');
-
-      NotifierHelper.logMessage(
-          'Yesterday nutrient data: $yesterdayNutrientFormatted');
-      NotifierHelper.logMessage(
-          'Day before yesterday nutrient data: $dayBeforeYesterdayNutrientFormatted');
+      final latestAiAnalyses = data[2];
 
       DateTime? latestMoistureTimestamp =
           soilDashboardHelper.getLatestTimestamp(latestMoistureData);
@@ -169,13 +136,15 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
             soilDashboardHelper.extractMessagesByType(messages, 'Suggestion'),
         deviceWarnings: soilDashboardHelper.extractMessagesByType(
             messages, 'Device Warning'),
+        aiAnalysis: latestAiAnalyses,
       );
     } catch (e) {
       NotifierHelper.logError(e);
     }
   }
 
-  Future<void> filterPlotData() async {
+  Future<void> filterPlotData(List<Map<String, dynamic>> rawPlotMoistureData,
+      List<Map<String, dynamic>> rawPlotNutrientData) async {
     DateTime startDate = soilDashboardHelper
         .getStartDateFromTimeRange(state.selectedTimeRangeFilter);
 
@@ -194,8 +163,8 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
             state.selectedTimeRangeFilter, startDate, endDate)
         : state.selectedTimeRangeFilter;
 
-    List<Map<String, dynamic>> filteredMoistureData = state.rawPlotMoistureData;
-    List<Map<String, dynamic>> filteredNutrientData = state.rawPlotNutrientData;
+    List<Map<String, dynamic>> filteredMoistureData = rawPlotMoistureData;
+    List<Map<String, dynamic>> filteredNutrientData = rawPlotNutrientData;
 
     if (state.selectedTimeRangeFilter != 'Custom') {
       filteredMoistureData = state.rawPlotMoistureData.where((reading) {
@@ -242,7 +211,7 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         fetchUserPlotData();
         state = state.copyWith(customStartDate: null, customEndDate: null);
       } else {
-        filterPlotData();
+        filterPlotData(state.rawPlotMoistureData, state.rawPlotNutrientData);
       }
     }
   }
@@ -314,11 +283,38 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     }
   }
 
-  Future<void> fetchAi() async {
+  Future<void> fetchAi(String rawData, String cropType, String soilType,
+      String plotName, int plotId) async {
     try {
-      // await aiService.fetchAndAnalyze();
+      NotifierHelper.logMessage('Fetching AI analysis...');
+      state = state.copyWith(isGeneratingAi: true);
+      final prompt = aiService.generateAIAnalysisPrompt(
+          rawData, cropType, soilType, plotName);
+
+      final aiResponse = await aiService.getAiAnalysis(prompt);
+      final aiRaw = aiResponse['choices'][0]['message']['content'];
+      final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
+      final today = DateTime.now().toIso8601String().split('T').first;
+
+      final newAnalysis = {
+        "plot_id": plotId,
+        "analysis_date": today,
+        "analysis": parsedJson,
+      };
+
+      await supabase.from('ai_analysis').insert(newAnalysis);
+      NotifierHelper.logMessage('AI analysis saved to database.');
+
+      final updatedAnalyses = [
+        ...state.aiAnalysis.where((entry) => entry['plot_id'] != plotId),
+        newAnalysis,
+      ];
+
+      state = state.copyWith(aiAnalysis: updatedAnalyses);
     } catch (e) {
       NotifierHelper.logError(e);
+    } finally {
+      state = state.copyWith(isGeneratingAi: false);
     }
   }
 

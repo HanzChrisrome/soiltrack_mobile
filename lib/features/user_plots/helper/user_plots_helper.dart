@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 
 class UserPlotsHelper {
   List<Map<String, dynamic>> filterData(
@@ -62,7 +63,6 @@ class UserPlotsHelper {
     return null;
   }
 
-  //FOR USER PLOTS SCREEN
   String getSensorName(List<dynamic> sensors, String category) {
     final sensor = sensors.firstWhere(
         (s) => s['soil_sensors']['sensor_category'] == category,
@@ -79,5 +79,181 @@ class UserPlotsHelper {
     } catch (_) {
       return 'Invalid date';
     }
+  }
+
+  Map<String, List<Map<String, dynamic>>>? getFilteredAiReadyData(
+      {required int selectedPlotId,
+      required List<Map<String, dynamic>> rawMoistureData,
+      required List<Map<String, dynamic>> rawNutrientData}) {
+    final now = DateTime.now();
+    final yesterday = now.subtract(const Duration(days: 1));
+    final dayBefore = now.subtract(const Duration(days: 2));
+
+    final moistureYesterday = _filterDataByDate(
+      rawMoistureData,
+      selectedPlotId,
+      DateTime(yesterday.year, yesterday.month, yesterday.day),
+      DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59),
+    );
+
+    final moistureDayBefore = _filterDataByDate(
+      rawMoistureData,
+      selectedPlotId,
+      DateTime(dayBefore.year, dayBefore.month, dayBefore.day),
+      DateTime(dayBefore.year, dayBefore.month, dayBefore.day, 23, 59, 59),
+    );
+
+    final nutrientYesterday = _filterDataByDate(
+      rawNutrientData,
+      selectedPlotId,
+      DateTime(yesterday.year, yesterday.month, yesterday.day),
+      DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59),
+    );
+
+    final nutrientDayBefore = _filterDataByDate(
+      rawNutrientData,
+      selectedPlotId,
+      DateTime(dayBefore.year, dayBefore.month, dayBefore.day),
+      DateTime(dayBefore.year, dayBefore.month, dayBefore.day, 23, 59, 59),
+    );
+
+    if (moistureYesterday.isEmpty ||
+        moistureDayBefore.isEmpty ||
+        nutrientYesterday.isEmpty ||
+        nutrientDayBefore.isEmpty) {
+      return null;
+    }
+
+    return {
+      'moistureYesterday': moistureYesterday,
+      'moistureDayBefore': moistureDayBefore,
+      'nutrientYesterday': nutrientYesterday,
+      'nutrientDayBefore': nutrientDayBefore,
+    };
+  }
+
+  List<Map<String, dynamic>> _filterDataByDate(List<Map<String, dynamic>> data,
+      int plotId, DateTime start, DateTime end) {
+    return data.where((entry) {
+      final readTime = DateTime.tryParse(entry['read_time'] ?? '');
+      return entry['plot_id'] == plotId &&
+          readTime != null &&
+          readTime.isAfter(start) &&
+          readTime.isBefore(end);
+    }).toList();
+  }
+
+  String getFormattedAiPrompt({
+    required Map<String, List<Map<String, dynamic>>> data,
+  }) {
+    String getDateLabel(List<Map<String, dynamic>> readings) {
+      if (readings.isNotEmpty) {
+        final date = DateTime.tryParse(readings.first['read_time'] ?? '');
+        if (date != null) {
+          return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
+        }
+      }
+      return "No data";
+    }
+
+    final moistureYDate = getDateLabel(data['moistureYesterday'] ?? []);
+    final moistureDBYDate = getDateLabel(data['moistureDayBefore'] ?? []);
+    final nutrientYDate = getDateLabel(data['nutrientYesterday'] ?? []);
+    final nutrientDBYDate = getDateLabel(data['nutrientDayBefore'] ?? []);
+
+    return '''🗓️ Moisture ($moistureYDate):
+    ${_formatMoistureDataForPrompt(data['moistureYesterday'] ?? [])}
+    🗓️ Moisture ($moistureDBYDate):
+    ${_formatMoistureDataForPrompt(data['moistureDayBefore'] ?? [])}
+    🗓️ Nutrients (NPK) ($nutrientYDate):
+    ${_formatNutrientDataForPrompt(data['nutrientYesterday'] ?? [])}
+    🗓️ Nutrients (NPK) ($nutrientDBYDate):
+    ${_formatNutrientDataForPrompt(data['nutrientDayBefore'] ?? [])}''';
+  }
+
+  String _formatMoistureDataForPrompt(List<Map<String, dynamic>> moistureData) {
+    Map<int, List<int>> formattedData = {};
+
+    for (var entry in moistureData) {
+      int plotId = entry['plot_id'];
+      int moisture = entry['soil_moisture'] ?? 0;
+
+      if (!formattedData.containsKey(plotId)) {
+        formattedData[plotId] = [];
+      }
+
+      formattedData[plotId]!.add(moisture);
+    }
+
+    List<String> summaries = [];
+
+    formattedData.forEach((plotId, readings) {
+      int minMoisture = readings.reduce((a, b) => a < b ? a : b);
+      int maxMoisture = readings.reduce((a, b) => a > b ? a : b);
+      double avgMoisture =
+          readings.reduce((a, b) => a + b) / readings.length.toDouble();
+
+      String summary =
+          "Plot ID: $plotId | Moisture (Min: $minMoisture, Max: $maxMoisture, Avg: ${avgMoisture.toStringAsFixed(1)})";
+
+      summaries.add(summary);
+    });
+
+    return summaries.join("\n");
+  }
+
+  String _formatNutrientDataForPrompt(List<Map<String, dynamic>> nutrientData) {
+    Map<int, List<Map<String, dynamic>>> formattedData = {};
+
+    for (var entry in nutrientData) {
+      int plotId = entry['plot_id'];
+      Map<String, dynamic> nutrientReading = {
+        'timestamp': entry['read_time'],
+        'nitrogen': entry['readed_nitrogen'] ?? 0,
+        'phosphorus': entry['readed_phosphorus'] ?? 0,
+        'potassium': entry['readed_potassium'] ?? 0,
+      };
+
+      if (!formattedData.containsKey(plotId)) {
+        formattedData[plotId] = [];
+      }
+
+      formattedData[plotId]!.add(nutrientReading);
+    }
+
+    List<String> summaries = [];
+
+    formattedData.forEach((plotId, readings) {
+      List<int> nitrogen = readings.map((e) => e['nitrogen'] as int).toList();
+      List<int> phosphorus =
+          readings.map((e) => e['phosphorus'] as int).toList();
+      List<int> potassium = readings.map((e) => e['potassium'] as int).toList();
+
+      String summary =
+          "Plot ID: $plotId | N (Min: ${nitrogen.reduce((a, b) => a < b ? a : b)}, Max: ${nitrogen.reduce((a, b) => a > b ? a : b)}, Avg: ${(nitrogen.reduce((a, b) => a + b) / nitrogen.length).toStringAsFixed(1)}) | "
+          "P (Min: ${phosphorus.reduce((a, b) => a < b ? a : b)}, Max: ${phosphorus.reduce((a, b) => a > b ? a : b)}, Avg: ${(phosphorus.reduce((a, b) => a + b) / phosphorus.length).toStringAsFixed(1)}) | "
+          "K (Min: ${potassium.reduce((a, b) => a < b ? a : b)}, Max: ${potassium.reduce((a, b) => a > b ? a : b)}, Avg: ${(potassium.reduce((a, b) => a + b) / potassium.length).toStringAsFixed(1)})";
+
+      summaries.add(summary);
+    });
+
+    return summaries.join("\n");
+  }
+
+  List<Map<String, dynamic>> getIrrigationLogs(
+    Map<String, dynamic> selectedPlot,
+    int selectedPlotId,
+    UserPlotsHelper plotHelper,
+  ) {
+    return (selectedPlot['irrigation_log'] as List<dynamic>? ?? [])
+        .where((log) => log['plot_id'] == selectedPlotId)
+        .map((log) => {
+              'mac_address': log['mac_address'],
+              'time_started': plotHelper.formatTimestamp(log['time_started']),
+              'time_stopped': log['time_stopped'] != null
+                  ? plotHelper.formatTimestamp(log['time_stopped'])
+                  : 'Ongoing',
+            })
+        .toList();
   }
 }
