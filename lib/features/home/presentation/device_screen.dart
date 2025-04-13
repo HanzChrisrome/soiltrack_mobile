@@ -67,7 +67,7 @@ class DeviceScreen extends ConsumerWidget {
               ),
               SliverPadding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     [
@@ -97,20 +97,26 @@ class DeviceScreen extends ConsumerWidget {
                               );
                             },
                           ),
-                          DeviceCard(
-                            deviceName: 'Arduino Nano',
-                            description: 'Soiltracker and Updater',
-                            imagePath: 'assets/hardware/nano_colored.png',
-                            imagePathDisconnected:
-                                'assets/hardware/nano_not_connected.png',
-                            isConnected: false,
-                            onTap: () {
-                              showModalBottomSheet<void>(
-                                context: context,
-                                isScrollControlled: true,
-                                builder: (BuildContext context) {
-                                  return NanoCard(
-                                    isConnected: false,
+                          Consumer(
+                            builder: (context, ref, child) {
+                              final isConnected =
+                                  ref.watch(deviceProvider).isNanoConnected;
+                              return DeviceCard(
+                                deviceName: 'Arduino Nano',
+                                description: 'Soiltracker and Updater',
+                                imagePath: 'assets/hardware/nano_colored.png',
+                                imagePathDisconnected:
+                                    'assets/hardware/nano_not_connected.png',
+                                isConnected: isConnected,
+                                onTap: () {
+                                  showModalBottomSheet<void>(
+                                    context: context,
+                                    isScrollControlled: true,
+                                    builder: (BuildContext context) {
+                                      return NanoCard(
+                                        isConnected: isConnected,
+                                      );
+                                    },
                                   );
                                 },
                               );

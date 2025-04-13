@@ -132,6 +132,38 @@ class UserPlotsHelper {
     };
   }
 
+  Map<String, List<Map<String, dynamic>>>? getWeeklyAiReadyData({
+    required int selectedPlotId,
+    required List<Map<String, dynamic>> rawMoistureData,
+    required List<Map<String, dynamic>> rawNutrientData,
+  }) {
+    final now = DateTime.now();
+    final sevenDaysAgo = now.subtract(const Duration(days: 7));
+
+    final weeklyMoisture = _filterDataByDate(
+      rawMoistureData,
+      selectedPlotId,
+      DateTime(sevenDaysAgo.year, sevenDaysAgo.month, sevenDaysAgo.day),
+      DateTime(now.year, now.month, now.day, 23, 59, 59),
+    );
+
+    final weeklyNutrients = _filterDataByDate(
+      rawNutrientData,
+      selectedPlotId,
+      DateTime(sevenDaysAgo.year, sevenDaysAgo.month, sevenDaysAgo.day),
+      DateTime(now.year, now.month, now.day, 23, 59, 59),
+    );
+
+    if (weeklyMoisture.isEmpty || weeklyNutrients.isEmpty) {
+      return null;
+    }
+
+    return {
+      'weeklyMoisture': weeklyMoisture,
+      'weeklyNutrients': weeklyNutrients,
+    };
+  }
+
   List<Map<String, dynamic>> _filterDataByDate(List<Map<String, dynamic>> data,
       int plotId, DateTime start, DateTime end) {
     return data.where((entry) {
@@ -169,6 +201,25 @@ class UserPlotsHelper {
     ${_formatNutrientDataForPrompt(data['nutrientYesterday'] ?? [])}
     🗓️ Nutrients (NPK) ($nutrientDBYDate):
     ${_formatNutrientDataForPrompt(data['nutrientDayBefore'] ?? [])}''';
+  }
+
+  String getFormattedWeeklyPrompt({
+    required Map<String, List<Map<String, dynamic>>> data,
+  }) {
+    final weekStart = DateTime.now().subtract(const Duration(days: 7));
+    final weekEnd = DateTime.now();
+
+    String rangeLabel =
+        "${weekStart.year}-${weekStart.month.toString().padLeft(2, '0')}-${weekStart.day.toString().padLeft(2, '0')} to "
+        "${weekEnd.year}-${weekEnd.month.toString().padLeft(2, '0')}-${weekEnd.day.toString().padLeft(2, '0')}";
+
+    return '''📅 Weekly Moisture & Nutrient Report ($rangeLabel):
+      Moisture Data:
+      ${_formatMoistureDataForPrompt(data['weeklyMoisture'] ?? [])}
+
+      Nutrient Data (NPK):
+      ${_formatNutrientDataForPrompt(data['weeklyNutrients'] ?? [])}
+    ''';
   }
 
   String _formatMoistureDataForPrompt(List<Map<String, dynamic>> moistureData) {
@@ -255,5 +306,57 @@ class UserPlotsHelper {
                   : 'Ongoing',
             })
         .toList();
+  }
+
+  bool isSameDay(DateTime d1, DateTime d2) {
+    return d1.year == d2.year && d1.month == d2.month && d1.day == d2.day;
+  }
+
+  String _monthName(int month) {
+    const months = [
+      '',
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December'
+    ];
+    return months[month];
+  }
+
+  Map<String, List<Map<String, dynamic>>> groupAnalysesByDate(
+      List<Map<String, dynamic>> analyses) {
+    final now = DateTime.now();
+    final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+    final lastWeekStart = startOfWeek.subtract(const Duration(days: 7));
+    final lastWeekEnd = startOfWeek.subtract(const Duration(seconds: 1));
+
+    Map<String, List<Map<String, dynamic>>> grouped = {};
+
+    for (final analysis in analyses) {
+      final date = DateTime.parse(analysis['analysis_date']).toLocal();
+      String label;
+
+      if (isSameDay(date, now)) {
+        label = 'Today';
+      } else if (date.isAfter(startOfWeek)) {
+        label = 'This Week';
+      } else if (date.isAfter(lastWeekStart) && date.isBefore(lastWeekEnd)) {
+        label = 'Last Week';
+      } else {
+        label = '${_monthName(date.month)} ${date.year}';
+      }
+
+      grouped.putIfAbsent(label, () => []).add(analysis);
+    }
+
+    return grouped;
   }
 }

@@ -1,10 +1,9 @@
-// ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/widgets/filled_button.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class TimeSelectionWidget extends ConsumerWidget {
   const TimeSelectionWidget({super.key});
@@ -84,9 +83,15 @@ class TimeSelectionWidget extends ConsumerWidget {
                   ? Border.all(color: Colors.green, width: 1)
                   : null,
             ),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Icon(
+                  Icons.calendar_today,
+                  size: 16,
+                  color: Theme.of(context).colorScheme.onPrimary,
+                ),
+                SizedBox(width: 5),
                 Text('Custom'),
                 SizedBox(width: 30),
                 Icon(Icons.keyboard_arrow_down_rounded),
@@ -102,7 +107,6 @@ class TimeSelectionWidget extends ConsumerWidget {
     final soilDashboardState = ref.watch(soilDashboardProvider);
     DateTime today = DateTime.now();
 
-    // ✅ Initialize with previously selected range if available
     DateTime? startDate = soilDashboardState.customStartDate;
     DateTime? endDate = soilDashboardState.customEndDate;
 
@@ -114,7 +118,6 @@ class TimeSelectionWidget extends ConsumerWidget {
           builder: (context, setState) {
             return Container(
               padding: const EdgeInsets.all(16),
-              height: 500,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.surface,
                 borderRadius:
@@ -122,42 +125,60 @@ class TimeSelectionWidget extends ConsumerWidget {
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Theme(
-                    data: Theme.of(context).copyWith(
-                      colorScheme: ColorScheme.light(
-                        primary: Theme.of(context).colorScheme.onPrimary,
-                        onPrimary: Colors.white,
-                        surface: Colors.blueGrey,
-                      ),
-                      textButtonTheme: TextButtonThemeData(
-                        style:
-                            TextButton.styleFrom(foregroundColor: Colors.green),
-                      ),
-                    ),
-                    child: CalendarDatePicker(
-                      initialDate: startDate ?? today,
-                      firstDate: DateTime(2000),
-                      lastDate: today,
-                      onDateChanged: (newDate) {
-                        setState(() {
-                          if (startDate == null ||
-                              (startDate != null && endDate != null)) {
-                            startDate = newDate;
+                  TableCalendar(
+                    focusedDay: startDate ?? today,
+                    firstDay: DateTime(2025),
+                    lastDay: today,
+                    selectedDayPredicate: (day) {
+                      if (startDate != null && endDate != null) {
+                        return (day.isAfter(startDate!) &&
+                                day.isBefore(endDate!)) ||
+                            day.isAtSameMomentAs(startDate!) ||
+                            day.isAtSameMomentAs(endDate!);
+                      } else if (startDate != null && endDate == null) {
+                        return day.isAtSameMomentAs(startDate!);
+                      } else {
+                        return false;
+                      }
+                    },
+                    onDaySelected: (selectedDay, focusedDay) {
+                      setState(() {
+                        if (startDate == null ||
+                            (startDate != null && endDate != null)) {
+                          startDate = selectedDay;
+                          endDate = null;
+                        } else if (startDate != null && endDate == null) {
+                          if (selectedDay.isAfter(startDate!)) {
+                            endDate = selectedDay;
+                          } else {
+                            startDate = selectedDay;
                             endDate = null;
-                          } else if (startDate != null && endDate == null) {
-                            if (newDate.isAfter(startDate!)) {
-                              endDate = newDate;
-                            } else {
-                              startDate = newDate;
-                              endDate = null;
-                            }
                           }
-                        });
-                      },
+                        }
+                      });
+                    },
+                    headerStyle: const HeaderStyle(
+                      formatButtonVisible: false,
+                    ),
+                    calendarStyle: CalendarStyle(
+                      todayDecoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        shape: BoxShape.circle,
+                      ),
+                      selectedDecoration: BoxDecoration(
+                        color: Colors.green,
+                        shape: BoxShape.circle,
+                      ),
+                      rangeHighlightColor:
+                          Theme.of(context).colorScheme.onSecondary,
+                      cellAlignment: Alignment.center,
+                      tablePadding: const EdgeInsets.all(10),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 10),
                   FilledCustomButton(
                     icon: Icons.filter_alt_outlined,
                     buttonText: 'Filter Date',
@@ -174,18 +195,6 @@ class TimeSelectionWidget extends ConsumerWidget {
                           }
                         : null,
                   ),
-                  if (startDate != null)
-                    Text(
-                      "Selected Range: ${DateFormat('MMMM d, y').format(startDate!)}"
-                      "${(endDate != null) ? ' - ${DateFormat('MMMM d, y').format(endDate!)}' : ''}",
-                      style: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.normal),
-                    ),
-                  if (startDate == null)
-                    const Text(
-                      'Select a date to enable the "Filter Date" button',
-                      style: TextStyle(fontSize: 12, color: Colors.red),
-                    ),
                 ],
               ),
             );

@@ -18,6 +18,7 @@ import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_w
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/tools_section.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/filled_button.dart';
+import 'package:soiltrack_mobile/widgets/outline_button.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
@@ -108,7 +109,7 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                   context, plotName, selectedPlot, userPlotNotifier),
               SliverPadding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     PlotCondition(
@@ -118,6 +119,20 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                       assignedSensor: assignedNutrientSensor,
                       plotName: plotName,
                       plotNameController: plotNameController,
+                    ),
+                    OutlineCustomButton(
+                      buttonText: 'Generate Weekly AI Analysis',
+                      onPressed: () {
+                        final weeklyData = plotHelper.getWeeklyAiReadyData(
+                            selectedPlotId: userPlot.selectedPlotId,
+                            rawMoistureData: userPlot.rawPlotMoistureData,
+                            rawNutrientData: userPlot.rawPlotNutrientData);
+                        if (weeklyData != null) {
+                          final aiPrompt = plotHelper.getFormattedWeeklyPrompt(
+                              data: weeklyData);
+                          NotifierHelper.logMessage('AI Prompt: $aiPrompt');
+                        }
+                      },
                     ),
                     if (deviceState.isPumpOpen)
                       GestureDetector(

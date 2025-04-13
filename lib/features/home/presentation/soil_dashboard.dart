@@ -97,7 +97,7 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                     ),
                     SliverPadding(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 15, vertical: 10),
+                          horizontal: 10, vertical: 10),
                       sliver: SliverList(
                         delegate: SliverChildListDelegate(
                           [

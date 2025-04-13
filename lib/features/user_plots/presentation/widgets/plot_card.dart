@@ -19,7 +19,7 @@ class PlotCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final selectedRange =
-        ref.watch(soilDashboardProvider).customTimeRangeFilter;
+        ref.watch(soilDashboardProvider).selectedTimeRangeFilter;
 
     final filteredReadings = moistureReadings
         .where((reading) => reading['plot_id'] == selectedPlotId)
@@ -148,8 +148,11 @@ class PlotCard extends ConsumerWidget {
                       bottomTitles: AxisTitles(
                         sideTitles: SideTitles(
                           showTitles: true,
-                          interval:
-                              selectedRange == '1D' ? 2 * 60 * 60 * 1000 : null,
+                          interval: selectedRange == '1D'
+                              ? 2 * 60 * 60 * 1000
+                              : selectedRange == '1W'
+                                  ? 24 * 60 * 60 * 1000
+                                  : null,
                           reservedSize: 22,
                           getTitlesWidget: (value, meta) {
                             DateTime actualTime =

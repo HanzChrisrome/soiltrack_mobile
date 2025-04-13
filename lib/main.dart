@@ -1,10 +1,11 @@
 import 'dart:async';
-import 'package:soiltrack_mobile/core/config/supabase_config.dart';
-import 'package:soiltrack_mobile/theme/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:app_links/app_links.dart';
+
+import 'package:soiltrack_mobile/core/config/supabase_config.dart';
+import 'package:soiltrack_mobile/theme/theme.dart';
 import 'package:soiltrack_mobile/core/router/app_router.dart';
-import 'package:uni_links/uni_links.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -24,7 +25,8 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> {
-  StreamSubscription? _sub;
+  final AppLinks _appLinks = AppLinks();
+  StreamSubscription<Uri>? _sub;
 
   @override
   void initState() {
@@ -33,21 +35,23 @@ class _MyAppState extends ConsumerState<MyApp> {
   }
 
   void _initDeepLinks() async {
-    Uri? initialUri = await getInitialUri();
-    if (initialUri != null) {
-      _handleDeepLink(initialUri);
-    }
+    try {
+      final Uri? initialUri = await _appLinks.uriLinkStream.first;
+      if (initialUri != null) {
+        _handleDeepLink(initialUri);
+      }
 
-    _sub = uriLinkStream.listen(
-      (Uri? uri) {
-        if (uri != null) {
+      _sub = _appLinks.uriLinkStream.listen(
+        (Uri uri) {
           _handleDeepLink(uri);
-        }
-      },
-      onError: (err) {
-        debugPrint('Error: $err');
-      },
-    );
+        },
+        onError: (err) {
+          debugPrint('AppLinks Error: $err');
+        },
+      );
+    } catch (e) {
+      debugPrint('Failed to get initial link: $e');
+    }
   }
 
   void _handleDeepLink(Uri uri) {

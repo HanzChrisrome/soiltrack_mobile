@@ -93,7 +93,7 @@ class _CropThresholdWidgetState extends ConsumerState<CropThresholdWidget> {
           SpecificDetails(
             icon: Icons.grass,
             title: 'Nitrogen Level',
-            details: '$nitrogenMin% - $nitrogenMax%',
+            details: '$nitrogenMin ppm - $nitrogenMax ppm',
             onPressed: () {
               editThreshold(
                 context: context,
@@ -115,7 +115,7 @@ class _CropThresholdWidgetState extends ConsumerState<CropThresholdWidget> {
           SpecificDetails(
             icon: Icons.science_outlined,
             title: 'Phosphorus Level',
-            details: '$phosphorusMin% - $phosphorusMax%',
+            details: '$phosphorusMin ppm - $phosphorusMax ppm',
             onPressed: () {
               editThreshold(
                 context: context,
@@ -137,7 +137,7 @@ class _CropThresholdWidgetState extends ConsumerState<CropThresholdWidget> {
           SpecificDetails(
             icon: Icons.local_florist,
             title: 'Potassium Level',
-            details: '$potassiumMin% - $potassiumMax%',
+            details: '$potassiumMin ppm - $potassiumMax ppm',
             onPressed: () {
               editThreshold(
                 context: context,

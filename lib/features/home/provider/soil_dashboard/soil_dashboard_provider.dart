@@ -62,17 +62,14 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       final rawMoistureData = results[0];
       final rawNutrientData = results[1];
 
-      NotifierHelper.logMessage(
-          'Range filter: ${state.selectedTimeRangeFilter}');
-
       if (state.selectedTimeRangeFilter != 'Custom') {
         state = state.copyWith(
           rawPlotMoistureData: rawMoistureData,
           rawPlotNutrientData: rawNutrientData,
         );
-        NotifierHelper.logMessage('Storing raw data for filtering');
       }
 
+      await fetchUserAnalytics();
       await fetchLatestData(plotIds);
       await filterPlotData(rawMoistureData, rawNutrientData);
     } catch (e) {
@@ -87,12 +84,10 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       final data = await Future.wait([
         soilDashboardService.fetchLatestMoistureReadings(plotIds),
         soilDashboardService.fetchLatestNutrientsReadings(plotIds),
-        soilDashboardService.fetchLatestAiAnalyses(plotIds),
       ]);
 
       final latestMoistureData = data[0];
       final latestNutrientData = data[1];
-      final latestAiAnalyses = data[2];
 
       DateTime? latestMoistureTimestamp =
           soilDashboardHelper.getLatestTimestamp(latestMoistureData);
@@ -136,7 +131,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
             soilDashboardHelper.extractMessagesByType(messages, 'Suggestion'),
         deviceWarnings: soilDashboardHelper.extractMessagesByType(
             messages, 'Device Warning'),
-        aiAnalysis: latestAiAnalyses,
       );
     } catch (e) {
       NotifierHelper.logError(e);
@@ -168,12 +162,12 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
 
     if (state.selectedTimeRangeFilter != 'Custom') {
       filteredMoistureData = state.rawPlotMoistureData.where((reading) {
-        DateTime readTime = DateTime.parse(reading['read_time']).toUtc();
+        DateTime readTime = DateTime.parse(reading['read_time']).toLocal();
         return readTime.isAfter(startDate) && readTime.isBefore(endDate);
       }).toList();
 
       filteredNutrientData = state.rawPlotNutrientData.where((reading) {
-        DateTime readTime = DateTime.parse(reading['read_time']).toUtc();
+        DateTime readTime = DateTime.parse(reading['read_time']).toLocal();
         return readTime.isAfter(startDate) && readTime.isBefore(endDate);
       }).toList();
     }
@@ -187,32 +181,37 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
           'readed_nitrogen',
           'readed_phosphorus',
           'readed_potassium'),
-      customTimeRangeFilter: aggregationInterval,
+      selectedTimeRangeFilter: aggregationInterval,
     );
   }
 
-  void updateTimeSelection(String selectedTimeRange,
-      {DateTime? customStartDate, DateTime? customEndDate}) {
-    final bool wasCustom = state.selectedTimeRangeFilter == 'Custom';
+  Future<void> fetchUserAnalytics(
+      {DateTime? customStartDate, DateTime? customEndDate}) async {
+    try {
+      final List<String> plotIds =
+          state.userPlots.map((plot) => plot['plot_id'].toString()).toList();
 
-    state = state.copyWith(
-      selectedTimeRangeFilter: selectedTimeRange,
-      customStartDate: selectedTimeRange == 'Custom' ? customStartDate : null,
-      customEndDate: selectedTimeRange == 'Custom' ? customEndDate : null,
-    );
+      final DateTime startDate =
+          customStartDate ?? DateTime.now().subtract(const Duration(days: 90));
 
-    if (selectedTimeRange == 'Custom' &&
-        customStartDate != null &&
-        customEndDate != null) {
-      fetchUserPlotData(
-          customStartDate: customStartDate, customEndDate: customEndDate);
-    } else {
-      if (wasCustom) {
-        fetchUserPlotData();
-        state = state.copyWith(customStartDate: null, customEndDate: null);
+      final DateTime endDate = customEndDate ??
+          DateTime.now().add(Duration(days: 1)).subtract(Duration(seconds: 1));
+
+      final results = await Future.wait([
+        soilDashboardService.fetchLatestAiAnalyses(plotIds, startDate, endDate),
+      ]);
+      final aiAnalysis = results[0];
+
+      if (state.selectedHistoryFilter != 'Custom') {
+        state = state.copyWith(
+            aiAnalysis: aiAnalysis, filteredAnalysis: aiAnalysis);
       } else {
-        filterPlotData(state.rawPlotMoistureData, state.rawPlotNutrientData);
+        state = state.copyWith(
+          filteredAnalysis: aiAnalysis,
+        );
       }
+    } catch (e) {
+      NotifierHelper.logError(e);
     }
   }
 
@@ -303,18 +302,73 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       };
 
       await supabase.from('ai_analysis').insert(newAnalysis);
-      NotifierHelper.logMessage('AI analysis saved to database.');
-
-      final updatedAnalyses = [
-        ...state.aiAnalysis.where((entry) => entry['plot_id'] != plotId),
-        newAnalysis,
-      ];
-
-      state = state.copyWith(aiAnalysis: updatedAnalyses);
+      await fetchUserPlots();
     } catch (e) {
       NotifierHelper.logError(e);
     } finally {
       state = state.copyWith(isGeneratingAi: false);
+    }
+  }
+
+  void updateHistoryFilterSelection(String selectedWeek,
+      {DateTime? customStartDate, DateTime? customEndDate}) {
+    final bool wasCustom = state.selectedHistoryFilter == 'Custom';
+    final now = DateTime.now();
+    DateTime? startDate;
+    DateTime? endDate;
+
+    if (selectedWeek == 'Custom' && customStartDate != null) {
+      fetchUserAnalytics(
+          customStartDate: customStartDate, customEndDate: customEndDate);
+      startDate = customStartDate;
+      endDate = customEndDate;
+    } else {
+      if (wasCustom) {
+        fetchUserAnalytics();
+        state = state.copyWith(
+          customStartDate: null,
+          customEndDate: null,
+        );
+      } else {
+        final match = RegExp(r'^(\d+)W$').firstMatch(selectedWeek);
+        if (match != null) {
+          final weekNumber = int.parse(match.group(1)!);
+          endDate = DateTime(now.year, now.month, now.day)
+              .subtract(Duration(days: 7 * (weekNumber - 1)));
+          startDate = endDate.subtract(const Duration(days: 7));
+        }
+      }
+    }
+
+    state = state.copyWith(
+      selectedHistoryFilter: selectedWeek,
+      historyDateStartFilter: startDate,
+      historyDateEndFilter: endDate,
+    );
+  }
+
+  void updateTimeSelection(String selectedTimeRange,
+      {DateTime? customStartDate, DateTime? customEndDate}) {
+    final bool wasCustom = state.selectedTimeRangeFilter == 'Custom';
+
+    state = state.copyWith(
+      selectedTimeRangeFilter: selectedTimeRange,
+      customStartDate: selectedTimeRange == 'Custom' ? customStartDate : null,
+      customEndDate: selectedTimeRange == 'Custom' ? customEndDate : null,
+    );
+
+    if (selectedTimeRange == 'Custom' &&
+        customStartDate != null &&
+        customEndDate != null) {
+      fetchUserPlotData(
+          customStartDate: customStartDate, customEndDate: customEndDate);
+    } else {
+      if (wasCustom) {
+        fetchUserPlotData();
+        state = state.copyWith(customStartDate: null, customEndDate: null);
+      } else {
+        filterPlotData(state.rawPlotMoistureData, state.rawPlotNutrientData);
+      }
     }
   }
 
@@ -326,6 +380,11 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
 
     NotifierHelper.logMessage('Plot warnings: $warnings');
     context.pushNamed('user-plot');
+  }
+
+  void setSelectedAnalysisId(BuildContext context, analysisId) {
+    state = state.copyWith(selectedAnalysisId: analysisId);
+    context.pushNamed('ai-analytics');
   }
 
   void setPlotId(plotId) {

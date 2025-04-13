@@ -1,6 +1,10 @@
 // home_routes.dart
 import 'package:go_router/go_router.dart';
+import 'package:soiltrack_mobile/core/utils/page_transition.dart';
+import 'package:soiltrack_mobile/features/chat_bot/presentation/chat_history.dart';
+import 'package:soiltrack_mobile/features/chat_bot/presentation/chat_screen.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/soil_assigning.dart';
+import 'package:soiltrack_mobile/features/home/presentation/chat_bot.dart';
 import 'package:soiltrack_mobile/features/home/presentation/home_screen.dart';
 import 'package:soiltrack_mobile/features/notification/presentation/notification_screen.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/plot_analytics_screen.dart';
@@ -37,5 +41,29 @@ final homeRoutes = [
     path: '/notifications',
     name: 'notifications',
     builder: (context, state) => const NotificationScreen(),
+  ),
+  GoRoute(
+    path: '/ai-chatbot',
+    name: 'ai-chatbot',
+    pageBuilder: (context, state) {
+      return customPageTransition(
+          context, transitionType: 'slide', const ChatBotScreen());
+    },
+  ),
+  GoRoute(
+    path: '/chat-screen',
+    name: 'chat-screen',
+    pageBuilder: (context, state) {
+      return customPageTransition(
+          context, transitionType: 'slide', const ChatScreen());
+    },
+  ),
+  GoRoute(
+    path: '/chat-history',
+    name: 'chat-history',
+    pageBuilder: (context, state) {
+      return customPageTransition(
+          context, transitionType: 'slide', const ChatHistoryScreen());
+    },
   ),
 ];

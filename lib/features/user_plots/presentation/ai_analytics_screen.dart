@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
@@ -14,7 +15,8 @@ import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 final _localNutrientProvider = StateProvider<String>((ref) => 'M');
 
 class AiAnalysisOverview extends ConsumerWidget {
-  const AiAnalysisOverview({super.key});
+  final String? analysisId;
+  const AiAnalysisOverview({super.key, this.analysisId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -22,40 +24,49 @@ class AiAnalysisOverview extends ConsumerWidget {
     final userPlot = dashboardState.userPlots;
     final selectedPlotId = dashboardState.selectedPlotId;
     final aiAnalysisList = dashboardState.aiAnalysis;
+    Map<String, dynamic> selectedAnalysis = {};
 
     final today = DateTime.now();
-    final aiAnalysisToday = aiAnalysisList.firstWhere(
-      (analysis) =>
-          analysis['plot_id'] == selectedPlotId &&
-          DateTime.parse(analysis['analysis_date']).year == today.year &&
-          DateTime.parse(analysis['analysis_date']).month == today.month &&
-          DateTime.parse(analysis['analysis_date']).day == today.day,
-      orElse: () => {},
-    );
+    if (analysisId != null) {
+      selectedAnalysis = aiAnalysisList.firstWhere(
+        (analysis) =>
+            analysis['plot_id'] == selectedPlotId &&
+            analysis['id'] == int.tryParse(analysisId!),
+        orElse: () => {},
+      );
+    } else {
+      selectedAnalysis = aiAnalysisList.firstWhere(
+        (analysis) =>
+            analysis['plot_id'] == selectedPlotId &&
+            DateTime.parse(analysis['analysis_date']).year == today.year &&
+            DateTime.parse(analysis['analysis_date']).month == today.month &&
+            DateTime.parse(analysis['analysis_date']).day == today.day,
+        orElse: () => {},
+      );
+    }
 
     final selectedPlot = userPlot.firstWhere(
-      (plot) => plot['plot_id'] == dashboardState.selectedPlotId,
+      (plot) => plot['plot_id'] == selectedPlotId,
       orElse: () => {},
     );
 
     final plotName = selectedPlot['plot_name'] ?? 'No plot found';
 
-    if (aiAnalysisToday.isEmpty) {
+    if (selectedAnalysis.isEmpty) {
       return const Center(
         child: Text("No AI analysis available for this plot today."),
       );
     }
 
-    final analysis = aiAnalysisToday['analysis']['AI_Analysis'];
-    NotifierHelper.logMessage('AI Analysis: $analysis');
+    final analysis = selectedAnalysis['analysis']['AI_Analysis'];
 
-    //FOR SUMMARIES
+    // FOR SUMMARIES
     final summary = analysis['summary'];
     final findings = summary['findings'];
     final predictions = summary['predictions'];
     final recommendations = summary['recommendations'];
 
-    //FOR CHARTS
+    // FOR CHARTS
     final moistureTrends = analysis['summary_of_findings']['moisture_trends'];
     final nutrientTrends = analysis['summary_of_findings']['nutrient_trends'];
     final nitrogenTrend = nutrientTrends['N'];
@@ -84,11 +95,10 @@ class AiAnalysisOverview extends ConsumerWidget {
         chartLabel = 'Soil Moisture';
     }
 
-    //FOR WARNINGS
+    // FOR WARNINGS
     final warnings = analysis['warnings'];
-    NotifierHelper.logMessage('Warnings: $warnings');
 
-    //RECOMMENDED FERTILIZERS
+    // RECOMMENDED FERTILIZERS
     final recommendedFertilizers =
         analysis['recommended_fertilizers'] as Map<String, dynamic>;
     final nutrientNames = {
@@ -96,6 +106,9 @@ class AiAnalysisOverview extends ConsumerWidget {
       'P': 'Phosphorus',
       'K': 'Potassium',
     };
+
+    final analysisDate = DateTime.parse(selectedAnalysis['analysis_date']);
+    final formattedDate = DateFormat('MMMM d, y').format(analysisDate);
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.primary,
@@ -121,6 +134,14 @@ class AiAnalysisOverview extends ConsumerWidget {
                       Navigator.of(context).pop();
                     },
                   ),
+                  actions: [
+                    IconButton(
+                      icon: Icon(Icons.history, color: Colors.green),
+                      onPressed: () {
+                        context.pushNamed('ai-history');
+                      },
+                    ),
+                  ],
                 ),
                 SliverPadding(
                   padding:
@@ -170,7 +191,7 @@ class AiAnalysisOverview extends ConsumerWidget {
                                     ),
                                     const SizedBox(height: 5),
                                     Text(
-                                      '[ DAILY AI ANALYSIS ]',
+                                      '[ $formattedDate ]',
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyMedium!

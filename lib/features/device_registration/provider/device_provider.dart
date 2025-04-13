@@ -182,11 +182,14 @@ class DeviceNotifier extends Notifier<DeviceState> {
   }
 
   Future<bool> checkDeviceStatus() async {
-    final authState = ref.read(authProvider);
+    final authState = ref.watch(authProvider);
     final macAddress = authState.macAddress;
 
     final responseTopic = "soiltrack/device/$macAddress/check-device/response";
     final publishTopic = "soiltrack/device/$macAddress/check-device";
+    final nanoTopic = "soiltrack/device/$macAddress/check-nano";
+    final nanoResponseTopic =
+        "soiltrack/device/$macAddress/check-nano/response";
 
     try {
       final response = await mqttService.publishAndWaitForResponse(
@@ -194,12 +197,20 @@ class DeviceNotifier extends Notifier<DeviceState> {
           expectedResponse: "PONG");
 
       if (response != "PONG") {
-        NotifierHelper.logError('Device did not respond.');
+        NotifierHelper.logError('ESP Device did not respond.');
         state = state.copyWith(isEspConnected: false);
         return false;
       }
 
-      state = state.copyWith(isEspConnected: true);
+      final nanoResponse = await mqttService.publishAndWaitForResponse(
+          nanoTopic, nanoResponseTopic, "CHECK NANO",
+          expectedResponse: "NANO_PONG");
+
+      if (nanoResponse != "NANO_PONG") {
+        NotifierHelper.logError('ESP Nano did not respond.');
+      }
+
+      state = state.copyWith(isEspConnected: true, isNanoConnected: true);
       return true;
     } catch (e) {
       NotifierHelper.logError(e);

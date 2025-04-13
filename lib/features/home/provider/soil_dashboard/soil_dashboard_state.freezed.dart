@@ -38,21 +38,29 @@ mixin _$SoilDashboardState {
       throw _privateConstructorUsedError;
   List<Map<String, dynamic>> get aiAnalysis =>
       throw _privateConstructorUsedError;
+  List<Map<String, dynamic>> get filteredAnalysis =>
+      throw _privateConstructorUsedError;
+  List<Map<String, dynamic>> get generatedAnalysis =>
+      throw _privateConstructorUsedError;
   bool get isFetchingUserPlots => throw _privateConstructorUsedError;
   bool get isFetchingUserPlotData => throw _privateConstructorUsedError;
   int get selectedPlotId => throw _privateConstructorUsedError;
+  int get selectedPlotHistoryId => throw _privateConstructorUsedError;
+  int get selectedAnalysisId => throw _privateConstructorUsedError;
   int get loadedPlotId => throw _privateConstructorUsedError;
   Map<int, String> get plotConditions => throw _privateConstructorUsedError;
+  String get aiAnalysisStatus => throw _privateConstructorUsedError;
+  String get selectedTimeRangeFilter => throw _privateConstructorUsedError;
+  String get selectedHistoryFilter => throw _privateConstructorUsedError;
   String? get error => throw _privateConstructorUsedError;
   String? get userPlotDataError => throw _privateConstructorUsedError;
   String? get overallCondition => throw _privateConstructorUsedError;
-  String get aiAnalysisStatus => throw _privateConstructorUsedError;
   DateTime? get selectedTimeRange => throw _privateConstructorUsedError;
   DateTime? get customStartDate => throw _privateConstructorUsedError;
   DateTime? get customEndDate => throw _privateConstructorUsedError;
   DateTime? get lastReadingTime => throw _privateConstructorUsedError;
-  String get selectedTimeRangeFilter => throw _privateConstructorUsedError;
-  String get customTimeRangeFilter => throw _privateConstructorUsedError;
+  DateTime? get historyDateStartFilter => throw _privateConstructorUsedError;
+  DateTime? get historyDateEndFilter => throw _privateConstructorUsedError;
   bool get isEditingUserPlot => throw _privateConstructorUsedError;
   bool get isSavingNewCrop => throw _privateConstructorUsedError;
   bool get isSavingNewSoilType => throw _privateConstructorUsedError;
@@ -85,21 +93,27 @@ abstract class $SoilDashboardStateCopyWith<$Res> {
       List<Map<String, dynamic>> plotsSuggestion,
       List<Map<String, dynamic>> deviceWarnings,
       List<Map<String, dynamic>> aiAnalysis,
+      List<Map<String, dynamic>> filteredAnalysis,
+      List<Map<String, dynamic>> generatedAnalysis,
       bool isFetchingUserPlots,
       bool isFetchingUserPlotData,
       int selectedPlotId,
+      int selectedPlotHistoryId,
+      int selectedAnalysisId,
       int loadedPlotId,
       Map<int, String> plotConditions,
+      String aiAnalysisStatus,
+      String selectedTimeRangeFilter,
+      String selectedHistoryFilter,
       String? error,
       String? userPlotDataError,
       String? overallCondition,
-      String aiAnalysisStatus,
       DateTime? selectedTimeRange,
       DateTime? customStartDate,
       DateTime? customEndDate,
       DateTime? lastReadingTime,
-      String selectedTimeRangeFilter,
-      String customTimeRangeFilter,
+      DateTime? historyDateStartFilter,
+      DateTime? historyDateEndFilter,
       bool isEditingUserPlot,
       bool isSavingNewCrop,
       bool isSavingNewSoilType,
@@ -134,21 +148,27 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
     Object? plotsSuggestion = null,
     Object? deviceWarnings = null,
     Object? aiAnalysis = null,
+    Object? filteredAnalysis = null,
+    Object? generatedAnalysis = null,
     Object? isFetchingUserPlots = null,
     Object? isFetchingUserPlotData = null,
     Object? selectedPlotId = null,
+    Object? selectedPlotHistoryId = null,
+    Object? selectedAnalysisId = null,
     Object? loadedPlotId = null,
     Object? plotConditions = null,
+    Object? aiAnalysisStatus = null,
+    Object? selectedTimeRangeFilter = null,
+    Object? selectedHistoryFilter = null,
     Object? error = freezed,
     Object? userPlotDataError = freezed,
     Object? overallCondition = freezed,
-    Object? aiAnalysisStatus = null,
     Object? selectedTimeRange = freezed,
     Object? customStartDate = freezed,
     Object? customEndDate = freezed,
     Object? lastReadingTime = freezed,
-    Object? selectedTimeRangeFilter = null,
-    Object? customTimeRangeFilter = null,
+    Object? historyDateStartFilter = freezed,
+    Object? historyDateEndFilter = freezed,
     Object? isEditingUserPlot = null,
     Object? isSavingNewCrop = null,
     Object? isSavingNewSoilType = null,
@@ -201,6 +221,14 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
           ? _value.aiAnalysis
           : aiAnalysis // ignore: cast_nullable_to_non_nullable
               as List<Map<String, dynamic>>,
+      filteredAnalysis: null == filteredAnalysis
+          ? _value.filteredAnalysis
+          : filteredAnalysis // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+      generatedAnalysis: null == generatedAnalysis
+          ? _value.generatedAnalysis
+          : generatedAnalysis // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
       isFetchingUserPlots: null == isFetchingUserPlots
           ? _value.isFetchingUserPlots
           : isFetchingUserPlots // ignore: cast_nullable_to_non_nullable
@@ -213,6 +241,14 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
           ? _value.selectedPlotId
           : selectedPlotId // ignore: cast_nullable_to_non_nullable
               as int,
+      selectedPlotHistoryId: null == selectedPlotHistoryId
+          ? _value.selectedPlotHistoryId
+          : selectedPlotHistoryId // ignore: cast_nullable_to_non_nullable
+              as int,
+      selectedAnalysisId: null == selectedAnalysisId
+          ? _value.selectedAnalysisId
+          : selectedAnalysisId // ignore: cast_nullable_to_non_nullable
+              as int,
       loadedPlotId: null == loadedPlotId
           ? _value.loadedPlotId
           : loadedPlotId // ignore: cast_nullable_to_non_nullable
@@ -221,6 +257,18 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
           ? _value.plotConditions
           : plotConditions // ignore: cast_nullable_to_non_nullable
               as Map<int, String>,
+      aiAnalysisStatus: null == aiAnalysisStatus
+          ? _value.aiAnalysisStatus
+          : aiAnalysisStatus // ignore: cast_nullable_to_non_nullable
+              as String,
+      selectedTimeRangeFilter: null == selectedTimeRangeFilter
+          ? _value.selectedTimeRangeFilter
+          : selectedTimeRangeFilter // ignore: cast_nullable_to_non_nullable
+              as String,
+      selectedHistoryFilter: null == selectedHistoryFilter
+          ? _value.selectedHistoryFilter
+          : selectedHistoryFilter // ignore: cast_nullable_to_non_nullable
+              as String,
       error: freezed == error
           ? _value.error
           : error // ignore: cast_nullable_to_non_nullable
@@ -233,10 +281,6 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
           ? _value.overallCondition
           : overallCondition // ignore: cast_nullable_to_non_nullable
               as String?,
-      aiAnalysisStatus: null == aiAnalysisStatus
-          ? _value.aiAnalysisStatus
-          : aiAnalysisStatus // ignore: cast_nullable_to_non_nullable
-              as String,
       selectedTimeRange: freezed == selectedTimeRange
           ? _value.selectedTimeRange
           : selectedTimeRange // ignore: cast_nullable_to_non_nullable
@@ -253,14 +297,14 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
           ? _value.lastReadingTime
           : lastReadingTime // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      selectedTimeRangeFilter: null == selectedTimeRangeFilter
-          ? _value.selectedTimeRangeFilter
-          : selectedTimeRangeFilter // ignore: cast_nullable_to_non_nullable
-              as String,
-      customTimeRangeFilter: null == customTimeRangeFilter
-          ? _value.customTimeRangeFilter
-          : customTimeRangeFilter // ignore: cast_nullable_to_non_nullable
-              as String,
+      historyDateStartFilter: freezed == historyDateStartFilter
+          ? _value.historyDateStartFilter
+          : historyDateStartFilter // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      historyDateEndFilter: freezed == historyDateEndFilter
+          ? _value.historyDateEndFilter
+          : historyDateEndFilter // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
       isEditingUserPlot: null == isEditingUserPlot
           ? _value.isEditingUserPlot
           : isEditingUserPlot // ignore: cast_nullable_to_non_nullable
@@ -309,21 +353,27 @@ abstract class _$$SoilDashboardStateImplCopyWith<$Res>
       List<Map<String, dynamic>> plotsSuggestion,
       List<Map<String, dynamic>> deviceWarnings,
       List<Map<String, dynamic>> aiAnalysis,
+      List<Map<String, dynamic>> filteredAnalysis,
+      List<Map<String, dynamic>> generatedAnalysis,
       bool isFetchingUserPlots,
       bool isFetchingUserPlotData,
       int selectedPlotId,
+      int selectedPlotHistoryId,
+      int selectedAnalysisId,
       int loadedPlotId,
       Map<int, String> plotConditions,
+      String aiAnalysisStatus,
+      String selectedTimeRangeFilter,
+      String selectedHistoryFilter,
       String? error,
       String? userPlotDataError,
       String? overallCondition,
-      String aiAnalysisStatus,
       DateTime? selectedTimeRange,
       DateTime? customStartDate,
       DateTime? customEndDate,
       DateTime? lastReadingTime,
-      String selectedTimeRangeFilter,
-      String customTimeRangeFilter,
+      DateTime? historyDateStartFilter,
+      DateTime? historyDateEndFilter,
       bool isEditingUserPlot,
       bool isSavingNewCrop,
       bool isSavingNewSoilType,
@@ -356,21 +406,27 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
     Object? plotsSuggestion = null,
     Object? deviceWarnings = null,
     Object? aiAnalysis = null,
+    Object? filteredAnalysis = null,
+    Object? generatedAnalysis = null,
     Object? isFetchingUserPlots = null,
     Object? isFetchingUserPlotData = null,
     Object? selectedPlotId = null,
+    Object? selectedPlotHistoryId = null,
+    Object? selectedAnalysisId = null,
     Object? loadedPlotId = null,
     Object? plotConditions = null,
+    Object? aiAnalysisStatus = null,
+    Object? selectedTimeRangeFilter = null,
+    Object? selectedHistoryFilter = null,
     Object? error = freezed,
     Object? userPlotDataError = freezed,
     Object? overallCondition = freezed,
-    Object? aiAnalysisStatus = null,
     Object? selectedTimeRange = freezed,
     Object? customStartDate = freezed,
     Object? customEndDate = freezed,
     Object? lastReadingTime = freezed,
-    Object? selectedTimeRangeFilter = null,
-    Object? customTimeRangeFilter = null,
+    Object? historyDateStartFilter = freezed,
+    Object? historyDateEndFilter = freezed,
     Object? isEditingUserPlot = null,
     Object? isSavingNewCrop = null,
     Object? isSavingNewSoilType = null,
@@ -423,6 +479,14 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
           ? _value._aiAnalysis
           : aiAnalysis // ignore: cast_nullable_to_non_nullable
               as List<Map<String, dynamic>>,
+      filteredAnalysis: null == filteredAnalysis
+          ? _value._filteredAnalysis
+          : filteredAnalysis // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+      generatedAnalysis: null == generatedAnalysis
+          ? _value._generatedAnalysis
+          : generatedAnalysis // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
       isFetchingUserPlots: null == isFetchingUserPlots
           ? _value.isFetchingUserPlots
           : isFetchingUserPlots // ignore: cast_nullable_to_non_nullable
@@ -435,6 +499,14 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
           ? _value.selectedPlotId
           : selectedPlotId // ignore: cast_nullable_to_non_nullable
               as int,
+      selectedPlotHistoryId: null == selectedPlotHistoryId
+          ? _value.selectedPlotHistoryId
+          : selectedPlotHistoryId // ignore: cast_nullable_to_non_nullable
+              as int,
+      selectedAnalysisId: null == selectedAnalysisId
+          ? _value.selectedAnalysisId
+          : selectedAnalysisId // ignore: cast_nullable_to_non_nullable
+              as int,
       loadedPlotId: null == loadedPlotId
           ? _value.loadedPlotId
           : loadedPlotId // ignore: cast_nullable_to_non_nullable
@@ -443,6 +515,18 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
           ? _value._plotConditions
           : plotConditions // ignore: cast_nullable_to_non_nullable
               as Map<int, String>,
+      aiAnalysisStatus: null == aiAnalysisStatus
+          ? _value.aiAnalysisStatus
+          : aiAnalysisStatus // ignore: cast_nullable_to_non_nullable
+              as String,
+      selectedTimeRangeFilter: null == selectedTimeRangeFilter
+          ? _value.selectedTimeRangeFilter
+          : selectedTimeRangeFilter // ignore: cast_nullable_to_non_nullable
+              as String,
+      selectedHistoryFilter: null == selectedHistoryFilter
+          ? _value.selectedHistoryFilter
+          : selectedHistoryFilter // ignore: cast_nullable_to_non_nullable
+              as String,
       error: freezed == error
           ? _value.error
           : error // ignore: cast_nullable_to_non_nullable
@@ -455,10 +539,6 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
           ? _value.overallCondition
           : overallCondition // ignore: cast_nullable_to_non_nullable
               as String?,
-      aiAnalysisStatus: null == aiAnalysisStatus
-          ? _value.aiAnalysisStatus
-          : aiAnalysisStatus // ignore: cast_nullable_to_non_nullable
-              as String,
       selectedTimeRange: freezed == selectedTimeRange
           ? _value.selectedTimeRange
           : selectedTimeRange // ignore: cast_nullable_to_non_nullable
@@ -475,14 +555,14 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
           ? _value.lastReadingTime
           : lastReadingTime // ignore: cast_nullable_to_non_nullable
               as DateTime?,
-      selectedTimeRangeFilter: null == selectedTimeRangeFilter
-          ? _value.selectedTimeRangeFilter
-          : selectedTimeRangeFilter // ignore: cast_nullable_to_non_nullable
-              as String,
-      customTimeRangeFilter: null == customTimeRangeFilter
-          ? _value.customTimeRangeFilter
-          : customTimeRangeFilter // ignore: cast_nullable_to_non_nullable
-              as String,
+      historyDateStartFilter: freezed == historyDateStartFilter
+          ? _value.historyDateStartFilter
+          : historyDateStartFilter // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      historyDateEndFilter: freezed == historyDateEndFilter
+          ? _value.historyDateEndFilter
+          : historyDateEndFilter // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
       isEditingUserPlot: null == isEditingUserPlot
           ? _value.isEditingUserPlot
           : isEditingUserPlot // ignore: cast_nullable_to_non_nullable
@@ -526,21 +606,27 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
       final List<Map<String, dynamic>> plotsSuggestion = const [],
       final List<Map<String, dynamic>> deviceWarnings = const [],
       final List<Map<String, dynamic>> aiAnalysis = const [],
+      final List<Map<String, dynamic>> filteredAnalysis = const [],
+      final List<Map<String, dynamic>> generatedAnalysis = const [],
       this.isFetchingUserPlots = false,
       this.isFetchingUserPlotData = false,
       this.selectedPlotId = 0,
+      this.selectedPlotHistoryId = 0,
+      this.selectedAnalysisId = 0,
       this.loadedPlotId = 0,
       final Map<int, String> plotConditions = const {},
+      this.aiAnalysisStatus = 'No analysis generated yet',
+      this.selectedTimeRangeFilter = "1D",
+      this.selectedHistoryFilter = "1W",
       this.error,
       this.userPlotDataError,
       this.overallCondition,
-      this.aiAnalysisStatus = 'No analysis generated yet',
       this.selectedTimeRange,
       this.customStartDate,
       this.customEndDate,
       this.lastReadingTime,
-      this.selectedTimeRangeFilter = "1D",
-      this.customTimeRangeFilter = "1D",
+      this.historyDateStartFilter,
+      this.historyDateEndFilter,
       this.isEditingUserPlot = false,
       this.isSavingNewCrop = false,
       this.isSavingNewSoilType = false,
@@ -558,6 +644,8 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
         _plotsSuggestion = plotsSuggestion,
         _deviceWarnings = deviceWarnings,
         _aiAnalysis = aiAnalysis,
+        _filteredAnalysis = filteredAnalysis,
+        _generatedAnalysis = generatedAnalysis,
         _plotConditions = plotConditions;
 
   final List<Map<String, dynamic>> _userPlots;
@@ -666,6 +754,26 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
     return EqualUnmodifiableListView(_aiAnalysis);
   }
 
+  final List<Map<String, dynamic>> _filteredAnalysis;
+  @override
+  @JsonKey()
+  List<Map<String, dynamic>> get filteredAnalysis {
+    if (_filteredAnalysis is EqualUnmodifiableListView)
+      return _filteredAnalysis;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_filteredAnalysis);
+  }
+
+  final List<Map<String, dynamic>> _generatedAnalysis;
+  @override
+  @JsonKey()
+  List<Map<String, dynamic>> get generatedAnalysis {
+    if (_generatedAnalysis is EqualUnmodifiableListView)
+      return _generatedAnalysis;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_generatedAnalysis);
+  }
+
   @override
   @JsonKey()
   final bool isFetchingUserPlots;
@@ -675,6 +783,12 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
   @override
   @JsonKey()
   final int selectedPlotId;
+  @override
+  @JsonKey()
+  final int selectedPlotHistoryId;
+  @override
+  @JsonKey()
+  final int selectedAnalysisId;
   @override
   @JsonKey()
   final int loadedPlotId;
@@ -688,14 +802,20 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
   }
 
   @override
+  @JsonKey()
+  final String aiAnalysisStatus;
+  @override
+  @JsonKey()
+  final String selectedTimeRangeFilter;
+  @override
+  @JsonKey()
+  final String selectedHistoryFilter;
+  @override
   final String? error;
   @override
   final String? userPlotDataError;
   @override
   final String? overallCondition;
-  @override
-  @JsonKey()
-  final String aiAnalysisStatus;
   @override
   final DateTime? selectedTimeRange;
   @override
@@ -705,11 +825,9 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
   @override
   final DateTime? lastReadingTime;
   @override
-  @JsonKey()
-  final String selectedTimeRangeFilter;
+  final DateTime? historyDateStartFilter;
   @override
-  @JsonKey()
-  final String customTimeRangeFilter;
+  final DateTime? historyDateEndFilter;
   @override
   @JsonKey()
   final bool isEditingUserPlot;
@@ -731,7 +849,7 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
 
   @override
   String toString() {
-    return 'SoilDashboardState(userPlots: $userPlots, rawPlotMoistureData: $rawPlotMoistureData, rawPlotNutrientData: $rawPlotNutrientData, latestPlotMoistureData: $latestPlotMoistureData, latestPlotNutrientData: $latestPlotNutrientData, userPlotMoistureData: $userPlotMoistureData, userPlotNutrientData: $userPlotNutrientData, nutrientWarnings: $nutrientWarnings, plotsSuggestion: $plotsSuggestion, deviceWarnings: $deviceWarnings, aiAnalysis: $aiAnalysis, isFetchingUserPlots: $isFetchingUserPlots, isFetchingUserPlotData: $isFetchingUserPlotData, selectedPlotId: $selectedPlotId, loadedPlotId: $loadedPlotId, plotConditions: $plotConditions, error: $error, userPlotDataError: $userPlotDataError, overallCondition: $overallCondition, aiAnalysisStatus: $aiAnalysisStatus, selectedTimeRange: $selectedTimeRange, customStartDate: $customStartDate, customEndDate: $customEndDate, lastReadingTime: $lastReadingTime, selectedTimeRangeFilter: $selectedTimeRangeFilter, customTimeRangeFilter: $customTimeRangeFilter, isEditingUserPlot: $isEditingUserPlot, isSavingNewCrop: $isSavingNewCrop, isSavingNewSoilType: $isSavingNewSoilType, isSavingNewSoilMoistureSensor: $isSavingNewSoilMoistureSensor, isSavingNewSoilNutrientSensor: $isSavingNewSoilNutrientSensor, isGeneratingAi: $isGeneratingAi)';
+    return 'SoilDashboardState(userPlots: $userPlots, rawPlotMoistureData: $rawPlotMoistureData, rawPlotNutrientData: $rawPlotNutrientData, latestPlotMoistureData: $latestPlotMoistureData, latestPlotNutrientData: $latestPlotNutrientData, userPlotMoistureData: $userPlotMoistureData, userPlotNutrientData: $userPlotNutrientData, nutrientWarnings: $nutrientWarnings, plotsSuggestion: $plotsSuggestion, deviceWarnings: $deviceWarnings, aiAnalysis: $aiAnalysis, filteredAnalysis: $filteredAnalysis, generatedAnalysis: $generatedAnalysis, isFetchingUserPlots: $isFetchingUserPlots, isFetchingUserPlotData: $isFetchingUserPlotData, selectedPlotId: $selectedPlotId, selectedPlotHistoryId: $selectedPlotHistoryId, selectedAnalysisId: $selectedAnalysisId, loadedPlotId: $loadedPlotId, plotConditions: $plotConditions, aiAnalysisStatus: $aiAnalysisStatus, selectedTimeRangeFilter: $selectedTimeRangeFilter, selectedHistoryFilter: $selectedHistoryFilter, error: $error, userPlotDataError: $userPlotDataError, overallCondition: $overallCondition, selectedTimeRange: $selectedTimeRange, customStartDate: $customStartDate, customEndDate: $customEndDate, lastReadingTime: $lastReadingTime, historyDateStartFilter: $historyDateStartFilter, historyDateEndFilter: $historyDateEndFilter, isEditingUserPlot: $isEditingUserPlot, isSavingNewCrop: $isSavingNewCrop, isSavingNewSoilType: $isSavingNewSoilType, isSavingNewSoilMoistureSensor: $isSavingNewSoilMoistureSensor, isSavingNewSoilNutrientSensor: $isSavingNewSoilNutrientSensor, isGeneratingAi: $isGeneratingAi)';
   }
 
   @override
@@ -761,23 +879,36 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
                 .equals(other._deviceWarnings, _deviceWarnings) &&
             const DeepCollectionEquality()
                 .equals(other._aiAnalysis, _aiAnalysis) &&
+            const DeepCollectionEquality()
+                .equals(other._filteredAnalysis, _filteredAnalysis) &&
+            const DeepCollectionEquality()
+                .equals(other._generatedAnalysis, _generatedAnalysis) &&
             (identical(other.isFetchingUserPlots, isFetchingUserPlots) ||
                 other.isFetchingUserPlots == isFetchingUserPlots) &&
             (identical(other.isFetchingUserPlotData, isFetchingUserPlotData) ||
                 other.isFetchingUserPlotData == isFetchingUserPlotData) &&
             (identical(other.selectedPlotId, selectedPlotId) ||
                 other.selectedPlotId == selectedPlotId) &&
+            (identical(other.selectedPlotHistoryId, selectedPlotHistoryId) ||
+                other.selectedPlotHistoryId == selectedPlotHistoryId) &&
+            (identical(other.selectedAnalysisId, selectedAnalysisId) ||
+                other.selectedAnalysisId == selectedAnalysisId) &&
             (identical(other.loadedPlotId, loadedPlotId) ||
                 other.loadedPlotId == loadedPlotId) &&
             const DeepCollectionEquality()
                 .equals(other._plotConditions, _plotConditions) &&
+            (identical(other.aiAnalysisStatus, aiAnalysisStatus) ||
+                other.aiAnalysisStatus == aiAnalysisStatus) &&
+            (identical(
+                    other.selectedTimeRangeFilter, selectedTimeRangeFilter) ||
+                other.selectedTimeRangeFilter == selectedTimeRangeFilter) &&
+            (identical(other.selectedHistoryFilter, selectedHistoryFilter) ||
+                other.selectedHistoryFilter == selectedHistoryFilter) &&
             (identical(other.error, error) || other.error == error) &&
             (identical(other.userPlotDataError, userPlotDataError) ||
                 other.userPlotDataError == userPlotDataError) &&
             (identical(other.overallCondition, overallCondition) ||
                 other.overallCondition == overallCondition) &&
-            (identical(other.aiAnalysisStatus, aiAnalysisStatus) ||
-                other.aiAnalysisStatus == aiAnalysisStatus) &&
             (identical(other.selectedTimeRange, selectedTimeRange) ||
                 other.selectedTimeRange == selectedTimeRange) &&
             (identical(other.customStartDate, customStartDate) ||
@@ -786,23 +917,20 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
                 other.customEndDate == customEndDate) &&
             (identical(other.lastReadingTime, lastReadingTime) ||
                 other.lastReadingTime == lastReadingTime) &&
-            (identical(
-                    other.selectedTimeRangeFilter, selectedTimeRangeFilter) ||
-                other.selectedTimeRangeFilter == selectedTimeRangeFilter) &&
-            (identical(other.customTimeRangeFilter, customTimeRangeFilter) ||
-                other.customTimeRangeFilter == customTimeRangeFilter) &&
+            (identical(other.historyDateStartFilter, historyDateStartFilter) ||
+                other.historyDateStartFilter == historyDateStartFilter) &&
+            (identical(other.historyDateEndFilter, historyDateEndFilter) ||
+                other.historyDateEndFilter == historyDateEndFilter) &&
             (identical(other.isEditingUserPlot, isEditingUserPlot) ||
                 other.isEditingUserPlot == isEditingUserPlot) &&
             (identical(other.isSavingNewCrop, isSavingNewCrop) ||
                 other.isSavingNewCrop == isSavingNewCrop) &&
             (identical(other.isSavingNewSoilType, isSavingNewSoilType) ||
                 other.isSavingNewSoilType == isSavingNewSoilType) &&
-            (identical(other.isSavingNewSoilMoistureSensor,
-                    isSavingNewSoilMoistureSensor) ||
+            (identical(other.isSavingNewSoilMoistureSensor, isSavingNewSoilMoistureSensor) ||
                 other.isSavingNewSoilMoistureSensor ==
                     isSavingNewSoilMoistureSensor) &&
-            (identical(other.isSavingNewSoilNutrientSensor,
-                    isSavingNewSoilNutrientSensor) ||
+            (identical(other.isSavingNewSoilNutrientSensor, isSavingNewSoilNutrientSensor) ||
                 other.isSavingNewSoilNutrientSensor ==
                     isSavingNewSoilNutrientSensor) &&
             (identical(other.isGeneratingAi, isGeneratingAi) ||
@@ -823,21 +951,27 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
         const DeepCollectionEquality().hash(_plotsSuggestion),
         const DeepCollectionEquality().hash(_deviceWarnings),
         const DeepCollectionEquality().hash(_aiAnalysis),
+        const DeepCollectionEquality().hash(_filteredAnalysis),
+        const DeepCollectionEquality().hash(_generatedAnalysis),
         isFetchingUserPlots,
         isFetchingUserPlotData,
         selectedPlotId,
+        selectedPlotHistoryId,
+        selectedAnalysisId,
         loadedPlotId,
         const DeepCollectionEquality().hash(_plotConditions),
+        aiAnalysisStatus,
+        selectedTimeRangeFilter,
+        selectedHistoryFilter,
         error,
         userPlotDataError,
         overallCondition,
-        aiAnalysisStatus,
         selectedTimeRange,
         customStartDate,
         customEndDate,
         lastReadingTime,
-        selectedTimeRangeFilter,
-        customTimeRangeFilter,
+        historyDateStartFilter,
+        historyDateEndFilter,
         isEditingUserPlot,
         isSavingNewCrop,
         isSavingNewSoilType,
@@ -869,21 +1003,27 @@ abstract class _SoilDashboardState implements SoilDashboardState {
       final List<Map<String, dynamic>> plotsSuggestion,
       final List<Map<String, dynamic>> deviceWarnings,
       final List<Map<String, dynamic>> aiAnalysis,
+      final List<Map<String, dynamic>> filteredAnalysis,
+      final List<Map<String, dynamic>> generatedAnalysis,
       final bool isFetchingUserPlots,
       final bool isFetchingUserPlotData,
       final int selectedPlotId,
+      final int selectedPlotHistoryId,
+      final int selectedAnalysisId,
       final int loadedPlotId,
       final Map<int, String> plotConditions,
+      final String aiAnalysisStatus,
+      final String selectedTimeRangeFilter,
+      final String selectedHistoryFilter,
       final String? error,
       final String? userPlotDataError,
       final String? overallCondition,
-      final String aiAnalysisStatus,
       final DateTime? selectedTimeRange,
       final DateTime? customStartDate,
       final DateTime? customEndDate,
       final DateTime? lastReadingTime,
-      final String selectedTimeRangeFilter,
-      final String customTimeRangeFilter,
+      final DateTime? historyDateStartFilter,
+      final DateTime? historyDateEndFilter,
       final bool isEditingUserPlot,
       final bool isSavingNewCrop,
       final bool isSavingNewSoilType,
@@ -914,23 +1054,35 @@ abstract class _SoilDashboardState implements SoilDashboardState {
   @override
   List<Map<String, dynamic>> get aiAnalysis;
   @override
+  List<Map<String, dynamic>> get filteredAnalysis;
+  @override
+  List<Map<String, dynamic>> get generatedAnalysis;
+  @override
   bool get isFetchingUserPlots;
   @override
   bool get isFetchingUserPlotData;
   @override
   int get selectedPlotId;
   @override
+  int get selectedPlotHistoryId;
+  @override
+  int get selectedAnalysisId;
+  @override
   int get loadedPlotId;
   @override
   Map<int, String> get plotConditions;
+  @override
+  String get aiAnalysisStatus;
+  @override
+  String get selectedTimeRangeFilter;
+  @override
+  String get selectedHistoryFilter;
   @override
   String? get error;
   @override
   String? get userPlotDataError;
   @override
   String? get overallCondition;
-  @override
-  String get aiAnalysisStatus;
   @override
   DateTime? get selectedTimeRange;
   @override
@@ -940,9 +1092,9 @@ abstract class _SoilDashboardState implements SoilDashboardState {
   @override
   DateTime? get lastReadingTime;
   @override
-  String get selectedTimeRangeFilter;
+  DateTime? get historyDateStartFilter;
   @override
-  String get customTimeRangeFilter;
+  DateTime? get historyDateEndFilter;
   @override
   bool get isEditingUserPlot;
   @override

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
+import 'package:soiltrack_mobile/features/chat_bot/provider/chatbot_provider.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/greeting_widget.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/soil_condition.dart';
@@ -22,103 +23,27 @@ class LandingDashboard extends ConsumerWidget {
     final weatherState = ref.watch(weatherProvider);
     final userPlotState = ref.watch(soilDashboardProvider);
     final deviceState = ref.watch(deviceProvider);
+    final chatState = ref.watch(chatbotProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 15, vertical: 25),
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(
-                              'Hello, ',
-                              style: TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: -0.5,
-                                height: 1.0,
-                                color: Theme.of(context).colorScheme.secondary,
-                              ),
-                            ),
-                            Text(
-                              '${authState.userName} ${authState.userLastName}',
-                              style: TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w600,
-                                letterSpacing: -0.5,
-                                height: 1.0,
-                                color: Theme.of(context).colorScheme.onPrimary,
-                              ),
-                            ),
-                          ],
-                        ),
-                        Text(
-                          'Manage your soil with care.',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            letterSpacing: -0.5,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .secondary
-                                .withOpacity(0.7),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const Spacer(),
-                    GestureDetector(
-                      onTap: () {
-                        context.pushNamed('notifications');
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 5,
-                        ),
-                        decoration: BoxDecoration(
-                          border: Border.all(
-                            color: Colors.grey[300]!,
-                            width: 1.0,
-                          ),
-                          borderRadius: BorderRadius.circular(15),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.notifications_none_rounded,
-                              color: Theme.of(context).colorScheme.onPrimary,
-                              size: 30,
-                            ),
-                            Icon(
-                              Icons.keyboard_arrow_down_rounded,
-                              color: Theme.of(context).colorScheme.onPrimary,
-                              size: 20,
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 15),
+                GreetingWidget(userName: authState.userName!),
+                const SizedBox(height: 10),
                 SoilCondition(),
                 const SizedBox(height: 10),
                 const WeatherWidget(),
                 const SizedBox(height: 10),
                 DynamicContainer(
                   backgroundColor: Colors.transparent,
-                  borderColor: Colors.black12,
+                  borderColor:
+                      Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -132,7 +57,7 @@ class LandingDashboard extends ConsumerWidget {
                               textColor: Colors.grey[500]!),
                         ],
                       ),
-                      const SizedBox(height: 40),
+                      DividerWidget(verticalHeight: 5),
                       if (weatherState.suggestionData != null &&
                           weatherState.suggestionData!.isNotEmpty)
                         ListView.separated(
@@ -186,6 +111,11 @@ class LandingDashboard extends ConsumerWidget {
                 if (userPlotState.deviceWarnings.isNotEmpty ||
                     deviceState.isEspConnected == false)
                   DynamicContainer(
+                    backgroundColor: Colors.transparent,
+                    borderColor: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.2),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -274,6 +204,11 @@ class LandingDashboard extends ConsumerWidget {
                   ),
                 if (userPlotState.nutrientWarnings.isNotEmpty)
                   DynamicContainer(
+                    backgroundColor: Colors.transparent,
+                    borderColor: Theme.of(context)
+                        .colorScheme
+                        .onSurface
+                        .withOpacity(0.2),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [

@@ -36,7 +36,7 @@ class ToolsButton extends ConsumerWidget {
             buttonName,
             style: TextStyle(
               color: Theme.of(context).colorScheme.onPrimary,
-              fontSize: 8,
+              fontSize: 10,
             ),
           ),
         ],

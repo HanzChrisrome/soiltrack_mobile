@@ -4,6 +4,7 @@ import 'package:soiltrack_mobile/features/crops_registration/presentation/crops_
 import 'package:soiltrack_mobile/features/crops_registration/presentation/crops_screen.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/custom_add.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/ai_analytics_screen.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/ai_history_screen.dart';
 
 final plotRoutes = [
   GoRoute(
@@ -29,6 +30,19 @@ final plotRoutes = [
   GoRoute(
     path: '/ai-analytics',
     name: 'ai-analytics',
-    builder: (context, state) => const AiAnalysisOverview(),
+    builder: (context, state) => AiAnalysisOverview(),
+  ),
+  GoRoute(
+    path: '/ai-analytics/:analysisId',
+    name: 'ai-analysis-detail',
+    builder: (context, state) {
+      final analysisId = state.pathParameters['analysisId'];
+      return AiAnalysisOverview(analysisId: analysisId);
+    },
+  ),
+  GoRoute(
+    path: '/ai-history',
+    name: 'ai-history',
+    builder: (context, state) => const AiHistoryScreen(),
   ),
 ];

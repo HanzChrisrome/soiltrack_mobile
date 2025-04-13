@@ -23,7 +23,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   final List<IconData> navIcons = [
     Icons.home,
     Icons.layers_rounded,
-    Icons.chat_bubble_outline_rounded,
     Icons.developer_board_rounded,
     Icons.settings,
   ];
@@ -51,8 +50,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: List.generate(navIcons.length, (index) {
           final isSelected = _selectedIndex == index;
           return Container(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 10, vertical: 3), // Reduced padding
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
             decoration: BoxDecoration(
               color: isSelected
                   ? const Color.fromARGB(255, 153, 228, 118)

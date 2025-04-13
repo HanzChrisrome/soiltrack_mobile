@@ -92,7 +92,7 @@ class PlotAnalyticsScreen extends ConsumerWidget {
               ),
               SliverPadding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 15, vertical: 10),
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate(
                     [

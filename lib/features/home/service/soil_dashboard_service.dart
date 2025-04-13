@@ -369,11 +369,17 @@ class SoilDashboardService {
   }
 
   Future<List<Map<String, dynamic>>> fetchLatestAiAnalyses(
-      List<String> plotIds) async {
+      List<String> plotIds, DateTime startDate, DateTime endDate) async {
+    final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+    final String formattedStartDate = formatter.format(startDate.toUtc());
+    final String formattedEndDate = formatter.format(endDate.toUtc());
+
     final response = await supabase
         .from('ai_analysis')
         .select()
         .inFilter('plot_id', plotIds)
+        .gte('analysis_date', formattedStartDate)
+        .lte('analysis_date', formattedEndDate)
         .order('created_at', ascending: false);
 
     return response;
