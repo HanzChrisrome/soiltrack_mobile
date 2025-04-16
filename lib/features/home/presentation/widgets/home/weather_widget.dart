@@ -15,13 +15,92 @@ class WeatherWidget extends ConsumerWidget {
       );
     }
 
+    String _getWeatherImage(Map<String, dynamic> weatherData) {
+      final int id = weatherData["weather"][0]["id"];
+      final int currentTime = weatherData["dt"];
+      final int sunrise = weatherData["sys"]["sunrise"];
+      final int sunset = weatherData["sys"]["sunset"];
+      final bool isDayTime = currentTime >= sunrise && currentTime < sunset;
+
+      if (id >= 200 && id < 300) {
+        // Thunderstorm
+        final hasRain = id >= 201 && id <= 232;
+        if (hasRain) {
+          return isDayTime
+              ? 'assets/weather/thunder/heavy_thunder_rain_day.png'
+              : 'assets/weather/thunder/heavy_thunder_rain_night.png';
+        } else {
+          return isDayTime
+              ? 'assets/weather/thunder/heavy_thunder_day.png'
+              : 'assets/weather/thunder/heavy_thunder_night.png';
+        }
+      } else if (id >= 300 && id < 400) {
+        // Drizzle (can reuse light rain icons)
+        return isDayTime
+            ? 'assets/weather/rain/light_rain_day.png'
+            : 'assets/weather/rain/light_rain_night.png';
+      } else if (id >= 500 && id < 600) {
+        // Rain
+        if (id >= 500 && id < 502) {
+          return isDayTime
+              ? 'assets/weather/rain/light_rain_day.png'
+              : 'assets/weather/rain/light_rain_night.png';
+        } else if (id == 502 || id == 503 || id == 504) {
+          return isDayTime
+              ? 'assets/weather/rain/heavy_rain_day.png'
+              : 'assets/weather/rain/heavy_rain_night.png';
+        } else {
+          return isDayTime
+              ? 'assets/weather/moderate_rain_day.png'
+              : 'assets/weather/moderate_rain_night.png';
+        }
+      } else if (id >= 600 && id < 700) {
+        // Snow (if you ever add snow icons later)
+        return isDayTime
+            ? 'assets/weather/clear/clear.png'
+            : 'assets/weather/clear/normal_night.png';
+      } else if (id >= 700 && id < 800) {
+        // Atmosphere: mist, smoke, haze, etc.
+        return isDayTime
+            ? 'assets/weather/cloudy/cloudy_day.png'
+            : 'assets/weather/cloudy/cloudy_night.png';
+      } else if (id == 800) {
+        // Clear
+        return isDayTime
+            ? 'assets/weather/clear/clear.png'
+            : 'assets/weather/clear/normal_night.png';
+      } else if (id > 800 && id < 805) {
+        // Clouds
+        switch (id) {
+          case 801:
+            return isDayTime
+                ? 'assets/weather/cloudy/few_clouds_day.png'
+                : 'assets/weather/cloudy/few_clouds_night.png';
+          case 802:
+            return isDayTime
+                ? 'assets/weather/cloudy/cloudy_day.png'
+                : 'assets/weather/cloudy/cloudy_night.png';
+          case 803:
+          case 804:
+            return isDayTime
+                ? 'assets/weather/cloudy/overcast_day.png'
+                : 'assets/weather/cloudy/overcast_night.png';
+        }
+      }
+
+      // Fallback
+      return isDayTime
+          ? 'assets/weather/clear/clear.png'
+          : 'assets/weather/clear/normal_night.png';
+    }
+
     return Column(
       children: [
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            image: const DecorationImage(
-              image: AssetImage('assets/weather/SUNNY DAY.png'),
+            image: DecorationImage(
+              image: AssetImage(_getWeatherImage(weatherState.weatherData!)),
               fit: BoxFit.cover,
             ),
             borderRadius: BorderRadius.circular(25),

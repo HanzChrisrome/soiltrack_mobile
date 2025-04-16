@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_toggle.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/history_filter.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
@@ -32,24 +33,23 @@ class _AiHistoryScreenState extends ConsumerState<AiHistoryScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final startDate =
-        ref.watch(soilDashboardProvider).historyDateStartFilter?.toLocal();
+    final soilDashboard = ref.watch(soilDashboardProvider);
+    final startDate = soilDashboard.historyDateStartFilter?.toLocal() ??
+        DateTime.now().subtract(const Duration(days: 7));
     final endDate =
-        ref.watch(soilDashboardProvider).historyDateEndFilter?.toLocal();
-    final selectedPlotId = ref.watch(soilDashboardProvider).selectedPlotId;
-    final fullAiAnalysisList =
-        ref.watch(soilDashboardProvider).filteredAnalysis;
+        soilDashboard.historyDateEndFilter?.toLocal() ?? DateTime.now();
+    final selectedPlotId = soilDashboard.selectedPlotId;
+    final fullAiAnalysisList = soilDashboard.filteredAnalysis;
+    final plotId = soilDashboard.selectedPlotId;
+    final currentCardToggled = soilDashboard.plotToggles[plotId] ?? 'Daily';
 
     final filteredList = fullAiAnalysisList.where((entry) {
       final analysisDate = DateTime.parse(entry['analysis_date']).toLocal();
-
-      final isInRange =
-          (startDate == null || !analysisDate.isBefore(startDate)) &&
-              (endDate == null ||
-                  analysisDate.isBefore(endDate.add(Duration(days: 1))));
-
+      final isInRange = (!analysisDate.isBefore(startDate)) &&
+          (analysisDate.isBefore(endDate.add(Duration(days: 1))));
       final isForPlot = entry['plot_id'] == selectedPlotId;
-      return isInRange && isForPlot;
+      final isCorrectType = entry['analysis_type'] == currentCardToggled;
+      return isInRange && isForPlot && isCorrectType;
     }).toList();
 
     return Scaffold(
@@ -75,6 +75,8 @@ class _AiHistoryScreenState extends ConsumerState<AiHistoryScreen> {
                   sliver: SliverList(
                     delegate: SliverChildListDelegate(
                       [
+                        AiToggle(plotId: plotId),
+                        const SizedBox(height: 5),
                         HistoryFilterWidget(),
                         const SizedBox(height: 10),
                         if (filteredList.isNotEmpty)

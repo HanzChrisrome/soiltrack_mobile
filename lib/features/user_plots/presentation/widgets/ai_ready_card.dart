@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
@@ -8,9 +9,11 @@ class AiReadyCard extends ConsumerWidget {
   const AiReadyCard({
     super.key,
     this.onTap,
+    required this.currentToggle,
   });
 
   final VoidCallback? onTap;
+  final String currentToggle;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -39,7 +42,10 @@ class AiReadyCard extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   TextGradient(
-                      text: 'AI analysis can be generated.', fontSize: 22),
+                      text: currentToggle == 'Daily'
+                          ? 'Your Daily AI analysis is ready!'
+                          : 'Your Weekly AI analysis is ready!',
+                      fontSize: 22),
                 ],
               ),
               const SizedBox(height: 5),
@@ -82,7 +88,9 @@ class AiReadyCard extends ConsumerWidget {
                 ),
               if (!isGenerating)
                 TextRoundedEnclose(
-                    text: 'Tap to generate AI analysis',
+                    text: currentToggle == 'Daily'
+                        ? 'Your Daily AI analysis is ready!'
+                        : 'Your Weekly AI analysis is ready!',
                     color: Theme.of(context).colorScheme.onPrimary,
                     textColor: Theme.of(context).colorScheme.onSecondary),
             ],

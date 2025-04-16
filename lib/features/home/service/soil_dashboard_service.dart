@@ -74,7 +74,6 @@ class SoilDashboardService {
         };
       }).toList();
 
-      print('Updated User Plots: $updatedPlots');
       return updatedPlots;
     } catch (e) {
       print('Error fetching user plots: $e');
@@ -91,6 +90,9 @@ class SoilDashboardService {
           endDate.add(Duration(days: 1)).subtract(Duration(seconds: 1));
       final String formattedEndDate = formatter.format(adjustedEndDate.toUtc());
 
+      NotifierHelper.logMessage('Start Date: $formattedStartDate');
+      NotifierHelper.logMessage('End Date: $formattedEndDate');
+
       final userPlotsData = await supabase
           .from('moisture_readings')
           .select('''
@@ -102,7 +104,7 @@ class SoilDashboardService {
           .inFilter('plot_id', plotIds)
           .gte('read_time', formattedStartDate)
           .lte('read_time', formattedEndDate)
-          .order('read_time', ascending: true);
+          .order('read_time', ascending: false);
 
       return userPlotsData;
     } catch (e) {
@@ -133,7 +135,7 @@ class SoilDashboardService {
           .inFilter('plot_id', plotIds)
           .gte('read_time', formattedStartDate)
           .lte('read_time', formattedEndDate)
-          .order('read_time', ascending: true);
+          .order('read_time', ascending: false);
 
       return userPlotsData;
     } catch (e) {
@@ -299,7 +301,7 @@ class SoilDashboardService {
           } else if (phosphorus > phosphorusMax) {
             plotMessages.add({
               "type": "Warning",
-              "message": "Phosphorus is too high ($phosphorus mg/L)"
+              "message": "• Phosphorus is too high ($phosphorus mg/L)"
             });
             plotMessages.add({
               "type": "Suggestion",
@@ -381,6 +383,21 @@ class SoilDashboardService {
         .gte('analysis_date', formattedStartDate)
         .lte('analysis_date', formattedEndDate)
         .order('created_at', ascending: false);
+
+    return response;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchIrrigationLogs(
+      List<String> plotIds, DateTime startDate, DateTime endDate) async {
+    final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
+    // final String formattedStartDate = formatter.format(startDate.toUtc());
+    // final String formattedEndDate = formatter.format(endDate.toUtc());
+
+    final response = await supabase
+        .from('irrigation_log')
+        .select()
+        .inFilter('plot_id', plotIds)
+        .order('time_started', ascending: false);
 
     return response;
   }

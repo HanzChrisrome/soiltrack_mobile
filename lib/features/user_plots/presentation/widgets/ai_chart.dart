@@ -25,6 +25,17 @@ class AiChart extends ConsumerWidget {
         if (entry.key != 'trend') entry.key: (entry.value as num).toDouble()
     };
 
+    String? trendLabel;
+    String? trendDescription;
+
+    if (data['trend'] is Map<String, dynamic>) {
+      final trendData = data['trend'] as Map<String, dynamic>;
+      trendLabel = trendData['label'] as String?;
+      trendDescription = trendData['description'] as String?;
+    }
+
+    bool useCalculatedTrend = trendLabel == null || trendLabel.trim().isEmpty;
+
     final sortedKeys = readings.keys.toList()
       ..sort((a, b) => DateTime.parse(a).compareTo(DateTime.parse(b)));
 
@@ -35,12 +46,10 @@ class AiChart extends ConsumerWidget {
       spots.add(FlSpot(timestamp, readings[dateStr]!));
     }
 
-    NotifierHelper.logMessage('Spots: $spots');
-
     String trend = 'stable';
     Color color = Colors.grey;
 
-    if (readings.length >= 2) {
+    if (useCalculatedTrend && readings.length >= 2) {
       final firstValue = readings[sortedKeys.first]!;
       final lastValue = readings[sortedKeys.last]!;
 
@@ -50,6 +59,25 @@ class AiChart extends ConsumerWidget {
       } else if (lastValue < firstValue) {
         trend = 'Decreasing';
         color = Colors.red;
+      }
+    } else {
+      switch (trendLabel?.toLowerCase()) {
+        case 'increasing':
+          trend = 'Increasing';
+          color = Colors.green;
+          break;
+        case 'decreasing':
+          trend = 'Decreasing';
+          color = Colors.red;
+          break;
+        case 'fluctuating':
+          trend = 'Fluctuating';
+          color = Colors.orange;
+          break;
+        case 'stable':
+        default:
+          trend = 'Stable';
+          color = Colors.grey;
       }
     }
 

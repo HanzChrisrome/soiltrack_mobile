@@ -8,6 +8,7 @@ import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dash
 import 'package:soiltrack_mobile/features/user_plots/helper/user_plots_helper.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_generated.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_ready_card.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_toggle.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_unready_card.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/crop_threshold.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/line_chart.dart';
@@ -16,11 +17,9 @@ import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_d
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_suggestions.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_warnings.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/tools_section.dart';
-import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/filled_button.dart';
 import 'package:soiltrack_mobile/widgets/outline_button.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
-import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
 class UserPlotScreen extends ConsumerStatefulWidget {
   const UserPlotScreen({super.key});
@@ -32,6 +31,18 @@ class UserPlotScreen extends ConsumerStatefulWidget {
 class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
   final FocusNode plotNameFocusNode = FocusNode();
   final TextEditingController plotNameController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final soilDashboard = ref.read(soilDashboardProvider.notifier);
+      final soilDashboardState = ref.watch(soilDashboardProvider);
+      if (soilDashboardState.irrigationLogs.isEmpty) {
+        soilDashboard.fetchIrrigationLogs();
+      }
+    });
+  }
 
   @override
   void dispose() {
@@ -49,7 +60,8 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
     final deviceStateNotifier = ref.read(deviceProvider.notifier);
     final today = DateTime.now().toIso8601String().split('T').first;
     String aiStatus = 'No generated AI Data yet';
-    String aiPrompt = "";
+    String dailyAiPrompt = "";
+    String weeklyAiPrompt = "";
 
     final selectedPlot = userPlot.userPlots.firstWhere(
       (plot) => plot['plot_id'] == userPlot.selectedPlotId,
@@ -76,14 +88,15 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
         (s) => s['plot_id'] == userPlot.selectedPlotId,
         orElse: () => {});
 
-    final irrigationLogs = plotHelper.getIrrigationLogs(
-        selectedPlot, userPlot.selectedPlotId, plotHelper);
-
     final aiAnalysisToday = userPlot.aiAnalysis.firstWhere(
-      (entry) => entry['plot_id'] == plotId && entry['analysis_date'] == today,
+      (entry) =>
+          entry['plot_id'] == plotId &&
+          entry['analysis_date'] == today &&
+          entry['analysis_type'] == 'Daily',
       orElse: () => {},
     );
 
+    //FOR DAILY
     if (aiAnalysisToday.isEmpty) {
       final filtered = plotHelper.getFilteredAiReadyData(
         selectedPlotId: userPlot.selectedPlotId,
@@ -92,12 +105,68 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
       );
 
       if (filtered != null) {
-        aiPrompt = plotHelper.getFormattedAiPrompt(data: filtered);
+        dailyAiPrompt = plotHelper.getFormattedAiPrompt(data: filtered);
         aiStatus = 'AI Ready for analysis';
       }
     } else {
       aiStatus = 'AI is generated';
     }
+
+    // FOR WEEKLY
+    final startOfWeek = DateTime.now().subtract(Duration(days: 7));
+
+    Set<String> moistureDataDays = Set();
+    Set<String> nutrientDataDays = Set();
+
+    for (var data in userPlot.rawPlotMoistureData) {
+      final dataDate = DateTime.parse(data['read_time']);
+      if (data['plot_id'] == plotId &&
+          dataDate.isAfter(startOfWeek.subtract(Duration(days: 1))) &&
+          dataDate.isBefore(DateTime.now())) {
+        moistureDataDays.add(DateFormat('yyyy-MM-dd').format(dataDate));
+      }
+    }
+
+    for (var data in userPlot.rawPlotNutrientData) {
+      final dataDate = DateTime.parse(data['read_time']);
+      if (data['plot_id'] == plotId &&
+          dataDate.isAfter(startOfWeek.subtract(Duration(days: 1))) &&
+          dataDate.isBefore(DateTime.now())) {
+        nutrientDataDays.add(DateFormat('yyyy-MM-dd').format(dataDate));
+      }
+    }
+
+    bool hasSufficientData =
+        (moistureDataDays.length >= 7 || nutrientDataDays.length >= 7);
+
+    if (hasSufficientData) {
+      final filtered = plotHelper.getWeeklyAiReadyData(
+        selectedPlotId: plotId,
+        rawMoistureData: userPlot.rawPlotMoistureData,
+        rawNutrientData: userPlot.rawPlotNutrientData,
+      );
+
+      weeklyAiPrompt = plotHelper.getFormattedWeeklyPrompt(data: filtered!);
+    }
+
+    final now = DateTime.now();
+    final sevenDaysAgo = now.subtract(Duration(days: 7));
+
+    final weeklyAnalyses = userPlot.aiAnalysis.where((entry) {
+      final entryDate = DateTime.parse(entry['analysis_date']);
+      return entry['plot_id'] == plotId &&
+          entry['analysis_type'] == 'Weekly' &&
+          entryDate.isAfter(sevenDaysAgo) &&
+          entryDate.isBefore(now);
+    }).toList();
+
+    weeklyAnalyses.sort((a, b) => DateTime.parse(b['analysis_date'])
+        .compareTo(DateTime.parse(a['analysis_date'])));
+
+    final aiAnalysisWeekly =
+        weeklyAnalyses.isNotEmpty ? weeklyAnalyses.first : {};
+
+    final currentToggle = userPlot.plotToggles[plotId] ?? 'Daily';
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -119,20 +188,6 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                       assignedSensor: assignedNutrientSensor,
                       plotName: plotName,
                       plotNameController: plotNameController,
-                    ),
-                    OutlineCustomButton(
-                      buttonText: 'Generate Weekly AI Analysis',
-                      onPressed: () {
-                        final weeklyData = plotHelper.getWeeklyAiReadyData(
-                            selectedPlotId: userPlot.selectedPlotId,
-                            rawMoistureData: userPlot.rawPlotMoistureData,
-                            rawNutrientData: userPlot.rawPlotNutrientData);
-                        if (weeklyData != null) {
-                          final aiPrompt = plotHelper.getFormattedWeeklyPrompt(
-                              data: weeklyData);
-                          NotifierHelper.logMessage('AI Prompt: $aiPrompt');
-                        }
-                      },
                     ),
                     if (deviceState.isPumpOpen)
                       GestureDetector(
@@ -156,29 +211,49 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                           ),
                         ),
                       ),
-                    if (aiStatus == 'AI Ready for analysis')
-                      AiReadyCard(
-                        onTap: userPlot.isGeneratingAi
-                            ? null
-                            : () {
-                                if (aiPrompt != "") {
-                                  userPlotNotifier.fetchAi(aiPrompt, cropType,
-                                      soilType, plotName, plotId);
+                    AiToggle(plotId: plotId),
+                    _showAiDisplay(
+                      context: context,
+                      aiStatus: aiStatus,
+                      plotId: plotId,
+                      hasSufficientData: hasSufficientData,
+                      aiAnalysisWeekly: aiAnalysisWeekly,
+                      onGenerateTap: userPlot.isGeneratingAi
+                          ? null
+                          : () {
+                              if (currentToggle == 'Daily') {
+                                if (dailyAiPrompt.isNotEmpty) {
+                                  userPlotNotifier.fetchAi(dailyAiPrompt,
+                                      cropType, soilType, plotName, plotId);
                                 }
-                              },
-                      ),
-                    if (aiStatus == 'No generated AI Data yet')
-                      AiUnreadyCard(
-                        onTap: () {},
-                      ),
-                    if (aiStatus == 'AI is generated')
-                      AiGeneratedCard(
-                        onTap: () {
-                          context.pushNamed('ai-analytics');
+                              } else if (currentToggle == 'Weekly') {
+                                if (weeklyAiPrompt.isNotEmpty) {
+                                  userPlotNotifier.fetchWeeklyAnalysis(
+                                      weeklyAiPrompt,
+                                      cropType,
+                                      soilType,
+                                      plotName,
+                                      plotId);
+                                }
+                              }
+                            },
+                      onViewAnalysis: () => context.pushNamed(
+                          'ai-analysis-detail',
+                          pathParameters: currentToggle == 'Daily'
+                              ? {'analysisId': aiAnalysisToday['id'].toString()}
+                              : {
+                                  'analysisId':
+                                      aiAnalysisWeekly['id'].toString()
+                                }),
+                    ),
+                    if (aiAnalysisToday.isEmpty && aiAnalysisWeekly.isEmpty)
+                      OutlineCustomButton(
+                        buttonText: 'View AI Analysis History',
+                        iconData: Icons.history,
+                        onPressed: () {
+                          context.pushNamed('ai-history');
                         },
                       ),
-                    PlotWarnings(plotWarningsData: plotWarningsData),
-                    PlotSuggestions(plotSuggestions: plotSuggestions),
                     Column(
                       children: [
                         NutrientProgressChart(),
@@ -191,77 +266,20 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                         ),
                       ],
                     ),
+                    PlotWarnings(plotWarningsData: plotWarningsData),
+                    PlotSuggestions(plotSuggestions: plotSuggestions),
                     PlotDetailsWidget(
                         assignedSensor: assignedMoistureSensor,
                         assignedNutrientSensor: assignedNutrientSensor,
                         soilType: soilType ?? 'No soil type found'),
                     CropThresholdWidget(plotDetails: selectedPlot),
-                    const SizedBox(height: 10),
-                    if (irrigationLogs.isNotEmpty)
-                      Container(
-                        margin: const EdgeInsets.only(bottom: 15),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 15),
-                        decoration: BoxDecoration(
-                          color: Theme.of(context).colorScheme.surface,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.blue, width: 1),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.water_drop_outlined,
-                                    color: Colors.blue, size: 20),
-                                const SizedBox(width: 5),
-                                const Text(
-                                  'Irrigation Log',
-                                  style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.blue),
-                                ),
-                                const Spacer(),
-                                TextRoundedEnclose(
-                                    text: DateFormat('MMMM d, yyyy')
-                                        .format(DateTime.now()),
-                                    color: Colors.white,
-                                    textColor: Colors.grey[500]!),
-                              ],
-                            ),
-                            const SizedBox(height: 20),
-                            ...irrigationLogs.map((log) {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Row(
-                                    children: [
-                                      Text(
-                                        'Started: ${log['time_started']}',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium!,
-                                      ),
-                                      const SizedBox(width: 30),
-                                      Text(
-                                        'Stopped: ${log['time_stopped'] ?? 'Ongoing'}',
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodyMedium!,
-                                      ),
-                                    ],
-                                  ),
-                                  if (irrigationLogs.indexOf(log) !=
-                                      irrigationLogs.length - 1)
-                                    DividerWidget(
-                                        verticalHeight: 1,
-                                        color: Colors.grey[300]!),
-                                ],
-                              );
-                            }),
-                          ],
-                        ),
-                      ),
+                    OutlineCustomButton(
+                      buttonText: 'View Irrigation Logs',
+                      iconData: Icons.history,
+                      onPressed: () {
+                        context.pushNamed('irrigation-logs');
+                      },
+                    ),
                   ]),
                 ),
               ),
@@ -270,6 +288,54 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
         ],
       ),
     );
+  }
+
+  Widget _showAiDisplay({
+    required BuildContext context,
+    required String aiStatus,
+    required int plotId,
+    required bool hasSufficientData,
+    required Map<dynamic, dynamic> aiAnalysisWeekly,
+    VoidCallback? onGenerateTap,
+    VoidCallback? onViewAnalysis,
+  }) {
+    final currentToggle =
+        ref.watch(soilDashboardProvider).plotToggles[plotId] ?? 'Daily';
+
+    NotifierHelper.logMessage('Current Toggle: $currentToggle');
+    if (currentToggle == 'Weekly') {
+      if (aiAnalysisWeekly.isEmpty) {
+        if (hasSufficientData) {
+          return AiReadyCard(
+            onTap: onGenerateTap ?? () {},
+            currentToggle: currentToggle,
+          );
+        } else {
+          return const AiUnreadyCard();
+        }
+      } else {
+        return AiGeneratedCard(
+          onTap: onViewAnalysis ?? () {},
+          currentToggle: currentToggle,
+        );
+      }
+    } else if (currentToggle == 'Daily') {
+      if (aiStatus == 'AI Ready for analysis') {
+        return AiReadyCard(
+          onTap: onGenerateTap ?? () {},
+          currentToggle: currentToggle,
+        );
+      } else if (aiStatus == 'AI is generated') {
+        return AiGeneratedCard(
+          onTap: onViewAnalysis ?? () {},
+          currentToggle: currentToggle,
+        );
+      } else {
+        return const AiUnreadyCard();
+      }
+    }
+
+    return const SizedBox.shrink();
   }
 
   Widget _buildSilverAppBar(

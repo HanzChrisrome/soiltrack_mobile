@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:soiltrack_mobile/features/auth/presentation/screens/forgot_password.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/settings/settings_card.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/settings/settings_item.dart';
 import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
+import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 import 'package:soiltrack_mobile/widgets/outline_button.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
@@ -29,38 +29,19 @@ class SettingsScreen extends ConsumerWidget {
               children: [
                 const TextGradient(text: 'Settings', fontSize: 33),
                 const SizedBox(height: 20),
-                SettingsCard(
-                  child: Row(
+                DynamicContainer(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      CircleAvatar(
-                        radius: 30,
-                        backgroundColor: Colors.grey[400],
-                        child: const Icon(
-                          Icons.person,
-                          size: 40,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(width: 20),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          TextGradient(
-                              text:
-                                  '${authState.userName} ${authState.userLastName}',
-                              fontSize: 20),
-                          const SizedBox(height: 1),
-                          Text(
-                            authState.userEmail?.toLowerCase() ?? '',
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall!
-                                .copyWith(
-                                    color: Colors.grey[700],
-                                    fontSize: 12,
-                                    height: 1.5),
-                          ),
-                        ],
+                      TextGradient(
+                          text:
+                              '${authState.userName} ${authState.userLastName}',
+                          fontSize: 25),
+                      const SizedBox(height: 1),
+                      Text(
+                        authState.userEmail?.toLowerCase() ?? '',
+                        style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                            color: Colors.grey[700], fontSize: 15, height: 1.5),
                       ),
                     ],
                   ),
@@ -79,10 +60,6 @@ class SettingsScreen extends ConsumerWidget {
                 SettingsCard(
                   child: Column(
                     children: [
-                      SettingsItem(
-                          settingsText: 'My Information',
-                          settingsIcon: Icons.person_2_outlined),
-                      DividerWidget(verticalHeight: 0),
                       SettingsItem(
                         settingsText: 'Change Password',
                         settingsIcon: Icons.lock_outline,

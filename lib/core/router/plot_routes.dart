@@ -1,10 +1,12 @@
 import 'package:go_router/go_router.dart';
+import 'package:soiltrack_mobile/core/utils/page_transition.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/crops_adding.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/crops_assigning.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/crops_screen.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/custom_add.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/ai_analytics_screen.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/ai_history_screen.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/irrigation_log.dart';
 
 final plotRoutes = [
   GoRoute(
@@ -35,14 +37,23 @@ final plotRoutes = [
   GoRoute(
     path: '/ai-analytics/:analysisId',
     name: 'ai-analysis-detail',
-    builder: (context, state) {
+    pageBuilder: (context, state) {
       final analysisId = state.pathParameters['analysisId'];
-      return AiAnalysisOverview(analysisId: analysisId);
+      return customPageTransition(
+        context,
+        AiAnalysisOverview(analysisId: analysisId),
+        transitionType: 'slide',
+      );
     },
   ),
   GoRoute(
     path: '/ai-history',
     name: 'ai-history',
     builder: (context, state) => const AiHistoryScreen(),
+  ),
+  GoRoute(
+    path: '/irrigation-logs',
+    name: 'irrigation-logs',
+    builder: (context, state) => const IrrigationLogScreen(),
   ),
 ];

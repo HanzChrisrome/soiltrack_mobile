@@ -72,25 +72,25 @@ class PlotCondition extends ConsumerWidget {
               ],
             ),
           ),
-          const SizedBox(height: 15),
-          Row(
-            children: [
-              Text(
-                'See statistics',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              const SizedBox(width: 5),
-              Icon(
-                Icons.arrow_forward_ios,
-                color: Theme.of(context).colorScheme.primary,
-                size: 12,
-              ),
-            ],
-          ),
+          // const SizedBox(height: 15),
+          // Row(
+          //   children: [
+          //     Text(
+          //       'See statistics',
+          //       style: TextStyle(
+          //         color: Theme.of(context).colorScheme.primary,
+          //         fontSize: 14,
+          //         fontWeight: FontWeight.w400,
+          //       ),
+          //     ),
+          //     const SizedBox(width: 5),
+          //     Icon(
+          //       Icons.arrow_forward_ios,
+          //       color: Theme.of(context).colorScheme.primary,
+          //       size: 12,
+          //     ),
+          //   ],
+          // ),
         ],
       ),
     );

@@ -33,7 +33,8 @@ class NutrientProgressBar extends StatelessWidget {
               Text('$label: ',
                   style: const TextStyle(
                       fontSize: 14, fontWeight: FontWeight.w600)),
-              Text("$value%",
+              Text(
+                  label.toLowerCase() == "moisture" ? "$value%" : "$value mg/l",
                   style: const TextStyle(fontSize: 12, color: Colors.black87)),
             ],
           ),

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_chart.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/custom_accordion.dart';
@@ -57,6 +56,8 @@ class AiAnalysisOverview extends ConsumerWidget {
         child: Text("No AI analysis available for this plot today."),
       );
     }
+
+    final analysisType = selectedAnalysis['analysis_type'];
 
     final analysis = selectedAnalysis['analysis']['AI_Analysis'];
 
@@ -135,8 +136,17 @@ class AiAnalysisOverview extends ConsumerWidget {
                     },
                   ),
                   actions: [
-                    IconButton(
+                    TextButton.icon(
                       icon: Icon(Icons.history, color: Colors.green),
+                      label: Text(
+                        'History',
+                        style:
+                            Theme.of(context).textTheme.titleMedium!.copyWith(
+                                  color: Colors.green,
+                                  fontSize: 16,
+                                  letterSpacing: -0.5,
+                                ),
+                      ),
                       onPressed: () {
                         context.pushNamed('ai-history');
                       },
@@ -191,6 +201,20 @@ class AiAnalysisOverview extends ConsumerWidget {
                                     ),
                                     const SizedBox(height: 5),
                                     Text(
+                                      '[ $analysisType Analysis ]',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyMedium!
+                                          .copyWith(
+                                            color: Theme.of(context)
+                                                .colorScheme
+                                                .onSecondary,
+                                            fontSize: 15,
+                                            letterSpacing: -0.5,
+                                          ),
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
                                       '[ $formattedDate ]',
                                       style: Theme.of(context)
                                           .textTheme
@@ -199,7 +223,7 @@ class AiAnalysisOverview extends ConsumerWidget {
                                             color: Theme.of(context)
                                                 .colorScheme
                                                 .onSecondary,
-                                            fontSize: 13,
+                                            fontSize: 12,
                                             letterSpacing: -0.5,
                                           ),
                                     ),
@@ -236,6 +260,7 @@ class AiAnalysisOverview extends ConsumerWidget {
                                 letterSpacing: -0.5,
                               ),
                               icon: Icons.analytics,
+                              initiallyExpanded: true,
                               content: Text(
                                 predictions,
                                 style: Theme.of(context)
@@ -257,6 +282,7 @@ class AiAnalysisOverview extends ConsumerWidget {
                                 letterSpacing: -0.5,
                               ),
                               icon: Icons.recommend,
+                              initiallyExpanded: true,
                               content: Text(
                                 recommendations,
                                 style: Theme.of(context)

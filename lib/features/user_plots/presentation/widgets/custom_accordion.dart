@@ -53,6 +53,7 @@ class _CustomAccordionState extends State<CustomAccordion>
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       borderColor: widget.borderColor ??
           Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
+      margin: const EdgeInsets.only(bottom: 5),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

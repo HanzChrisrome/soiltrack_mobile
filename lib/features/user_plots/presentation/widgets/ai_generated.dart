@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
-import 'package:soiltrack_mobile/widgets/text_gradient.dart';
-import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
 class AiGeneratedCard extends StatelessWidget {
   const AiGeneratedCard({
     super.key,
     required this.onTap,
+    required this.currentToggle,
   });
 
   final VoidCallback onTap;
+  final String currentToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -26,8 +26,12 @@ class AiGeneratedCard extends StatelessWidget {
             color: Theme.of(context).colorScheme.onSurface.withOpacity(0.05),
             width: 1,
           ),
-          image: const DecorationImage(
-            image: AssetImage('assets/elements/ai_is_here.png'),
+          image: DecorationImage(
+            image: AssetImage(
+              currentToggle == 'Weekly'
+                  ? 'assets/elements/ai_weekly_analysis.png'
+                  : 'assets/elements/ai_is_here.png',
+            ),
             fit: BoxFit.cover,
           ),
         ),
@@ -37,7 +41,9 @@ class AiGeneratedCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                'Your AI analysis\nhas been generated!',
+                currentToggle == 'Weekly'
+                    ? 'Your Weekly AI analysis\nhas been generated!'
+                    : 'Your Daily AI analysis\nhas been generated!',
                 style: Theme.of(context).textTheme.titleLarge!.copyWith(
                       fontSize: 25,
                       color: Theme.of(context).colorScheme.secondary,

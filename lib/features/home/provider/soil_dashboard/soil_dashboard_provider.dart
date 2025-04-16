@@ -215,6 +215,31 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     }
   }
 
+  Future<void> fetchIrrigationLogs(
+      {DateTime? customStartDate, DateTime? customEndDate}) async {
+    try {
+      final List<String> plotIds =
+          state.userPlots.map((plot) => plot['plot_id'].toString()).toList();
+
+      final DateTime startDate =
+          customStartDate ?? DateTime.now().subtract(const Duration(days: 90));
+
+      final DateTime endDate = customEndDate ??
+          DateTime.now().add(Duration(days: 1)).subtract(Duration(seconds: 1));
+
+      final results = await soilDashboardService.fetchIrrigationLogs(
+          plotIds, startDate, endDate);
+
+      NotifierHelper.logMessage('Fetched irrigation logs: $results');
+
+      state = state.copyWith(
+        irrigationLogs: results,
+      );
+    } catch (e) {
+      NotifierHelper.logError(e);
+    }
+  }
+
   Future<void> saveNewCrop(BuildContext context) async {
     final cropState = ref.watch(cropProvider);
     NotifierHelper.showLoadingToast(context, 'Assigning crop to plot');
@@ -299,10 +324,39 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         "plot_id": plotId,
         "analysis_date": today,
         "analysis": parsedJson,
+        "analysis_type": 'Daily',
       };
 
       await supabase.from('ai_analysis').insert(newAnalysis);
-      await fetchUserPlots();
+      await fetchUserAnalytics();
+    } catch (e) {
+      NotifierHelper.logError(e);
+    } finally {
+      state = state.copyWith(isGeneratingAi: false);
+    }
+  }
+
+  Future<void> fetchWeeklyAnalysis(String rawData, String cropType,
+      String soilType, String plotName, int plotId) async {
+    try {
+      NotifierHelper.logMessage('Fetching Weekly AI Analysis');
+      state = state.copyWith(isGeneratingAi: true);
+      final prompt = aiService.generateWeeklyAIAnalysisPrompt(
+          rawData, cropType, soilType, plotName);
+      final aiResponse = await aiService.getAiAnalysis(prompt);
+      final aiRaw = aiResponse['choices'][0]['message']['content'];
+      final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
+      final today = DateTime.now().toIso8601String().split('T').first;
+
+      final newAnalysis = {
+        "plot_id": plotId,
+        "analysis_date": today,
+        "analysis": parsedJson,
+        "analysis_type": 'Weekly',
+      };
+
+      await supabase.from('ai_analysis').insert(newAnalysis);
+      await fetchUserAnalytics();
     } catch (e) {
       NotifierHelper.logError(e);
     } finally {
@@ -398,6 +452,15 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
 
   void setEditingUserPlot(bool isEditing) {
     state = state.copyWith(isEditingUserPlot: isEditing);
+  }
+
+  void setCurrentCardToggled(int plotId, String toggleType) {
+    final updatedToggles = Map<int, String>.from(state.plotToggles);
+    updatedToggles[plotId] = toggleType;
+
+    NotifierHelper.logMessage(
+        'Updated plot toggles: ${updatedToggles.toString()}');
+    state = state.copyWith(plotToggles: updatedToggles);
   }
 }
 

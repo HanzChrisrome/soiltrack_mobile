@@ -75,6 +75,7 @@ flutter:
     - assets/elements/ai_is_here.png
     - assets/elements/ai_analysis.png
     - assets/elements/ai_chatbot.png
+    - assets/elements/ai_weekly_analysis.png
 
     #SOIL PICTURES
     - assets/soil_images/clay_soil.png
@@ -93,9 +94,38 @@ flutter:
     - assets/weather/morning.png
     - assets/weather/afternoon.png
     - assets/weather/night.png
-    - assets/weather/normal_night.png
     - assets/weather/SUNNY DAY.png
     - assets/weather/CLOUDY DAY.png
+
+    #THUNDER
+    - assets/weather/thunder/heavy_thunder_day.png
+    - assets/weather/thunder/heavy_thunder_night.png
+    - assets/weather/thunder/heavy_thunder_rain_day.png
+    - assets/weather/thunder/heavy_thunder_rain_night.png
+    - assets/weather/thunder/thunderstorm_day.png
+    - assets/weather/thunder/thunderstorm_night.png
+    - assets/weather/thunder/thunderstorm_with_rain_day.png
+    - assets/weather/thunder/thunderstorm_with_rain_night.png
+
+    #RAIN
+    - assets/weather/rain/heavy_rain_day.png
+    - assets/weather/rain/heavy_rain_night.png
+    - assets/weather/rain/light_rain_day.png
+    - assets/weather/rain/light_rain_night.png
+    - assets/weather/rain/moderate_rain_day.png
+    - assets/weather/rain/moderate_rain_night.png
+
+    #CLOUDY
+    - assets/weather/cloudy/cloudy_day.png
+    - assets/weather/cloudy/cloudy_night.png
+    - assets/weather/cloudy/few_clouds_day.png
+    - assets/weather/cloudy/few_clouds_night.png
+    - assets/weather/cloudy/overcast_day.png
+    - assets/weather/cloudy/overcast_night.png
+
+    #CLEAR
+    - assets/weather/clear/clear.png
+    - assets/weather/clear/normal_night.png
 
     #HARDWARE
     - assets/hardware/nano_colored.png
