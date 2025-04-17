@@ -187,6 +187,7 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
 
   Future<void> fetchUserAnalytics(
       {DateTime? customStartDate, DateTime? customEndDate}) async {
+    state = state.copyWith(isFetchingHistoryData: true);
     try {
       final List<String> plotIds =
           state.userPlots.map((plot) => plot['plot_id'].toString()).toList();
@@ -212,6 +213,8 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       }
     } catch (e) {
       NotifierHelper.logError(e);
+    } finally {
+      state = state.copyWith(isFetchingHistoryData: false);
     }
   }
 
@@ -406,6 +409,7 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     final bool wasCustom = state.selectedTimeRangeFilter == 'Custom';
 
     state = state.copyWith(
+      selectedTimeRangeFilterGeneral: selectedTimeRange,
       selectedTimeRangeFilter: selectedTimeRange,
       customStartDate: selectedTimeRange == 'Custom' ? customStartDate : null,
       customEndDate: selectedTimeRange == 'Custom' ? customEndDate : null,

@@ -53,176 +53,186 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
 
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Stack(
-        children: [
-          AnimatedPositioned(
-            duration: const Duration(milliseconds: 0),
-            top: keyboardHeight > 0 ? 60 : 70.0,
-            bottom: keyboardHeight > 0 ? 320 : 40.0,
-            left: 0,
-            right: 0,
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  if (keyboardHeight == 0)
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        Positioned(
-                          left: 0,
-                          child: IconButton(
-                            icon: const Icon(Icons.arrow_back),
-                            onPressed: () {
-                              context.pop();
-                            },
+      body: PopScope(
+        canPop: true,
+        onPopInvokedWithResult: (bool didPop, dynamic result) {
+          if (didPop) {
+            userAuthStateNotifier.updateCurrentStep(0);
+          }
+        },
+        child: Stack(
+          children: [
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 0),
+              top: keyboardHeight > 0 ? 60 : 70.0,
+              bottom: keyboardHeight > 0 ? 320 : 40.0,
+              left: 0,
+              right: 0,
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    if (keyboardHeight == 0)
+                      Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Positioned(
+                            left: 0,
+                            child: IconButton(
+                              icon: const Icon(Icons.arrow_back),
+                              onPressed: () {
+                                context.pop();
+                              },
+                            ),
                           ),
-                        ),
-                        Center(
-                          child: Image.asset(
-                            'assets/logo/DARK HORIZONTAL.png',
-                            width: 150,
-                          ),
-                        ),
-                      ],
-                    ),
-                  const Spacer(),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                    child: Column(
-                      children: [
-                        if (currentStep == 0) ...[
-                          _buildStepTitle(
-                              '[ STEP 1 ]', 'Enter your information'),
-                          TextFieldWidget(
-                            label: 'First Name',
-                            controller: userFname,
-                            validator: Validators.validateUsername,
-                            prefixIcon: Icons.person,
-                          ),
-                          TextFieldWidget(
-                            label: 'Last Name',
-                            controller: userLname,
-                            validator: Validators.validateUsername,
-                            prefixIcon: Icons.person,
+                          Center(
+                            child: Image.asset(
+                              'assets/logo/DARK HORIZONTAL.png',
+                              width: 150,
+                            ),
                           ),
                         ],
-                        if (currentStep == 1) ...[
-                          _buildStepTitle('[ STEP 2 ]', 'Enter your address'),
-                          TextFieldWidget(
-                            label: 'City',
-                            controller: cityController,
-                            validator: Validators.validateUsername,
-                            prefixIcon: Icons.location_city,
-                          ),
-                          TextFieldWidget(
-                            label: 'Province',
-                            controller: provinceController,
-                            validator: Validators.validateUsername,
-                            prefixIcon: Icons.location_pin,
-                          ),
-                        ],
-                        if (currentStep == 2) ...[
-                          _buildStepTitle(
-                              '[ STEP 3 ]', 'Enter your credentials'),
-                          TextFieldWidget(
-                            label: 'Email',
-                            controller: emailController,
-                            validator: Validators.validateEmail,
-                            prefixIcon: Icons.email,
-                          ),
-                          TextFieldWidget(
-                            label: 'Password',
-                            controller: passwordController,
-                            isPasswordField: true,
-                            validator: Validators.validatePassword,
-                            prefixIcon: Icons.lock,
-                          ),
-                          TextFieldWidget(
-                            label: 'Confirm Password',
-                            controller: confirmPasswordController,
-                            isPasswordField: true,
-                            validator: Validators.validatePassword,
-                            prefixIcon: Icons.lock,
-                          ),
-                        ],
-                        const SizedBox(height: 10.0),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            if (currentStep > 0)
+                      ),
+                    const Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Column(
+                        children: [
+                          if (currentStep == 0) ...[
+                            _buildStepTitle(
+                                '[ STEP 1 ]', 'Enter your information'),
+                            TextFieldWidget(
+                              label: 'First Name',
+                              controller: userFname,
+                              validator: Validators.validateUsername,
+                              prefixIcon: Icons.person,
+                            ),
+                            TextFieldWidget(
+                              label: 'Last Name',
+                              controller: userLname,
+                              validator: Validators.validateUsername,
+                              prefixIcon: Icons.person,
+                            ),
+                          ],
+                          if (currentStep == 1) ...[
+                            _buildStepTitle('[ STEP 2 ]', 'Enter your address'),
+                            TextFieldWidget(
+                              label: 'City',
+                              controller: cityController,
+                              validator: Validators.validateUsername,
+                              prefixIcon: Icons.location_city,
+                            ),
+                            TextFieldWidget(
+                              label: 'Province',
+                              controller: provinceController,
+                              validator: Validators.validateUsername,
+                              prefixIcon: Icons.location_pin,
+                            ),
+                          ],
+                          if (currentStep == 2) ...[
+                            _buildStepTitle(
+                                '[ STEP 3 ]', 'Enter your credentials'),
+                            TextFieldWidget(
+                              label: 'Email',
+                              controller: emailController,
+                              validator: Validators.validateEmail,
+                              prefixIcon: Icons.email,
+                            ),
+                            TextFieldWidget(
+                              label: 'Password',
+                              controller: passwordController,
+                              isPasswordField: true,
+                              validator: Validators.validatePassword,
+                              prefixIcon: Icons.lock,
+                            ),
+                            TextFieldWidget(
+                              label: 'Confirm Password',
+                              controller: confirmPasswordController,
+                              isPasswordField: true,
+                              validator: Validators.validatePassword,
+                              prefixIcon: Icons.lock,
+                            ),
+                          ],
+                          const SizedBox(height: 10.0),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              if (currentStep > 0)
+                                Expanded(
+                                  flex: 1,
+                                  child: OutlineCustomButton(
+                                    buttonText: 'Back',
+                                    onPressed: () {
+                                      if (currentStep > 0) {
+                                        userAuthStateNotifier
+                                            .updateCurrentStep(currentStep - 1);
+                                      }
+                                    },
+                                  ),
+                                ),
+                              if (currentStep > 0) const SizedBox(width: 5),
                               Expanded(
-                                flex: 1,
-                                child: OutlineCustomButton(
-                                  buttonText: 'Back',
+                                flex: currentStep > 0 ? 2 : 3,
+                                child: FilledCustomButton(
+                                  buttonText:
+                                      currentStep < 2 ? 'Next' : 'Register',
+                                  icon: currentStep < 2
+                                      ? Icons.arrow_forward
+                                      : Icons.check,
                                   onPressed: () {
-                                    if (currentStep > 0) {
-                                      userAuthStateNotifier
-                                          .updateCurrentStep(currentStep - 1);
+                                    FocusScope.of(context).unfocus();
+
+                                    if (userAuthState.isRegistering) return;
+                                    bool isValid = _validateCurrentStep(
+                                        context, currentStep);
+
+                                    if (isValid) {
+                                      if (currentStep < 2) {
+                                        userAuthStateNotifier
+                                            .updateCurrentStep(currentStep + 1);
+                                      } else {
+                                        authController
+                                          ..signUp(
+                                            userFname.text,
+                                            userLname.text,
+                                            emailController.text,
+                                            passwordController.text,
+                                            cityController.text,
+                                            provinceController.text,
+                                          );
+                                      }
                                     }
                                   },
                                 ),
                               ),
-                            if (currentStep > 0) const SizedBox(width: 5),
-                            Expanded(
-                              flex: currentStep > 0 ? 2 : 3,
-                              child: FilledCustomButton(
-                                buttonText:
-                                    currentStep < 2 ? 'Next' : 'Register',
-                                icon: currentStep < 2
-                                    ? Icons.arrow_forward
-                                    : Icons.check,
-                                onPressed: () {
-                                  if (userAuthState.isRegistering) return;
-                                  bool isValid = _validateCurrentStep(
-                                      context, currentStep);
-
-                                  if (isValid) {
-                                    if (currentStep < 2) {
-                                      userAuthStateNotifier
-                                          .updateCurrentStep(currentStep + 1);
-                                    } else {
-                                      authController
-                                        ..signUp(
-                                          userFname.text,
-                                          userLname.text,
-                                          emailController.text,
-                                          passwordController.text,
-                                          cityController.text,
-                                          provinceController.text,
-                                        );
-                                    }
-                                  }
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                            ],
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const Spacer(),
-                ],
-              ),
-            ),
-          ),
-          if (keyboardHeight == 0)
-            Positioned(
-              bottom: 30.0,
-              left: 0,
-              right: 0,
-              child: Center(
-                child: SizedBox(
-                  width: 350,
-                  child: Text(
-                    "By creating an account, you agree to our\nterms and conditions",
-                    style: Theme.of(context).textTheme.bodyMedium,
-                    textAlign: TextAlign.center,
-                  ),
+                    const Spacer(),
+                  ],
                 ),
               ),
             ),
-        ],
+            if (keyboardHeight == 0)
+              Positioned(
+                bottom: 30.0,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: SizedBox(
+                    width: 350,
+                    child: Text(
+                      "By creating an account, you agree to our\nterms and conditions",
+                      style: Theme.of(context).textTheme.bodyMedium,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }

@@ -92,10 +92,10 @@ class SettingsScreen extends ConsumerWidget {
                           context.pushNamed('help-topics');
                         },
                       ),
-                      DividerWidget(verticalHeight: 0),
-                      SettingsItem(
-                          settingsText: 'Ask a Question',
-                          settingsIcon: Icons.question_answer_outlined),
+                      // DividerWidget(verticalHeight: 0),
+                      // SettingsItem(
+                      //     settingsText: 'Ask a Question',
+                      //     settingsIcon: Icons.question_answer_outlined),
                     ],
                   ),
                 ),

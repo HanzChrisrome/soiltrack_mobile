@@ -46,6 +46,7 @@ mixin _$SoilDashboardState {
       throw _privateConstructorUsedError;
   bool get isFetchingUserPlots => throw _privateConstructorUsedError;
   bool get isFetchingUserPlotData => throw _privateConstructorUsedError;
+  bool get isFetchingHistoryData => throw _privateConstructorUsedError;
   int get selectedPlotId => throw _privateConstructorUsedError;
   int get selectedPlotHistoryId => throw _privateConstructorUsedError;
   int get selectedAnalysisId => throw _privateConstructorUsedError;
@@ -55,6 +56,8 @@ mixin _$SoilDashboardState {
   String get aiAnalysisStatus => throw _privateConstructorUsedError;
   String get currentCardToggled => throw _privateConstructorUsedError;
   String get selectedTimeRangeFilter => throw _privateConstructorUsedError;
+  String get selectedTimeRangeFilterGeneral =>
+      throw _privateConstructorUsedError;
   String get selectedHistoryFilter => throw _privateConstructorUsedError;
   String? get error => throw _privateConstructorUsedError;
   String? get userPlotDataError => throw _privateConstructorUsedError;
@@ -102,6 +105,7 @@ abstract class $SoilDashboardStateCopyWith<$Res> {
       List<Map<String, dynamic>> irrigationLogs,
       bool isFetchingUserPlots,
       bool isFetchingUserPlotData,
+      bool isFetchingHistoryData,
       int selectedPlotId,
       int selectedPlotHistoryId,
       int selectedAnalysisId,
@@ -111,6 +115,7 @@ abstract class $SoilDashboardStateCopyWith<$Res> {
       String aiAnalysisStatus,
       String currentCardToggled,
       String selectedTimeRangeFilter,
+      String selectedTimeRangeFilterGeneral,
       String selectedHistoryFilter,
       String? error,
       String? userPlotDataError,
@@ -160,6 +165,7 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
     Object? irrigationLogs = null,
     Object? isFetchingUserPlots = null,
     Object? isFetchingUserPlotData = null,
+    Object? isFetchingHistoryData = null,
     Object? selectedPlotId = null,
     Object? selectedPlotHistoryId = null,
     Object? selectedAnalysisId = null,
@@ -169,6 +175,7 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
     Object? aiAnalysisStatus = null,
     Object? currentCardToggled = null,
     Object? selectedTimeRangeFilter = null,
+    Object? selectedTimeRangeFilterGeneral = null,
     Object? selectedHistoryFilter = null,
     Object? error = freezed,
     Object? userPlotDataError = freezed,
@@ -251,6 +258,10 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
           ? _value.isFetchingUserPlotData
           : isFetchingUserPlotData // ignore: cast_nullable_to_non_nullable
               as bool,
+      isFetchingHistoryData: null == isFetchingHistoryData
+          ? _value.isFetchingHistoryData
+          : isFetchingHistoryData // ignore: cast_nullable_to_non_nullable
+              as bool,
       selectedPlotId: null == selectedPlotId
           ? _value.selectedPlotId
           : selectedPlotId // ignore: cast_nullable_to_non_nullable
@@ -286,6 +297,10 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
       selectedTimeRangeFilter: null == selectedTimeRangeFilter
           ? _value.selectedTimeRangeFilter
           : selectedTimeRangeFilter // ignore: cast_nullable_to_non_nullable
+              as String,
+      selectedTimeRangeFilterGeneral: null == selectedTimeRangeFilterGeneral
+          ? _value.selectedTimeRangeFilterGeneral
+          : selectedTimeRangeFilterGeneral // ignore: cast_nullable_to_non_nullable
               as String,
       selectedHistoryFilter: null == selectedHistoryFilter
           ? _value.selectedHistoryFilter
@@ -380,6 +395,7 @@ abstract class _$$SoilDashboardStateImplCopyWith<$Res>
       List<Map<String, dynamic>> irrigationLogs,
       bool isFetchingUserPlots,
       bool isFetchingUserPlotData,
+      bool isFetchingHistoryData,
       int selectedPlotId,
       int selectedPlotHistoryId,
       int selectedAnalysisId,
@@ -389,6 +405,7 @@ abstract class _$$SoilDashboardStateImplCopyWith<$Res>
       String aiAnalysisStatus,
       String currentCardToggled,
       String selectedTimeRangeFilter,
+      String selectedTimeRangeFilterGeneral,
       String selectedHistoryFilter,
       String? error,
       String? userPlotDataError,
@@ -436,6 +453,7 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
     Object? irrigationLogs = null,
     Object? isFetchingUserPlots = null,
     Object? isFetchingUserPlotData = null,
+    Object? isFetchingHistoryData = null,
     Object? selectedPlotId = null,
     Object? selectedPlotHistoryId = null,
     Object? selectedAnalysisId = null,
@@ -445,6 +463,7 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
     Object? aiAnalysisStatus = null,
     Object? currentCardToggled = null,
     Object? selectedTimeRangeFilter = null,
+    Object? selectedTimeRangeFilterGeneral = null,
     Object? selectedHistoryFilter = null,
     Object? error = freezed,
     Object? userPlotDataError = freezed,
@@ -527,6 +546,10 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
           ? _value.isFetchingUserPlotData
           : isFetchingUserPlotData // ignore: cast_nullable_to_non_nullable
               as bool,
+      isFetchingHistoryData: null == isFetchingHistoryData
+          ? _value.isFetchingHistoryData
+          : isFetchingHistoryData // ignore: cast_nullable_to_non_nullable
+              as bool,
       selectedPlotId: null == selectedPlotId
           ? _value.selectedPlotId
           : selectedPlotId // ignore: cast_nullable_to_non_nullable
@@ -562,6 +585,10 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
       selectedTimeRangeFilter: null == selectedTimeRangeFilter
           ? _value.selectedTimeRangeFilter
           : selectedTimeRangeFilter // ignore: cast_nullable_to_non_nullable
+              as String,
+      selectedTimeRangeFilterGeneral: null == selectedTimeRangeFilterGeneral
+          ? _value.selectedTimeRangeFilterGeneral
+          : selectedTimeRangeFilterGeneral // ignore: cast_nullable_to_non_nullable
               as String,
       selectedHistoryFilter: null == selectedHistoryFilter
           ? _value.selectedHistoryFilter
@@ -651,6 +678,7 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
       final List<Map<String, dynamic>> irrigationLogs = const [],
       this.isFetchingUserPlots = false,
       this.isFetchingUserPlotData = false,
+      this.isFetchingHistoryData = false,
       this.selectedPlotId = 0,
       this.selectedPlotHistoryId = 0,
       this.selectedAnalysisId = 0,
@@ -660,6 +688,7 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
       this.aiAnalysisStatus = 'No analysis generated yet',
       this.currentCardToggled = 'Daily',
       this.selectedTimeRangeFilter = "1D",
+      this.selectedTimeRangeFilterGeneral = "1D",
       this.selectedHistoryFilter = "1W",
       this.error,
       this.userPlotDataError,
@@ -836,6 +865,9 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
   final bool isFetchingUserPlotData;
   @override
   @JsonKey()
+  final bool isFetchingHistoryData;
+  @override
+  @JsonKey()
   final int selectedPlotId;
   @override
   @JsonKey()
@@ -873,6 +905,9 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
   @override
   @JsonKey()
   final String selectedTimeRangeFilter;
+  @override
+  @JsonKey()
+  final String selectedTimeRangeFilterGeneral;
   @override
   @JsonKey()
   final String selectedHistoryFilter;
@@ -915,7 +950,7 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
 
   @override
   String toString() {
-    return 'SoilDashboardState(userPlots: $userPlots, rawPlotMoistureData: $rawPlotMoistureData, rawPlotNutrientData: $rawPlotNutrientData, latestPlotMoistureData: $latestPlotMoistureData, latestPlotNutrientData: $latestPlotNutrientData, userPlotMoistureData: $userPlotMoistureData, userPlotNutrientData: $userPlotNutrientData, nutrientWarnings: $nutrientWarnings, plotsSuggestion: $plotsSuggestion, deviceWarnings: $deviceWarnings, aiAnalysis: $aiAnalysis, filteredAnalysis: $filteredAnalysis, generatedAnalysis: $generatedAnalysis, irrigationLogs: $irrigationLogs, isFetchingUserPlots: $isFetchingUserPlots, isFetchingUserPlotData: $isFetchingUserPlotData, selectedPlotId: $selectedPlotId, selectedPlotHistoryId: $selectedPlotHistoryId, selectedAnalysisId: $selectedAnalysisId, loadedPlotId: $loadedPlotId, plotConditions: $plotConditions, plotToggles: $plotToggles, aiAnalysisStatus: $aiAnalysisStatus, currentCardToggled: $currentCardToggled, selectedTimeRangeFilter: $selectedTimeRangeFilter, selectedHistoryFilter: $selectedHistoryFilter, error: $error, userPlotDataError: $userPlotDataError, overallCondition: $overallCondition, selectedTimeRange: $selectedTimeRange, customStartDate: $customStartDate, customEndDate: $customEndDate, lastReadingTime: $lastReadingTime, historyDateStartFilter: $historyDateStartFilter, historyDateEndFilter: $historyDateEndFilter, isEditingUserPlot: $isEditingUserPlot, isSavingNewCrop: $isSavingNewCrop, isSavingNewSoilType: $isSavingNewSoilType, isSavingNewSoilMoistureSensor: $isSavingNewSoilMoistureSensor, isSavingNewSoilNutrientSensor: $isSavingNewSoilNutrientSensor, isGeneratingAi: $isGeneratingAi)';
+    return 'SoilDashboardState(userPlots: $userPlots, rawPlotMoistureData: $rawPlotMoistureData, rawPlotNutrientData: $rawPlotNutrientData, latestPlotMoistureData: $latestPlotMoistureData, latestPlotNutrientData: $latestPlotNutrientData, userPlotMoistureData: $userPlotMoistureData, userPlotNutrientData: $userPlotNutrientData, nutrientWarnings: $nutrientWarnings, plotsSuggestion: $plotsSuggestion, deviceWarnings: $deviceWarnings, aiAnalysis: $aiAnalysis, filteredAnalysis: $filteredAnalysis, generatedAnalysis: $generatedAnalysis, irrigationLogs: $irrigationLogs, isFetchingUserPlots: $isFetchingUserPlots, isFetchingUserPlotData: $isFetchingUserPlotData, isFetchingHistoryData: $isFetchingHistoryData, selectedPlotId: $selectedPlotId, selectedPlotHistoryId: $selectedPlotHistoryId, selectedAnalysisId: $selectedAnalysisId, loadedPlotId: $loadedPlotId, plotConditions: $plotConditions, plotToggles: $plotToggles, aiAnalysisStatus: $aiAnalysisStatus, currentCardToggled: $currentCardToggled, selectedTimeRangeFilter: $selectedTimeRangeFilter, selectedTimeRangeFilterGeneral: $selectedTimeRangeFilterGeneral, selectedHistoryFilter: $selectedHistoryFilter, error: $error, userPlotDataError: $userPlotDataError, overallCondition: $overallCondition, selectedTimeRange: $selectedTimeRange, customStartDate: $customStartDate, customEndDate: $customEndDate, lastReadingTime: $lastReadingTime, historyDateStartFilter: $historyDateStartFilter, historyDateEndFilter: $historyDateEndFilter, isEditingUserPlot: $isEditingUserPlot, isSavingNewCrop: $isSavingNewCrop, isSavingNewSoilType: $isSavingNewSoilType, isSavingNewSoilMoistureSensor: $isSavingNewSoilMoistureSensor, isSavingNewSoilNutrientSensor: $isSavingNewSoilNutrientSensor, isGeneratingAi: $isGeneratingAi)';
   }
 
   @override
@@ -955,6 +990,8 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
                 other.isFetchingUserPlots == isFetchingUserPlots) &&
             (identical(other.isFetchingUserPlotData, isFetchingUserPlotData) ||
                 other.isFetchingUserPlotData == isFetchingUserPlotData) &&
+            (identical(other.isFetchingHistoryData, isFetchingHistoryData) ||
+                other.isFetchingHistoryData == isFetchingHistoryData) &&
             (identical(other.selectedPlotId, selectedPlotId) ||
                 other.selectedPlotId == selectedPlotId) &&
             (identical(other.selectedPlotHistoryId, selectedPlotHistoryId) ||
@@ -973,6 +1010,9 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
                 other.currentCardToggled == currentCardToggled) &&
             (identical(other.selectedTimeRangeFilter, selectedTimeRangeFilter) ||
                 other.selectedTimeRangeFilter == selectedTimeRangeFilter) &&
+            (identical(other.selectedTimeRangeFilterGeneral, selectedTimeRangeFilterGeneral) ||
+                other.selectedTimeRangeFilterGeneral ==
+                    selectedTimeRangeFilterGeneral) &&
             (identical(other.selectedHistoryFilter, selectedHistoryFilter) ||
                 other.selectedHistoryFilter == selectedHistoryFilter) &&
             (identical(other.error, error) || other.error == error) &&
@@ -998,12 +1038,8 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
                 other.isSavingNewCrop == isSavingNewCrop) &&
             (identical(other.isSavingNewSoilType, isSavingNewSoilType) ||
                 other.isSavingNewSoilType == isSavingNewSoilType) &&
-            (identical(other.isSavingNewSoilMoistureSensor, isSavingNewSoilMoistureSensor) ||
-                other.isSavingNewSoilMoistureSensor ==
-                    isSavingNewSoilMoistureSensor) &&
-            (identical(other.isSavingNewSoilNutrientSensor, isSavingNewSoilNutrientSensor) ||
-                other.isSavingNewSoilNutrientSensor ==
-                    isSavingNewSoilNutrientSensor) &&
+            (identical(other.isSavingNewSoilMoistureSensor, isSavingNewSoilMoistureSensor) || other.isSavingNewSoilMoistureSensor == isSavingNewSoilMoistureSensor) &&
+            (identical(other.isSavingNewSoilNutrientSensor, isSavingNewSoilNutrientSensor) || other.isSavingNewSoilNutrientSensor == isSavingNewSoilNutrientSensor) &&
             (identical(other.isGeneratingAi, isGeneratingAi) || other.isGeneratingAi == isGeneratingAi));
   }
 
@@ -1026,6 +1062,7 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
         const DeepCollectionEquality().hash(_irrigationLogs),
         isFetchingUserPlots,
         isFetchingUserPlotData,
+        isFetchingHistoryData,
         selectedPlotId,
         selectedPlotHistoryId,
         selectedAnalysisId,
@@ -1035,6 +1072,7 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
         aiAnalysisStatus,
         currentCardToggled,
         selectedTimeRangeFilter,
+        selectedTimeRangeFilterGeneral,
         selectedHistoryFilter,
         error,
         userPlotDataError,
@@ -1081,6 +1119,7 @@ abstract class _SoilDashboardState implements SoilDashboardState {
       final List<Map<String, dynamic>> irrigationLogs,
       final bool isFetchingUserPlots,
       final bool isFetchingUserPlotData,
+      final bool isFetchingHistoryData,
       final int selectedPlotId,
       final int selectedPlotHistoryId,
       final int selectedAnalysisId,
@@ -1090,6 +1129,7 @@ abstract class _SoilDashboardState implements SoilDashboardState {
       final String aiAnalysisStatus,
       final String currentCardToggled,
       final String selectedTimeRangeFilter,
+      final String selectedTimeRangeFilterGeneral,
       final String selectedHistoryFilter,
       final String? error,
       final String? userPlotDataError,
@@ -1140,6 +1180,8 @@ abstract class _SoilDashboardState implements SoilDashboardState {
   @override
   bool get isFetchingUserPlotData;
   @override
+  bool get isFetchingHistoryData;
+  @override
   int get selectedPlotId;
   @override
   int get selectedPlotHistoryId;
@@ -1157,6 +1199,8 @@ abstract class _SoilDashboardState implements SoilDashboardState {
   String get currentCardToggled;
   @override
   String get selectedTimeRangeFilter;
+  @override
+  String get selectedTimeRangeFilterGeneral;
   @override
   String get selectedHistoryFilter;
   @override

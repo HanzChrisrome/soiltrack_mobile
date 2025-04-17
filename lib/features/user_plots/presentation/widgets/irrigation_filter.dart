@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/widgets/filled_button.dart';
 import 'package:table_calendar/table_calendar.dart';
 
-class TimeSelectionWidget extends ConsumerWidget {
-  const TimeSelectionWidget({super.key});
+class HistoryFilterWidget extends ConsumerWidget {
+  const HistoryFilterWidget({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final soilDashboardState = ref.watch(soilDashboardProvider);
-    final selectedOption = soilDashboardState.selectedTimeRangeFilterGeneral;
-    final List<String> options = ['1D', '1W', '1M', '3M'];
+    final selectedOption = soilDashboardState.selectedHistoryFilter;
+    final List<String> options = ['1W', '2W', '3W', '4W'];
 
     return Row(
       children: [
@@ -30,11 +31,7 @@ class TimeSelectionWidget extends ConsumerWidget {
                     onTap: () {
                       ref
                           .read(soilDashboardProvider.notifier)
-                          .updateTimeSelection(
-                            option,
-                            customEndDate: null,
-                            customStartDate: null,
-                          );
+                          .updateHistoryFilterSelection(option);
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -78,10 +75,9 @@ class TimeSelectionWidget extends ConsumerWidget {
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(10),
-              border:
-                  soilDashboardState.selectedTimeRangeFilterGeneral == 'Custom'
-                      ? Border.all(color: Colors.green, width: 1)
-                      : null,
+              border: soilDashboardState.selectedHistoryFilter == 'Custom'
+                  ? Border.all(color: Colors.green, width: 1)
+                  : null,
             ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -106,9 +102,7 @@ class TimeSelectionWidget extends ConsumerWidget {
   Future<void> _selectDateRange(BuildContext context, WidgetRef ref) async {
     final soilDashboardState = ref.watch(soilDashboardProvider);
     DateTime today = DateTime.now();
-
-    DateTime? startDate = soilDashboardState.customStartDate;
-    DateTime? endDate = soilDashboardState.customEndDate;
+    DateTime? selectedDate = soilDashboardState.historyDateStartFilter;
 
     await showModalBottomSheet<void>(
       context: context,
@@ -125,39 +119,17 @@ class TimeSelectionWidget extends ConsumerWidget {
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   TableCalendar(
-                    focusedDay: startDate ?? today,
+                    focusedDay: selectedDate ?? today,
                     firstDay: DateTime(2025),
                     lastDay: today,
-                    selectedDayPredicate: (day) {
-                      if (startDate != null && endDate != null) {
-                        return (day.isAfter(startDate!) &&
-                                day.isBefore(endDate!)) ||
-                            day.isAtSameMomentAs(startDate!) ||
-                            day.isAtSameMomentAs(endDate!);
-                      } else if (startDate != null && endDate == null) {
-                        return day.isAtSameMomentAs(startDate!);
-                      } else {
-                        return false;
-                      }
-                    },
+                    selectedDayPredicate: (day) =>
+                        selectedDate != null && isSameDay(day, selectedDate),
                     onDaySelected: (selectedDay, focusedDay) {
                       setState(() {
-                        if (startDate == null ||
-                            (startDate != null && endDate != null)) {
-                          startDate = selectedDay;
-                          endDate = null;
-                        } else if (startDate != null && endDate == null) {
-                          if (selectedDay.isAfter(startDate!)) {
-                            endDate = selectedDay;
-                          } else {
-                            startDate = selectedDay;
-                            endDate = null;
-                          }
-                        }
+                        selectedDate = selectedDay;
                       });
                     },
                     headerStyle: const HeaderStyle(
@@ -168,12 +140,10 @@ class TimeSelectionWidget extends ConsumerWidget {
                         color: Theme.of(context).colorScheme.onPrimary,
                         shape: BoxShape.circle,
                       ),
-                      selectedDecoration: BoxDecoration(
+                      selectedDecoration: const BoxDecoration(
                         color: Colors.green,
                         shape: BoxShape.circle,
                       ),
-                      rangeHighlightColor:
-                          Theme.of(context).colorScheme.onSecondary,
                       cellAlignment: Alignment.center,
                       tablePadding: const EdgeInsets.all(10),
                     ),
@@ -182,14 +152,14 @@ class TimeSelectionWidget extends ConsumerWidget {
                   FilledCustomButton(
                     icon: Icons.filter_alt_outlined,
                     buttonText: 'Filter Date',
-                    onPressed: startDate != null
+                    onPressed: selectedDate != null
                         ? () {
                             ref
                                 .read(soilDashboardProvider.notifier)
-                                .updateTimeSelection(
+                                .updateHistoryFilterSelection(
                                   'Custom',
-                                  customStartDate: startDate,
-                                  customEndDate: endDate ?? startDate,
+                                  customStartDate: selectedDate,
+                                  customEndDate: selectedDate,
                                 );
                             Navigator.pop(context);
                           }

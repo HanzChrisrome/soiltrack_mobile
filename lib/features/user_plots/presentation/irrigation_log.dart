@@ -2,14 +2,10 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
-import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_toggle.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/custom_accordion.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/history_filter.dart';
-import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
@@ -35,20 +31,32 @@ class _IrrigationLogScreenState extends ConsumerState<IrrigationLogScreen> {
   @override
   Widget build(BuildContext context) {
     final soilDashboard = ref.watch(soilDashboardProvider);
+    final selectedPlotId = soilDashboard.selectedPlotId;
+    final irrigationLogs = soilDashboard.irrigationLogs;
+
     final startDate = soilDashboard.historyDateStartFilter?.toLocal() ??
         DateTime.now().subtract(const Duration(days: 7));
     final endDate =
         soilDashboard.historyDateEndFilter?.toLocal() ?? DateTime.now();
-    final selectedPlotId = soilDashboard.selectedPlotId;
-    final irrigationLogs = soilDashboard.irrigationLogs;
+
+    final adjustedStartDate =
+        DateTime(startDate.year, startDate.month, startDate.day, 0, 0, 0, 0, 0);
+
+    final adjustedEndDate = DateTime(
+        endDate.year, endDate.month, endDate.day, 23, 59, 59, 999, 999);
 
     final filteredLogs = irrigationLogs.where((log) {
       final plotMatch = log['plot_id'] == selectedPlotId;
       final timeStarted = DateTime.parse(log['time_started']).toLocal();
-      final inRange = (!timeStarted.isBefore(startDate)) &&
-          (timeStarted.isBefore(endDate.add(const Duration(days: 1))));
+
+      // Check if the log is within the adjusted range
+      final inRange = (timeStarted.isAfter(adjustedStartDate) ||
+              timeStarted.isAtSameMomentAs(adjustedStartDate)) &&
+          (timeStarted.isBefore(adjustedEndDate) ||
+              timeStarted.isAtSameMomentAs(adjustedEndDate));
+
       return plotMatch && inRange;
-    });
+    }).toList();
 
     final Map<String, List<Map<String, dynamic>>> groupedByDate = {};
     for (final log in filteredLogs) {

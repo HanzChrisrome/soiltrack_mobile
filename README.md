@@ -1,16 +1,23 @@
-# soiltrack_mobile
+# Soiltrack-Antechtors
 
-A new Flutter project.
+Soiltrack: Soil Nutrients Monitoring and Automated Irrigation System with Data Analysis.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## Overview
 
-A few resources to get you started if this is your first Flutter project:
+Designed for farmers, agronomists, and researchers, this app enables:
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+- **Soil Moisture Tracking** — Know when your soil is too dry or too wet
+- **Soil Nutrient Monitoring** — Real-time feedback on soil fertility
+- **Automated or Manual Irrigation** — Control water delivery intelligently
+- **AI Analysis** — Get actionable insights based on sensor data trends
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+---
+
+## Features
+
+- Live data from IoT soil sensors
+- AI recommendations for optimal crop conditions
+- Manual override or fully automated irrigation control
+- Clean and intuitive mobile interface
