@@ -33,11 +33,15 @@ class Validators {
     }
 
     if (!RegExp(r'[A-Z]').hasMatch(value)) {
-      return 'Atleast one uppercase letter';
+      return 'At least one uppercase letter';
     }
 
     if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
-      return 'Atleast one special character';
+      return 'At least one special character';
+    }
+
+    if (!RegExp(r'\d').hasMatch(value)) {
+      return 'At least one number';
     }
 
     return null;

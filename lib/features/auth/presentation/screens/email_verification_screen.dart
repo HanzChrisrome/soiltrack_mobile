@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,13 +8,45 @@ import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/widgets/filled_button.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
-class EmailVerificationScreen extends ConsumerWidget {
+class EmailVerificationScreen extends ConsumerStatefulWidget {
   const EmailVerificationScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<EmailVerificationScreen> createState() =>
+      _EmailVerificationScreenState();
+}
+
+class _EmailVerificationScreenState
+    extends ConsumerState<EmailVerificationScreen> {
+  Timer? _timer;
+  int _cooldownSeconds = 0;
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  void startCooldown() {
+    setState(() {
+      _cooldownSeconds = 30; // Cooldown of 30 seconds
+    });
+
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      if (_cooldownSeconds == 0) {
+        timer.cancel();
+      } else {
+        setState(() {
+          _cooldownSeconds--;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final authState = ref.watch(authProvider);
-    final registerController = AuthController(ref, context);
+    final authNotifier = ref.read(authProvider.notifier);
 
     return Scaffold(
       body: Stack(
@@ -26,8 +60,8 @@ class EmailVerificationScreen extends ConsumerWidget {
             ),
           ),
           Positioned(
-            top: 40, // Adjust as needed
-            left: 5, // Adjust as needed
+            top: 40,
+            left: 5,
             child: IconButton(
               icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: () {
@@ -69,28 +103,53 @@ class EmailVerificationScreen extends ConsumerWidget {
                 FilledCustomButton(
                   buttonText: 'Continue',
                   onPressed: () {
-                    registerController.signIn(authState.userEmail as String,
-                        authState.userPassword as String);
+                    authNotifier.tryToSignIn(
+                      context,
+                      authState.userEmail as String,
+                      authState.userPassword as String,
+                    );
                   },
                 ),
                 const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text("Didn't receive the email? ",
-                        style: Theme.of(context).textTheme.bodyMedium),
-                    GestureDetector(
-                      onTap: () {
-                        context.push('/login');
-                      },
-                      child: Text(
-                        "Resend",
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.onPrimary,
-                              fontWeight: FontWeight.w700,
-                            ),
-                      ),
+                    Text(
+                      "Didn't receive the email? ",
+                      style: Theme.of(context).textTheme.bodyMedium,
                     ),
+                    _cooldownSeconds == 0
+                        ? GestureDetector(
+                            onTap: () {
+                              authNotifier.resendEmailVerification(
+                                context,
+                                authState.userEmail as String,
+                                authState.userPassword as String,
+                              );
+                              startCooldown();
+                            },
+                            child: Text(
+                              "Resend",
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    color:
+                                        Theme.of(context).colorScheme.onPrimary,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                            ),
+                          )
+                        : Text(
+                            "Resend in ${_cooldownSeconds}s",
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(
+                                  color: Colors.grey,
+                                  fontStyle: FontStyle.italic,
+                                ),
+                          ),
                   ],
                 ),
               ],

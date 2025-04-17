@@ -22,7 +22,10 @@ mixin _$UserAuthState {
   String? get userLastName => throw _privateConstructorUsedError;
   String? get userEmail => throw _privateConstructorUsedError;
   String? get userPassword => throw _privateConstructorUsedError;
+  String? get userCity => throw _privateConstructorUsedError;
+  String? get userProvince => throw _privateConstructorUsedError;
   String? get macAddress => throw _privateConstructorUsedError;
+  int get currentRegistrationStep => throw _privateConstructorUsedError;
   int? get failedAttempts => throw _privateConstructorUsedError;
   DateTime? get lockoutTime => throw _privateConstructorUsedError;
   bool get isAuthenticated => throw _privateConstructorUsedError;
@@ -51,7 +54,10 @@ abstract class $UserAuthStateCopyWith<$Res> {
       String? userLastName,
       String? userEmail,
       String? userPassword,
+      String? userCity,
+      String? userProvince,
       String? macAddress,
+      int currentRegistrationStep,
       int? failedAttempts,
       DateTime? lockoutTime,
       bool isAuthenticated,
@@ -82,7 +88,10 @@ class _$UserAuthStateCopyWithImpl<$Res, $Val extends UserAuthState>
     Object? userLastName = freezed,
     Object? userEmail = freezed,
     Object? userPassword = freezed,
+    Object? userCity = freezed,
+    Object? userProvince = freezed,
     Object? macAddress = freezed,
+    Object? currentRegistrationStep = null,
     Object? failedAttempts = freezed,
     Object? lockoutTime = freezed,
     Object? isAuthenticated = null,
@@ -116,10 +125,22 @@ class _$UserAuthStateCopyWithImpl<$Res, $Val extends UserAuthState>
           ? _value.userPassword
           : userPassword // ignore: cast_nullable_to_non_nullable
               as String?,
+      userCity: freezed == userCity
+          ? _value.userCity
+          : userCity // ignore: cast_nullable_to_non_nullable
+              as String?,
+      userProvince: freezed == userProvince
+          ? _value.userProvince
+          : userProvince // ignore: cast_nullable_to_non_nullable
+              as String?,
       macAddress: freezed == macAddress
           ? _value.macAddress
           : macAddress // ignore: cast_nullable_to_non_nullable
               as String?,
+      currentRegistrationStep: null == currentRegistrationStep
+          ? _value.currentRegistrationStep
+          : currentRegistrationStep // ignore: cast_nullable_to_non_nullable
+              as int,
       failedAttempts: freezed == failedAttempts
           ? _value.failedAttempts
           : failedAttempts // ignore: cast_nullable_to_non_nullable
@@ -167,7 +188,10 @@ abstract class _$$UserAuthStateImplCopyWith<$Res>
       String? userLastName,
       String? userEmail,
       String? userPassword,
+      String? userCity,
+      String? userProvince,
       String? macAddress,
+      int currentRegistrationStep,
       int? failedAttempts,
       DateTime? lockoutTime,
       bool isAuthenticated,
@@ -196,7 +220,10 @@ class __$$UserAuthStateImplCopyWithImpl<$Res>
     Object? userLastName = freezed,
     Object? userEmail = freezed,
     Object? userPassword = freezed,
+    Object? userCity = freezed,
+    Object? userProvince = freezed,
     Object? macAddress = freezed,
+    Object? currentRegistrationStep = null,
     Object? failedAttempts = freezed,
     Object? lockoutTime = freezed,
     Object? isAuthenticated = null,
@@ -230,10 +257,22 @@ class __$$UserAuthStateImplCopyWithImpl<$Res>
           ? _value.userPassword
           : userPassword // ignore: cast_nullable_to_non_nullable
               as String?,
+      userCity: freezed == userCity
+          ? _value.userCity
+          : userCity // ignore: cast_nullable_to_non_nullable
+              as String?,
+      userProvince: freezed == userProvince
+          ? _value.userProvince
+          : userProvince // ignore: cast_nullable_to_non_nullable
+              as String?,
       macAddress: freezed == macAddress
           ? _value.macAddress
           : macAddress // ignore: cast_nullable_to_non_nullable
               as String?,
+      currentRegistrationStep: null == currentRegistrationStep
+          ? _value.currentRegistrationStep
+          : currentRegistrationStep // ignore: cast_nullable_to_non_nullable
+              as int,
       failedAttempts: freezed == failedAttempts
           ? _value.failedAttempts
           : failedAttempts // ignore: cast_nullable_to_non_nullable
@@ -276,7 +315,10 @@ class _$UserAuthStateImpl implements _UserAuthState {
       this.userLastName,
       this.userEmail,
       this.userPassword,
+      this.userCity,
+      this.userProvince,
       this.macAddress,
+      this.currentRegistrationStep = 0,
       this.failedAttempts,
       this.lockoutTime,
       this.isAuthenticated = false,
@@ -298,7 +340,14 @@ class _$UserAuthStateImpl implements _UserAuthState {
   @override
   final String? userPassword;
   @override
+  final String? userCity;
+  @override
+  final String? userProvince;
+  @override
   final String? macAddress;
+  @override
+  @JsonKey()
+  final int currentRegistrationStep;
   @override
   final int? failedAttempts;
   @override
@@ -321,7 +370,7 @@ class _$UserAuthStateImpl implements _UserAuthState {
 
   @override
   String toString() {
-    return 'UserAuthState(user: $user, userId: $userId, userName: $userName, userLastName: $userLastName, userEmail: $userEmail, userPassword: $userPassword, macAddress: $macAddress, failedAttempts: $failedAttempts, lockoutTime: $lockoutTime, isAuthenticated: $isAuthenticated, isLoggingIn: $isLoggingIn, isRegistering: $isRegistering, isSetupComplete: $isSetupComplete, isRequestingChange: $isRequestingChange)';
+    return 'UserAuthState(user: $user, userId: $userId, userName: $userName, userLastName: $userLastName, userEmail: $userEmail, userPassword: $userPassword, userCity: $userCity, userProvince: $userProvince, macAddress: $macAddress, currentRegistrationStep: $currentRegistrationStep, failedAttempts: $failedAttempts, lockoutTime: $lockoutTime, isAuthenticated: $isAuthenticated, isLoggingIn: $isLoggingIn, isRegistering: $isRegistering, isSetupComplete: $isSetupComplete, isRequestingChange: $isRequestingChange)';
   }
 
   @override
@@ -339,8 +388,15 @@ class _$UserAuthStateImpl implements _UserAuthState {
                 other.userEmail == userEmail) &&
             (identical(other.userPassword, userPassword) ||
                 other.userPassword == userPassword) &&
+            (identical(other.userCity, userCity) ||
+                other.userCity == userCity) &&
+            (identical(other.userProvince, userProvince) ||
+                other.userProvince == userProvince) &&
             (identical(other.macAddress, macAddress) ||
                 other.macAddress == macAddress) &&
+            (identical(
+                    other.currentRegistrationStep, currentRegistrationStep) ||
+                other.currentRegistrationStep == currentRegistrationStep) &&
             (identical(other.failedAttempts, failedAttempts) ||
                 other.failedAttempts == failedAttempts) &&
             (identical(other.lockoutTime, lockoutTime) ||
@@ -366,7 +422,10 @@ class _$UserAuthStateImpl implements _UserAuthState {
       userLastName,
       userEmail,
       userPassword,
+      userCity,
+      userProvince,
       macAddress,
+      currentRegistrationStep,
       failedAttempts,
       lockoutTime,
       isAuthenticated,
@@ -392,7 +451,10 @@ abstract class _UserAuthState implements UserAuthState {
       final String? userLastName,
       final String? userEmail,
       final String? userPassword,
+      final String? userCity,
+      final String? userProvince,
       final String? macAddress,
+      final int currentRegistrationStep,
       final int? failedAttempts,
       final DateTime? lockoutTime,
       final bool isAuthenticated,
@@ -414,7 +476,13 @@ abstract class _UserAuthState implements UserAuthState {
   @override
   String? get userPassword;
   @override
+  String? get userCity;
+  @override
+  String? get userProvince;
+  @override
   String? get macAddress;
+  @override
+  int get currentRegistrationStep;
   @override
   int? get failedAttempts;
   @override

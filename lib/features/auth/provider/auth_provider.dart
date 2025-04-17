@@ -124,9 +124,16 @@ class AuthNotifier extends Notifier<UserAuthState> {
     }
   }
 
-  Future<void> signUp(String email, String password, String firstName,
-      String lastName, String municipality, String city) async {
+  Future<void> signUp(
+      BuildContext context,
+      String email,
+      String password,
+      String firstName,
+      String lastName,
+      String municipality,
+      String city) async {
     state = state.copyWith(isRegistering: true);
+    NotifierHelper.showLoadingToast(context, 'Signing up...');
     try {
       final existingUser = await supabase
           .from('users')
@@ -140,8 +147,12 @@ class AuthNotifier extends Notifier<UserAuthState> {
         return;
       }
 
-      final response =
-          await supabase.auth.signUp(email: email, password: password);
+      final response = await supabase.auth.signUp(
+        email: email,
+        password: password,
+        emailRedirectTo:
+            'https://soiltrack-server.onrender.com/auth/verify-email',
+      );
 
       if (response.user != null) {
         await supabase.from('users').insert({
@@ -160,9 +171,11 @@ class AuthNotifier extends Notifier<UserAuthState> {
       if (e is AuthException) {
         errorMessage = e.message;
       }
+      NotifierHelper.closeToast(context);
       throw (errorMessage);
     } finally {
       state = state.copyWith(isRegistering: false);
+      NotifierHelper.closeToast(context);
     }
   }
 
@@ -245,6 +258,51 @@ class AuthNotifier extends Notifier<UserAuthState> {
     } catch (e) {
       NotifierHelper.logError(e);
     }
+  }
+
+  Future<void> tryToSignIn(
+      BuildContext context, String email, String password) async {
+    NotifierHelper.logMessage('Trying to sign in...');
+    try {
+      await supabase.auth.signInWithPassword(
+        email: email,
+        password: password,
+      );
+
+      if (state.isRegistering || !state.isSetupComplete) {
+        context.go('/setup');
+      } else {
+        context.go('/home');
+      }
+    } catch (e) {
+      if (e is AuthException) {
+        if (e.message.contains('Email not confirmed')) {
+          NotifierHelper.showErrorToast(
+              context, 'Email not confirmed, check your inbox.');
+        } else {
+          NotifierHelper.showErrorToast(context, e.message);
+        }
+      } else {
+        NotifierHelper.showErrorToast(context, 'An unexpected error occurred.');
+        print('Error: $e');
+      }
+    }
+  }
+
+  Future<void> resendEmailVerification(
+      BuildContext context, String email, String password) async {
+    try {
+      NotifierHelper.showLoadingToast(
+          context, 'Resending verification email...');
+      await supabase.auth.signUp(password: password, email: email);
+      NotifierHelper.showSuccessToast(context, 'Verification email resent!');
+    } catch (e) {
+      NotifierHelper.logMessage('Error: $e');
+    }
+  }
+
+  void updateCurrentStep(int step) {
+    state = state.copyWith(currentRegistrationStep: step);
   }
 }
 

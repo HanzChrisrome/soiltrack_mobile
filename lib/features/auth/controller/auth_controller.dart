@@ -60,7 +60,7 @@ class AuthController {
 
     try {
       await authNotifier.signUp(
-          email, password, userFname, userLname, municipality, city);
+          context, email, password, userFname, userLname, municipality, city);
       context.pushNamed('email-verification');
     } catch (e) {
       NotifierHelper.logError(e, context, e.toString());
