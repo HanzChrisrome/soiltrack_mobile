@@ -39,7 +39,7 @@ class PlotCondition extends ConsumerWidget {
               Text(
                 lastRead != null
                     ? 'As of ${DateFormat('MMMM d, yyyy').format(lastRead)}'
-                    : 'No recent data', // Handle null case
+                    : '', // Handle null case
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSecondary,
                   fontSize: 14,
@@ -49,48 +49,43 @@ class PlotCondition extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 15),
-          RichText(
-            text: TextSpan(
-              text: '$plotName condition are ', // Normal text
-              style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    height: 1.1,
-                    letterSpacing: -1.0,
-                    fontSize: 28,
-                  ),
-
-              children: [
-                TextSpan(
-                  text: condition,
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onSecondary,
-                  ),
-                ),
-                TextSpan(
-                  text: '.',
-                ),
-              ],
+          if (lastRead == null)
+            Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'No data available for this selected plot.',
+                style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      height: 1.1,
+                      letterSpacing: -1.0,
+                      fontSize: 28,
+                    ),
+                textAlign: TextAlign.start,
+              ),
             ),
-          ),
-          // const SizedBox(height: 15),
-          // Row(
-          //   children: [
-          //     Text(
-          //       'See statistics',
-          //       style: TextStyle(
-          //         color: Theme.of(context).colorScheme.primary,
-          //         fontSize: 14,
-          //         fontWeight: FontWeight.w400,
-          //       ),
-          //     ),
-          //     const SizedBox(width: 5),
-          //     Icon(
-          //       Icons.arrow_forward_ios,
-          //       color: Theme.of(context).colorScheme.primary,
-          //       size: 12,
-          //     ),
-          //   ],
-          // ),
+          if (lastRead != null)
+            RichText(
+              text: TextSpan(
+                text: '$plotName condition are ', // Normal text
+                style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                      color: Theme.of(context).colorScheme.primary,
+                      height: 1.1,
+                      letterSpacing: -1.0,
+                      fontSize: 28,
+                    ),
+                children: [
+                  TextSpan(
+                    text: condition,
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSecondary,
+                    ),
+                  ),
+                  TextSpan(
+                    text: '.',
+                  ),
+                ],
+              ),
+            ),
         ],
       ),
     );

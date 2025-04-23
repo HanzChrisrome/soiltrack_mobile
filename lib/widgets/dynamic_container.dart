@@ -7,6 +7,7 @@ class DynamicContainer extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
   final EdgeInsetsGeometry? margin;
   final double? borderRadius; // Optional borderRadius parameter
+  final double? width; // Optional width parameter
 
   const DynamicContainer({
     super.key,
@@ -16,12 +17,13 @@ class DynamicContainer extends StatelessWidget {
     this.padding,
     this.margin,
     this.borderRadius, // Include borderRadius in constructor
+    this.width, // Include width in constructor
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
+      width: width, // Set the width if provided
       margin: margin ?? const EdgeInsets.only(bottom: 10),
       padding:
           padding ?? const EdgeInsets.symmetric(horizontal: 20, vertical: 20),

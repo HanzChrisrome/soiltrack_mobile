@@ -24,6 +24,7 @@ mixin _$UserAuthState {
   String? get userPassword => throw _privateConstructorUsedError;
   String? get userCity => throw _privateConstructorUsedError;
   String? get userProvince => throw _privateConstructorUsedError;
+  String? get userBarangay => throw _privateConstructorUsedError;
   String? get macAddress => throw _privateConstructorUsedError;
   int get currentRegistrationStep => throw _privateConstructorUsedError;
   int? get failedAttempts => throw _privateConstructorUsedError;
@@ -56,6 +57,7 @@ abstract class $UserAuthStateCopyWith<$Res> {
       String? userPassword,
       String? userCity,
       String? userProvince,
+      String? userBarangay,
       String? macAddress,
       int currentRegistrationStep,
       int? failedAttempts,
@@ -90,6 +92,7 @@ class _$UserAuthStateCopyWithImpl<$Res, $Val extends UserAuthState>
     Object? userPassword = freezed,
     Object? userCity = freezed,
     Object? userProvince = freezed,
+    Object? userBarangay = freezed,
     Object? macAddress = freezed,
     Object? currentRegistrationStep = null,
     Object? failedAttempts = freezed,
@@ -132,6 +135,10 @@ class _$UserAuthStateCopyWithImpl<$Res, $Val extends UserAuthState>
       userProvince: freezed == userProvince
           ? _value.userProvince
           : userProvince // ignore: cast_nullable_to_non_nullable
+              as String?,
+      userBarangay: freezed == userBarangay
+          ? _value.userBarangay
+          : userBarangay // ignore: cast_nullable_to_non_nullable
               as String?,
       macAddress: freezed == macAddress
           ? _value.macAddress
@@ -190,6 +197,7 @@ abstract class _$$UserAuthStateImplCopyWith<$Res>
       String? userPassword,
       String? userCity,
       String? userProvince,
+      String? userBarangay,
       String? macAddress,
       int currentRegistrationStep,
       int? failedAttempts,
@@ -222,6 +230,7 @@ class __$$UserAuthStateImplCopyWithImpl<$Res>
     Object? userPassword = freezed,
     Object? userCity = freezed,
     Object? userProvince = freezed,
+    Object? userBarangay = freezed,
     Object? macAddress = freezed,
     Object? currentRegistrationStep = null,
     Object? failedAttempts = freezed,
@@ -264,6 +273,10 @@ class __$$UserAuthStateImplCopyWithImpl<$Res>
       userProvince: freezed == userProvince
           ? _value.userProvince
           : userProvince // ignore: cast_nullable_to_non_nullable
+              as String?,
+      userBarangay: freezed == userBarangay
+          ? _value.userBarangay
+          : userBarangay // ignore: cast_nullable_to_non_nullable
               as String?,
       macAddress: freezed == macAddress
           ? _value.macAddress
@@ -317,6 +330,7 @@ class _$UserAuthStateImpl implements _UserAuthState {
       this.userPassword,
       this.userCity,
       this.userProvince,
+      this.userBarangay,
       this.macAddress,
       this.currentRegistrationStep = 0,
       this.failedAttempts,
@@ -344,6 +358,8 @@ class _$UserAuthStateImpl implements _UserAuthState {
   @override
   final String? userProvince;
   @override
+  final String? userBarangay;
+  @override
   final String? macAddress;
   @override
   @JsonKey()
@@ -370,7 +386,7 @@ class _$UserAuthStateImpl implements _UserAuthState {
 
   @override
   String toString() {
-    return 'UserAuthState(user: $user, userId: $userId, userName: $userName, userLastName: $userLastName, userEmail: $userEmail, userPassword: $userPassword, userCity: $userCity, userProvince: $userProvince, macAddress: $macAddress, currentRegistrationStep: $currentRegistrationStep, failedAttempts: $failedAttempts, lockoutTime: $lockoutTime, isAuthenticated: $isAuthenticated, isLoggingIn: $isLoggingIn, isRegistering: $isRegistering, isSetupComplete: $isSetupComplete, isRequestingChange: $isRequestingChange)';
+    return 'UserAuthState(user: $user, userId: $userId, userName: $userName, userLastName: $userLastName, userEmail: $userEmail, userPassword: $userPassword, userCity: $userCity, userProvince: $userProvince, userBarangay: $userBarangay, macAddress: $macAddress, currentRegistrationStep: $currentRegistrationStep, failedAttempts: $failedAttempts, lockoutTime: $lockoutTime, isAuthenticated: $isAuthenticated, isLoggingIn: $isLoggingIn, isRegistering: $isRegistering, isSetupComplete: $isSetupComplete, isRequestingChange: $isRequestingChange)';
   }
 
   @override
@@ -392,6 +408,8 @@ class _$UserAuthStateImpl implements _UserAuthState {
                 other.userCity == userCity) &&
             (identical(other.userProvince, userProvince) ||
                 other.userProvince == userProvince) &&
+            (identical(other.userBarangay, userBarangay) ||
+                other.userBarangay == userBarangay) &&
             (identical(other.macAddress, macAddress) ||
                 other.macAddress == macAddress) &&
             (identical(
@@ -424,6 +442,7 @@ class _$UserAuthStateImpl implements _UserAuthState {
       userPassword,
       userCity,
       userProvince,
+      userBarangay,
       macAddress,
       currentRegistrationStep,
       failedAttempts,
@@ -453,6 +472,7 @@ abstract class _UserAuthState implements UserAuthState {
       final String? userPassword,
       final String? userCity,
       final String? userProvince,
+      final String? userBarangay,
       final String? macAddress,
       final int currentRegistrationStep,
       final int? failedAttempts,
@@ -479,6 +499,8 @@ abstract class _UserAuthState implements UserAuthState {
   String? get userCity;
   @override
   String? get userProvince;
+  @override
+  String? get userBarangay;
   @override
   String? get macAddress;
   @override

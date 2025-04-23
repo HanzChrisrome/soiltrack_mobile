@@ -30,7 +30,7 @@ class DeviceHelper {
           publishTopic, responseTopic, message,
           expectedResponse: expectedResponse);
 
-      if (expectedResponse == null || response == expectedResponse) {
+      if (response == expectedResponse) {
         NotifierHelper.showSuccessToast(context, successMessage);
         return true;
       } else {

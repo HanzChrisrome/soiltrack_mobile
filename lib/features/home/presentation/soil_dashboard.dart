@@ -4,9 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/registered_plots.dart';
+import 'package:soiltrack_mobile/features/home/presentation/widgets/device/warning_widget.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/soil_dashboard/unassigned_sensor.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
-import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/hardware_provider/soil_sensors_provider.dart';
+import 'package:soiltrack_mobile/widgets/bottom_navigation_bar.dart';
 import 'package:soiltrack_mobile/widgets/text_header.dart';
 
 class SoilDashboardScreen extends ConsumerStatefulWidget {
@@ -52,6 +54,7 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                     SliverAppBar(
                       backgroundColor: Colors.white,
                       surfaceTintColor: Colors.transparent,
+                      automaticallyImplyLeading: false,
                       leading: null,
                       expandedHeight: 200,
                       flexibleSpace: FlexibleSpaceBar(
@@ -104,7 +107,10 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                             Column(
                               children: [
                                 if (unassignedNutrientSensors.isNotEmpty)
-                                  const UnassignedSensor(),
+                                  WarningWidget(
+                                      headerText: 'UNASSIGNED SENSORS',
+                                      bodyText:
+                                          'Assigning sensors to plots is important for data collection and monitoring. Please assign the available sensors to your plots.'),
                                 Column(
                                   children: userPlot.userPlots.map<Widget>(
                                     (plot) {
@@ -176,58 +182,6 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                                   ).toList(),
                                 ),
                                 const SizedBox(height: 5),
-
-                                // GestureDetector(
-                                //   onTap: () {
-                                //     showCustomBottomSheet(
-                                //       context: context,
-                                //       title: deviceState.isPumpOpen
-                                //           ? 'Close Pump and All Valves'
-                                //           : 'Open Pump and Valves',
-                                //       description:
-                                //           'Are you sure you want to do this action?',
-                                //       icon: Icons.arrow_forward_ios_outlined,
-                                //       buttonText: 'Proceed',
-                                //       onPressed: () {
-                                //         if (deviceState.isPumpOpen) {
-                                //           deviceNotifier.closeAll(context);
-                                //         } else {
-                                //           deviceNotifier.openAll(context);
-                                //         }
-                                //         Navigator.of(context).pop();
-                                //       },
-                                //     );
-                                //   },
-                                //   child: Container(
-                                //     padding: const EdgeInsets.symmetric(
-                                //         horizontal: 15, vertical: 20),
-                                //     decoration: BoxDecoration(
-                                //       color: deviceState.isPumpOpen
-                                //           ? Colors.red.withOpacity(0.1)
-                                //           : Colors.green.withOpacity(0.1),
-                                //       borderRadius: BorderRadius.circular(15),
-                                //       border: Border.all(
-                                //         color: deviceState.isPumpOpen
-                                //             ? Colors.red
-                                //             : Colors.green,
-                                //         width: 1,
-                                //       ),
-                                //     ),
-                                //     child: Center(
-                                //       child: Text(
-                                //         deviceState.isPumpOpen
-                                //             ? 'Close pump and all valves'
-                                //             : 'Open pump and all valves',
-                                //         style: TextStyle(
-                                //           color: deviceState.isPumpOpen
-                                //               ? Colors.red
-                                //               : Colors.green,
-                                //           fontWeight: FontWeight.bold,
-                                //         ),
-                                //       ),
-                                //     ),
-                                //   ),
-                                // ),
                               ],
                             ),
                             const SizedBox(height: 100),
@@ -236,6 +190,12 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                       ),
                     ),
                   ],
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: CustomNavBar(
+                    selectedIndex: 1,
+                  ),
                 ),
               ],
             ),

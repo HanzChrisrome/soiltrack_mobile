@@ -1,7 +1,9 @@
 import 'package:flutter/services.dart';
+import 'package:philippines_rpcmb/philippines_rpcmb.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/core/utils/validators.dart';
 import 'package:soiltrack_mobile/features/auth/controller/auth_controller.dart';
+import 'package:soiltrack_mobile/features/auth/presentation/widgets/custom_dropdown.dart';
 import 'package:soiltrack_mobile/widgets/filled_button.dart';
 import 'package:soiltrack_mobile/widgets/outline_button.dart';
 import 'package:soiltrack_mobile/widgets/text_field.dart';
@@ -9,7 +11,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
-// import 'package:philippines_rpcmb/philippines_rpcmb.dart';
+import 'package:philippines_rpcmb/philippines_rpcmb.dart' as PhilippinesRPCMB;
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 
 class RegisterScreen extends ConsumerStatefulWidget {
@@ -27,9 +29,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController confirmPasswordController =
       TextEditingController();
-  final TextEditingController cityController = TextEditingController();
-  final TextEditingController provinceController = TextEditingController();
 
+  Region? selectedRegion;
+  Province? selectedProvince;
+  Municipality? selectedMunicipality;
+  String? selectedBarangay;
+
+  List<Region> regions = PhilippinesRPCMB.philippineRegions;
   @override
   void dispose() {
     userFname.dispose();
@@ -37,8 +43,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     emailController.dispose();
     passwordController.dispose();
     confirmPasswordController.dispose();
-    cityController.dispose();
-    provinceController.dispose();
     super.dispose();
   }
 
@@ -64,8 +68,8 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
           children: [
             AnimatedPositioned(
               duration: const Duration(milliseconds: 0),
-              top: keyboardHeight > 0 ? 60 : 70.0,
-              bottom: keyboardHeight > 0 ? 320 : 40.0,
+              top: keyboardHeight > 0 ? 50 : 40.0,
+              bottom: keyboardHeight > 0 ? 280 : 40.0,
               left: 0,
               right: 0,
               child: Form(
@@ -99,8 +103,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                       child: Column(
                         children: [
                           if (currentStep == 0) ...[
-                            _buildStepTitle(
-                                '[ STEP 1 ]', 'Enter your information'),
+                            if (keyboardHeight == 0)
+                              _buildStepTitle(
+                                  '[ STEP 1 ]', 'Enter your information'),
                             TextFieldWidget(
                               label: 'First Name',
                               controller: userFname,
@@ -115,23 +120,18 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                             ),
                           ],
                           if (currentStep == 1) ...[
-                            _buildStepTitle('[ STEP 2 ]', 'Enter your address'),
-                            TextFieldWidget(
-                              label: 'City',
-                              controller: cityController,
-                              validator: Validators.validateUsername,
-                              prefixIcon: Icons.location_city,
-                            ),
-                            TextFieldWidget(
-                              label: 'Province',
-                              controller: provinceController,
-                              validator: Validators.validateUsername,
-                              prefixIcon: Icons.location_pin,
-                            ),
+                            if (keyboardHeight == 0)
+                              _buildStepTitle(
+                                  '[ STEP 2 ]', 'Enter your address'),
+                            _buildCustomRegionDropdown(),
+                            _buildCustomProvinceDropdown(),
+                            _buildCustomMunicipalityDropdown(),
+                            _buildCustomBarangayDropdown(),
                           ],
                           if (currentStep == 2) ...[
-                            _buildStepTitle(
-                                '[ STEP 3 ]', 'Enter your credentials'),
+                            if (keyboardHeight == 0)
+                              _buildStepTitle(
+                                  '[ STEP 3 ]', 'Enter your credentials'),
                             TextFieldWidget(
                               label: 'Email',
                               controller: emailController,
@@ -197,8 +197,9 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
                                             userLname.text,
                                             emailController.text,
                                             passwordController.text,
-                                            cityController.text,
-                                            provinceController.text,
+                                            selectedMunicipality?.name ?? '',
+                                            selectedProvince?.name ?? '',
+                                            selectedBarangay ?? '',
                                           );
                                       }
                                     }
@@ -237,6 +238,83 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     );
   }
 
+  Widget _buildCustomRegionDropdown() {
+    return DropdownButtonFormFieldWidget<Region>(
+      label: 'Region',
+      items: regions,
+      selectedValue: selectedRegion,
+      onChanged: (Region? region) {
+        setState(() {
+          selectedRegion = region;
+          selectedProvince = null;
+          selectedMunicipality = null;
+          selectedBarangay = null;
+        });
+      },
+      itemBuilder: (Region region) {
+        return Text(region.regionName);
+      },
+    );
+  }
+
+  Widget _buildCustomProvinceDropdown() {
+    List<Province> provinceList = selectedRegion?.provinces ?? [];
+
+    return DropdownButtonFormFieldWidget<Province>(
+      label: 'Province',
+      items: provinceList,
+      selectedValue: selectedProvince,
+      onChanged: (Province? province) {
+        setState(() {
+          selectedProvince = province;
+          selectedMunicipality = null;
+          selectedBarangay = null;
+        });
+      },
+      itemBuilder: (Province province) {
+        return Text(province.name);
+      },
+    );
+  }
+
+  Widget _buildCustomMunicipalityDropdown() {
+    List<Municipality> municipalityList =
+        selectedProvince?.municipalities ?? [];
+
+    return DropdownButtonFormFieldWidget<Municipality>(
+      label: 'Municipality',
+      items: municipalityList,
+      selectedValue: selectedMunicipality,
+      onChanged: (Municipality? municipality) {
+        setState(() {
+          selectedMunicipality = municipality;
+          selectedBarangay = null;
+        });
+      },
+      itemBuilder: (Municipality municipality) {
+        return Text(municipality.name);
+      },
+    );
+  }
+
+  Widget _buildCustomBarangayDropdown() {
+    List<String> barangayList = selectedMunicipality?.barangays ?? [];
+
+    return DropdownButtonFormFieldWidget<String>(
+      label: 'Barangay',
+      items: barangayList,
+      selectedValue: selectedBarangay,
+      onChanged: (String? barangay) {
+        setState(() {
+          selectedBarangay = barangay;
+        });
+      },
+      itemBuilder: (String barangay) {
+        return Text(barangay);
+      },
+    );
+  }
+
   // Helper function to build step titles
   Widget _buildStepTitle(String stepNumber, String description) {
     return Container(
@@ -270,7 +348,10 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
         return false;
       }
     } else if (currentStep == 1) {
-      if (cityController.text.isEmpty || provinceController.text.isEmpty) {
+      if (selectedRegion == null ||
+          selectedProvince == null ||
+          selectedMunicipality == null ||
+          selectedBarangay == null) {
         vibrateError();
         NotifierHelper.showErrorToast(context, 'All fields are required.');
         return false;

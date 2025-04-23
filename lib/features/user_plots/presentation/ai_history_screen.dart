@@ -6,33 +6,19 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
-import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_toggle.dart';
-import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/history_filter.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_widgets/ai_toggle.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_widgets/history_filter.dart';
+import 'package:soiltrack_mobile/widgets/collapsible_appbar.dart';
+import 'package:soiltrack_mobile/widgets/collapsible_scaffold.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
-class AiHistoryScreen extends ConsumerStatefulWidget {
+class AiHistoryScreen extends ConsumerWidget {
   const AiHistoryScreen({super.key});
 
   @override
-  _AiHistoryScreenState createState() => _AiHistoryScreenState();
-}
-
-class _AiHistoryScreenState extends ConsumerState<AiHistoryScreen> {
-  bool isAppBarCollapsed = false;
-  void _updateAppBarTitle(double scrollOffset, double expandedHeight) {
-    bool shouldCollapse = scrollOffset > expandedHeight - kToolbarHeight;
-
-    if (shouldCollapse != isAppBarCollapsed) {
-      setState(() {
-        isAppBarCollapsed = shouldCollapse;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final soilDashboard = ref.watch(soilDashboardProvider);
     final selectedPlotId = soilDashboard.selectedPlotId;
     final fullAiAnalysisList = soilDashboard.filteredAnalysis;
@@ -67,166 +53,35 @@ class _AiHistoryScreenState extends ConsumerState<AiHistoryScreen> {
       body: PopScope(
         canPop: true,
         onPopInvokedWithResult: (didPop, result) async {},
-        child: Stack(
-          children: [
-            NotificationListener<ScrollNotification>(
-              onNotification: (scrollNotification) {
-                if (scrollNotification.metrics.axis == Axis.vertical) {
-                  _updateAppBarTitle(
-                    scrollNotification.metrics.pixels,
-                    200.0,
-                  );
-                }
-                return true;
+        child: CollapsibleSliverScaffold(
+          expandedHeight: 200,
+          backgroundColor: Colors.white,
+          headerBuilder: (context, isCollapsed) {
+            return CollapsibleSliverAppBar(
+              isCollapsed: isCollapsed,
+              onBackTap: () {
+                context.pop();
               },
-              child: CustomScrollView(
-                slivers: [
-                  _buildSilverAppBar(context),
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 10, vertical: 10),
-                    sliver: SliverList(
-                      delegate: SliverChildListDelegate(
-                        [
-                          AiToggle(plotId: plotId),
-                          const SizedBox(height: 5),
-                          HistoryFilterWidget(),
-                          const SizedBox(height: 10),
-                          if (isFetchingHistory)
-                            SizedBox(
-                              height: MediaQuery.of(context).size.height - 300,
-                              child: Center(
-                                child: DynamicContainer(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      LoadingAnimationWidget.threeArchedCircle(
-                                        color: Theme.of(context)
-                                            .colorScheme
-                                            .onPrimary,
-                                        size: 30,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          if (filteredList.isNotEmpty)
-                            Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: filteredList.map((analysis) {
-                                  final aiData =
-                                      analysis['analysis']['AI_Analysis'];
-                                  final date = analysis['analysis_date'];
-                                  final findings =
-                                      aiData['summary']['findings'];
-                                  final formattedDate =
-                                      DateFormat('MMMM d, yyyy')
-                                          .format(DateTime.parse(date));
-
-                                  return GestureDetector(
-                                    onTap: () {
-                                      final analysisId = analysis['id'];
-                                      context.pushNamed(
-                                        'ai-analysis-detail',
-                                        pathParameters: {
-                                          'analysisId': analysisId.toString()
-                                        },
-                                      );
-                                    },
-                                    child: DynamicContainer(
-                                      backgroundColor: Colors.transparent,
-                                      borderColor: Theme.of(context)
-                                          .colorScheme
-                                          .onSurface
-                                          .withOpacity(0.2),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 25, vertical: 15),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Analysis for $formattedDate',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodyMedium!
-                                                .copyWith(
-                                                  color: Theme.of(context)
-                                                      .colorScheme
-                                                      .secondary,
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                          ),
-                                          const SizedBox(height: 5),
-                                          Text(
-                                            '$findings',
-                                            style: Theme.of(context)
-                                                .textTheme
-                                                .bodySmall!
-                                                .copyWith(
-                                                  fontSize: 14,
-                                                ),
-                                            maxLines: 2,
-                                            overflow: TextOverflow.ellipsis,
-                                          ),
-                                          DividerWidget(verticalHeight: 1),
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.spaceBetween,
-                                            children: [
-                                              Text(
-                                                'Tap the card for more details',
-                                                style: Theme.of(context)
-                                                    .textTheme
-                                                    .bodySmall!
-                                                    .copyWith(
-                                                      fontSize: 12,
-                                                      color: Theme.of(context)
-                                                          .colorScheme
-                                                          .onPrimary,
-                                                    ),
-                                              ),
-                                              Icon(
-                                                Icons.arrow_forward_ios,
-                                                size: 12,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .onPrimary,
-                                              ),
-                                            ],
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                }).toList()),
-                          if (filteredList.isEmpty)
-                            SizedBox(
-                              height: MediaQuery.of(context).size.height - 300,
-                              child: Center(
-                                child: DynamicContainer(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      TextGradient(
-                                        text: '[ NO AI ANALYSIS FOUND ]',
-                                        fontSize: 17,
-                                        textAlign: TextAlign.center,
-                                        letterSpacing: -1.3,
-                                        heightSpacing: 1,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
+              collapsedTitle: 'AI Analytics History',
+              title: 'AI Analytics \nHistory',
+              backgroundColor: Theme.of(context).colorScheme.primary,
+            );
+          },
+          bodySlivers: [
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate([
+                  AiToggle(plotId: plotId),
+                  const SizedBox(height: 5),
+                  const HistoryFilterWidget(),
+                  const SizedBox(height: 10),
+                  if (isFetchingHistory) _buildLoadingState(context),
+                  if (!isFetchingHistory && filteredList.isNotEmpty)
+                    ..._buildAnalysisCards(context, filteredList),
+                  if (!isFetchingHistory && filteredList.isEmpty)
+                    _buildEmptyState(context),
+                ]),
               ),
             ),
           ],
@@ -235,67 +90,107 @@ class _AiHistoryScreenState extends ConsumerState<AiHistoryScreen> {
     );
   }
 
-  Widget _buildSilverAppBar(BuildContext context) {
-    return SliverAppBar(
-      backgroundColor: Colors.white,
-      surfaceTintColor: Colors.transparent,
-      leading: IconButton(
-        icon: Padding(
-          padding: const EdgeInsets.only(bottom: 5),
-          child: Icon(
-            Icons.arrow_back_ios_new_outlined,
-            color: Theme.of(context).colorScheme.onPrimary,
+  Widget _buildLoadingState(BuildContext context) {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height - 300,
+      child: Center(
+        child: DynamicContainer(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              LoadingAnimationWidget.threeArchedCircle(
+                color: Theme.of(context).colorScheme.onPrimary,
+                size: 30,
+              ),
+            ],
           ),
         ),
-        onPressed: () {
-          Navigator.pop(context);
-        },
       ),
-      pinned: true,
-      expandedHeight: 200,
-      flexibleSpace: FlexibleSpaceBar(
-        collapseMode: CollapseMode.parallax,
-        title: isAppBarCollapsed
-            ? Container(
-                padding: const EdgeInsets.only(top: 50),
-                child: Text(
-                  'AI History',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.onPrimary,
-                    fontSize: 20,
-                    letterSpacing: -1.3,
-                  ),
-                ),
-              )
-            : null,
-        background: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 0),
-          child: Container(
-            height: 250,
-            width: double.infinity,
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+    );
+  }
+
+  List<Widget> _buildAnalysisCards(
+      BuildContext context, List<Map<String, dynamic>> analysisList) {
+    return analysisList.map((analysis) {
+      final aiData = analysis['analysis']['AI_Analysis'];
+      final date = analysis['analysis_date'];
+      final findings = aiData['summary']['findings'];
+      final formattedDate =
+          DateFormat('MMMM d, yyyy').format(DateTime.parse(date));
+
+      return GestureDetector(
+        onTap: () {
+          final analysisId = analysis['id'];
+          context.pushNamed(
+            'ai-analysis-detail',
+            pathParameters: {'analysisId': analysisId.toString()},
+          );
+        },
+        child: DynamicContainer(
+          backgroundColor: Colors.transparent,
+          borderColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 15),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Analysis for $formattedDate',
+                style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                      color: Theme.of(context).colorScheme.secondary,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: 5),
+              Text(
+                '$findings',
+                style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                      fontSize: 14,
+                    ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              DividerWidget(verticalHeight: 1),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const SizedBox(height: 70),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      TextGradient(
-                        text: 'AI Analytics \nHistory',
-                        fontSize: 45,
-                        textAlign: TextAlign.center,
-                        letterSpacing: -1.3,
-                        heightSpacing: 1,
-                      ),
-                    ],
+                  Text(
+                    'Tap the card for more details',
+                    style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.onPrimary,
+                        ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_ios,
+                    size: 12,
+                    color: Theme.of(context).colorScheme.onPrimary,
                   ),
                 ],
               ),
-            ),
+            ],
+          ),
+        ),
+      );
+    }).toList();
+  }
+
+  Widget _buildEmptyState(BuildContext context) {
+    return SizedBox(
+      height: MediaQuery.of(context).size.height - 300,
+      child: Center(
+        child: DynamicContainer(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextGradient(
+                text: '[ NO AI ANALYSIS FOUND ]',
+                fontSize: 17,
+                textAlign: TextAlign.center,
+                letterSpacing: -1.3,
+                heightSpacing: 1,
+              ),
+            ],
           ),
         ),
       ),

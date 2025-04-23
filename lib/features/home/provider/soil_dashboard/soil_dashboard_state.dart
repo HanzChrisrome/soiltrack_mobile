@@ -30,6 +30,8 @@ class SoilDashboardState with _$SoilDashboardState {
     @Default({}) Map<int, String> plotToggles,
     @Default('No analysis generated yet') String aiAnalysisStatus,
     @Default('Daily') String currentCardToggled,
+    @Default('Moisture') String currentDeviceToggled,
+    @Default('Controller') String mainDeviceToggled,
     @Default("1D") String selectedTimeRangeFilter,
     @Default("1D") String selectedTimeRangeFilterGeneral,
     @Default("1W") String selectedHistoryFilter,

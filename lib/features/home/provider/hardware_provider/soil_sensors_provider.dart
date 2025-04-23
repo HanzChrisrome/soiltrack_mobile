@@ -1,37 +1,11 @@
 // ignore_for_file: avoid_print
 
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
-
-class SensorsState {
-  final List<Map<String, dynamic>> moistureSensors;
-  final List<Map<String, dynamic>> nutrientSensors;
-  final bool isFetchingSensors;
-  final String? error;
-
-  SensorsState({
-    this.moistureSensors = const [],
-    this.nutrientSensors = const [],
-    this.isFetchingSensors = false,
-    this.error,
-  });
-
-  SensorsState copyWith({
-    List<Map<String, dynamic>>? moistureSensors,
-    List<Map<String, dynamic>>? nutrientSensors,
-    bool? isFetchingSensors,
-    String? error,
-  }) {
-    return SensorsState(
-      moistureSensors: moistureSensors ?? this.moistureSensors,
-      nutrientSensors: nutrientSensors ?? this.nutrientSensors,
-      isFetchingSensors: isFetchingSensors ?? this.isFetchingSensors,
-      error: error ?? this.error,
-    );
-  }
-}
+import 'package:soiltrack_mobile/features/home/provider/hardware_provider/soil_sensors_state.dart';
 
 class SensorsNotifier extends Notifier<SensorsState> {
   @override
@@ -42,7 +16,7 @@ class SensorsNotifier extends Notifier<SensorsState> {
   Future<void> fetchSensors() async {
     if (state.isFetchingSensors) return;
     state = state.copyWith(isFetchingSensors: true);
-    final authState = ref.watch(authProvider);
+    final authState = ref.read(authProvider);
     final macAddress = authState.macAddress;
 
     try {
@@ -60,12 +34,7 @@ class SensorsNotifier extends Notifier<SensorsState> {
         sensor_category,
         user_plot_sensors(
           plot_id,
-          user_plots (
-            plot_name,
-            user_crops (
-              crop_name
-            )
-          )
+          user_plots(plot_name)
         )
       ''').eq('mac_address', macAddress);
 
@@ -73,20 +42,58 @@ class SensorsNotifier extends Notifier<SensorsState> {
           .where((s) => s['sensor_category'] == 'Moisture Sensor')
           .toList();
 
-      print('Moisture Sensors $moistureSensors');
       final npkSensors =
           sensors.where((s) => s['sensor_category'] == 'NPK Sensor').toList();
-      print('NPK Sensors $npkSensors');
 
       state = state.copyWith(
         moistureSensors: moistureSensors,
         nutrientSensors: npkSensors,
       );
     } catch (e) {
-      print('❌ Error fetching sensors: $e');
       state = state.copyWith(error: e.toString(), isFetchingSensors: false);
     } finally {
       state = state.copyWith(isFetchingSensors: false);
+    }
+  }
+
+  Future<void> assignSensor(
+      BuildContext context, int sensorId, int plotId) async {
+    final authNotifier = ref.read(authProvider.notifier);
+
+    try {
+      NotifierHelper.showLoadingToast(context, 'Assigning Sensor.');
+      await supabase.from('user_plot_sensors').insert({
+        'sensor_id': sensorId,
+        'plot_id': plotId,
+      });
+      await supabase.from('soil_sensors').update({
+        'is_assigned': true,
+      }).eq('sensor_id', sensorId);
+
+      await authNotifier.fetchRelatedData(false);
+      NotifierHelper.showSuccessToast(context, 'Sensor Assigned.');
+    } catch (e) {
+      NotifierHelper.showErrorToast(context, e.toString());
+    }
+  }
+
+  Future<void> unassignSensor(BuildContext context, int sensorId) async {
+    final authNotifier = ref.read(authProvider.notifier);
+
+    try {
+      NotifierHelper.showLoadingToast(context, 'Unassigning Sensor.');
+      await supabase.from('user_plot_sensors').delete().eq(
+            'sensor_id',
+            sensorId,
+          );
+      await supabase.from('soil_sensors').update({
+        'is_assigned': false,
+      }).eq('sensor_id', sensorId);
+
+      await authNotifier.fetchRelatedData(false);
+      NotifierHelper.showSuccessToast(context, 'Sensor Unassigned.');
+    } catch (e) {
+      NotifierHelper.logError(e.toString());
     }
   }
 }

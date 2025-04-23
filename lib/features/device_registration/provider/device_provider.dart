@@ -13,7 +13,7 @@ import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/features/device_registration/helper/device_helper.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider_state.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
-import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/hardware_provider/soil_sensors_provider.dart';
 import 'package:wifi_iot/wifi_iot.dart';
 import 'package:wifi_scan/wifi_scan.dart';
 import 'package:http/http.dart' as http;
@@ -153,7 +153,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
           await sensorProvider.fetchSensors();
           await mqttService.connect();
 
-          await checkDeviceStatus();
+          // await checkDeviceStatus();
           NotifierHelper.logMessage('Device already saved to database.');
           state = state.copyWith(isSaving: false);
           return;
@@ -172,7 +172,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
         throw Exception(responseSaving.error!.message);
       }
 
-      await checkDeviceStatus();
+      // await checkDeviceStatus();
       NotifierHelper.logMessage('Device saved to database.');
       state = state.copyWith(isSaving: false);
     } catch (e) {
@@ -181,7 +181,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
     }
   }
 
-  Future<bool> checkDeviceStatus() async {
+  Future<bool> checkDeviceStatus(BuildContext context) async {
     final authState = ref.watch(authProvider);
     final macAddress = authState.macAddress;
 
@@ -192,12 +192,13 @@ class DeviceNotifier extends Notifier<DeviceState> {
         "soiltrack/device/$macAddress/check-nano/response";
 
     try {
+      NotifierHelper.showLoadingToast(context, 'Checking ESP32 connection');
       final response = await mqttService.publishAndWaitForResponse(
           publishTopic, responseTopic, "CHECK DEVICE",
           expectedResponse: "PONG");
 
       if (response != "PONG") {
-        NotifierHelper.logError('ESP Device did not respond.');
+        NotifierHelper.showErrorToast(context, 'ESP32 is not connected.');
         state = state.copyWith(isEspConnected: false);
         return false;
       }
@@ -207,7 +208,8 @@ class DeviceNotifier extends Notifier<DeviceState> {
           expectedResponse: "NANO_PONG");
 
       if (nanoResponse != "NANO_PONG") {
-        NotifierHelper.logError('ESP Nano did not respond.');
+        NotifierHelper.showErrorToast(context, 'NANO is not connected.');
+        state = state.copyWith(isNanoConnected: false);
       }
 
       state = state.copyWith(isEspConnected: true, isNanoConnected: true);
@@ -215,6 +217,8 @@ class DeviceNotifier extends Notifier<DeviceState> {
     } catch (e) {
       NotifierHelper.logError(e);
       return false;
+    } finally {
+      NotifierHelper.closeToast(context);
     }
   }
 
@@ -364,7 +368,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
       }).toList();
 
       await supabase.from('irrigation_log').insert(logEntries);
-      NotifierHelper.logMessage('All valves opened.');
     }
   }
 

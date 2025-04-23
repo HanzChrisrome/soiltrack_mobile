@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/provider/weather_provider.dart';
+import 'package:soiltrack_mobile/widgets/divider_widget.dart';
+import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
+import 'package:soiltrack_mobile/widgets/text_gradient.dart';
+import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
 class WeatherWidget extends ConsumerWidget {
   const WeatherWidget({super.key});
@@ -8,10 +14,16 @@ class WeatherWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final weatherState = ref.watch(weatherProvider);
+    final authState = ref.watch(authProvider);
 
-    if (weatherState.weatherData == null) {
-      return const Center(
-        child: CircularProgressIndicator(),
+    if (weatherState.isLoading) {
+      return DynamicContainer(
+        backgroundColor: Colors.transparent,
+        borderColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+        child: Center(
+          child: LoadingAnimationWidget.fourRotatingDots(
+              color: Theme.of(context).colorScheme.onPrimary, size: 70),
+        ),
       );
     }
 
@@ -109,7 +121,7 @@ class WeatherWidget extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Baliuag, Bulacan',
+              Text('${authState.userProvince}, ${authState.userCity}',
                   style: Theme.of(context)
                       .textTheme
                       .bodySmall!
@@ -172,6 +184,69 @@ class WeatherWidget extends ConsumerWidget {
                   ],
                 ),
               ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 10),
+        DynamicContainer(
+          backgroundColor: Colors.transparent,
+          borderColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const TextGradient(text: 'Suggestions', fontSize: 20),
+                  TextRoundedEnclose(
+                      text: 'Based on weather data',
+                      color: Colors.white,
+                      textColor: Colors.grey[500]!),
+                ],
+              ),
+              DividerWidget(verticalHeight: 5),
+              if (weatherState.suggestionData != null &&
+                  weatherState.suggestionData!.isNotEmpty)
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: weatherState.suggestionData!.length,
+                  itemBuilder: (context, index) {
+                    final suggestion = weatherState.suggestionData![index];
+
+                    return SizedBox(
+                      width: 300,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            suggestion["title"], // Use the dynamic title
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyLarge!
+                                .copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  height: 0.8,
+                                  color: const Color.fromARGB(255, 44, 44, 44),
+                                ),
+                          ),
+                          const SizedBox(height: 5),
+                          Text(
+                            suggestion["message"], // Use the dynamic message
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodySmall!
+                                .copyWith(
+                                  color: const Color.fromARGB(255, 97, 97, 97),
+                                ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  separatorBuilder: (context, index) =>
+                      const DividerWidget(verticalHeight: 5),
+                ),
             ],
           ),
         ),

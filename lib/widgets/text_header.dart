@@ -24,10 +24,10 @@ class TextHeader extends StatelessWidget {
       text,
       textAlign: textAlign ?? TextAlign.left,
       style: Theme.of(context).textTheme.titleLarge!.copyWith(
-            fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w700,
             fontSize: fontSize,
             letterSpacing: letterSpacing,
-            color: Colors.white,
+            color: color,
             height: heightSpacing,
           ),
     );

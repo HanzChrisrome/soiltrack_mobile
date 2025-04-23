@@ -14,6 +14,7 @@ class UserAuthState with _$UserAuthState {
     String? userPassword,
     String? userCity,
     String? userProvince,
+    String? userBarangay,
     String? macAddress,
     @Default(0) int currentRegistrationStep,
     int? failedAttempts,

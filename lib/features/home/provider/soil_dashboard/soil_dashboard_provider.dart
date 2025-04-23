@@ -8,7 +8,7 @@ import 'package:soiltrack_mobile/features/home/helper/soilDashboardHelper.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_state.dart';
 import 'package:soiltrack_mobile/features/home/service/ai_service.dart';
 import 'package:soiltrack_mobile/features/home/service/soil_dashboard_service.dart';
-import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/hardware_provider/soil_sensors_provider.dart';
 
 class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
   final SoilDashboardService soilDashboardService = SoilDashboardService();
@@ -437,12 +437,12 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         state.selectedPlotId, state.nutrientWarnings);
 
     NotifierHelper.logMessage('Plot warnings: $warnings');
-    context.pushNamed('user-plot');
+    context.push('/user-plot');
   }
 
   void setSelectedAnalysisId(BuildContext context, analysisId) {
     state = state.copyWith(selectedAnalysisId: analysisId);
-    context.pushNamed('ai-analytics');
+    context.push('/ai-analytics');
   }
 
   void setPlotId(plotId) {
@@ -462,9 +462,15 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     final updatedToggles = Map<int, String>.from(state.plotToggles);
     updatedToggles[plotId] = toggleType;
 
-    NotifierHelper.logMessage(
-        'Updated plot toggles: ${updatedToggles.toString()}');
     state = state.copyWith(plotToggles: updatedToggles);
+  }
+
+  void setDeviceToggled(String toggleType) {
+    state = state.copyWith(currentDeviceToggled: toggleType);
+  }
+
+  void setMainDeviceToggle(String toggleType) {
+    state = state.copyWith(mainDeviceToggled: toggleType);
   }
 }
 

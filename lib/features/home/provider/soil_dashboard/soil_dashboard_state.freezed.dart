@@ -55,6 +55,8 @@ mixin _$SoilDashboardState {
   Map<int, String> get plotToggles => throw _privateConstructorUsedError;
   String get aiAnalysisStatus => throw _privateConstructorUsedError;
   String get currentCardToggled => throw _privateConstructorUsedError;
+  String get currentDeviceToggled => throw _privateConstructorUsedError;
+  String get mainDeviceToggled => throw _privateConstructorUsedError;
   String get selectedTimeRangeFilter => throw _privateConstructorUsedError;
   String get selectedTimeRangeFilterGeneral =>
       throw _privateConstructorUsedError;
@@ -114,6 +116,8 @@ abstract class $SoilDashboardStateCopyWith<$Res> {
       Map<int, String> plotToggles,
       String aiAnalysisStatus,
       String currentCardToggled,
+      String currentDeviceToggled,
+      String mainDeviceToggled,
       String selectedTimeRangeFilter,
       String selectedTimeRangeFilterGeneral,
       String selectedHistoryFilter,
@@ -174,6 +178,8 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
     Object? plotToggles = null,
     Object? aiAnalysisStatus = null,
     Object? currentCardToggled = null,
+    Object? currentDeviceToggled = null,
+    Object? mainDeviceToggled = null,
     Object? selectedTimeRangeFilter = null,
     Object? selectedTimeRangeFilterGeneral = null,
     Object? selectedHistoryFilter = null,
@@ -294,6 +300,14 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
           ? _value.currentCardToggled
           : currentCardToggled // ignore: cast_nullable_to_non_nullable
               as String,
+      currentDeviceToggled: null == currentDeviceToggled
+          ? _value.currentDeviceToggled
+          : currentDeviceToggled // ignore: cast_nullable_to_non_nullable
+              as String,
+      mainDeviceToggled: null == mainDeviceToggled
+          ? _value.mainDeviceToggled
+          : mainDeviceToggled // ignore: cast_nullable_to_non_nullable
+              as String,
       selectedTimeRangeFilter: null == selectedTimeRangeFilter
           ? _value.selectedTimeRangeFilter
           : selectedTimeRangeFilter // ignore: cast_nullable_to_non_nullable
@@ -404,6 +418,8 @@ abstract class _$$SoilDashboardStateImplCopyWith<$Res>
       Map<int, String> plotToggles,
       String aiAnalysisStatus,
       String currentCardToggled,
+      String currentDeviceToggled,
+      String mainDeviceToggled,
       String selectedTimeRangeFilter,
       String selectedTimeRangeFilterGeneral,
       String selectedHistoryFilter,
@@ -462,6 +478,8 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
     Object? plotToggles = null,
     Object? aiAnalysisStatus = null,
     Object? currentCardToggled = null,
+    Object? currentDeviceToggled = null,
+    Object? mainDeviceToggled = null,
     Object? selectedTimeRangeFilter = null,
     Object? selectedTimeRangeFilterGeneral = null,
     Object? selectedHistoryFilter = null,
@@ -582,6 +600,14 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
           ? _value.currentCardToggled
           : currentCardToggled // ignore: cast_nullable_to_non_nullable
               as String,
+      currentDeviceToggled: null == currentDeviceToggled
+          ? _value.currentDeviceToggled
+          : currentDeviceToggled // ignore: cast_nullable_to_non_nullable
+              as String,
+      mainDeviceToggled: null == mainDeviceToggled
+          ? _value.mainDeviceToggled
+          : mainDeviceToggled // ignore: cast_nullable_to_non_nullable
+              as String,
       selectedTimeRangeFilter: null == selectedTimeRangeFilter
           ? _value.selectedTimeRangeFilter
           : selectedTimeRangeFilter // ignore: cast_nullable_to_non_nullable
@@ -687,6 +713,8 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
       final Map<int, String> plotToggles = const {},
       this.aiAnalysisStatus = 'No analysis generated yet',
       this.currentCardToggled = 'Daily',
+      this.currentDeviceToggled = 'Moisture',
+      this.mainDeviceToggled = 'Controller',
       this.selectedTimeRangeFilter = "1D",
       this.selectedTimeRangeFilterGeneral = "1D",
       this.selectedHistoryFilter = "1W",
@@ -904,6 +932,12 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
   final String currentCardToggled;
   @override
   @JsonKey()
+  final String currentDeviceToggled;
+  @override
+  @JsonKey()
+  final String mainDeviceToggled;
+  @override
+  @JsonKey()
   final String selectedTimeRangeFilter;
   @override
   @JsonKey()
@@ -950,7 +984,7 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
 
   @override
   String toString() {
-    return 'SoilDashboardState(userPlots: $userPlots, rawPlotMoistureData: $rawPlotMoistureData, rawPlotNutrientData: $rawPlotNutrientData, latestPlotMoistureData: $latestPlotMoistureData, latestPlotNutrientData: $latestPlotNutrientData, userPlotMoistureData: $userPlotMoistureData, userPlotNutrientData: $userPlotNutrientData, nutrientWarnings: $nutrientWarnings, plotsSuggestion: $plotsSuggestion, deviceWarnings: $deviceWarnings, aiAnalysis: $aiAnalysis, filteredAnalysis: $filteredAnalysis, generatedAnalysis: $generatedAnalysis, irrigationLogs: $irrigationLogs, isFetchingUserPlots: $isFetchingUserPlots, isFetchingUserPlotData: $isFetchingUserPlotData, isFetchingHistoryData: $isFetchingHistoryData, selectedPlotId: $selectedPlotId, selectedPlotHistoryId: $selectedPlotHistoryId, selectedAnalysisId: $selectedAnalysisId, loadedPlotId: $loadedPlotId, plotConditions: $plotConditions, plotToggles: $plotToggles, aiAnalysisStatus: $aiAnalysisStatus, currentCardToggled: $currentCardToggled, selectedTimeRangeFilter: $selectedTimeRangeFilter, selectedTimeRangeFilterGeneral: $selectedTimeRangeFilterGeneral, selectedHistoryFilter: $selectedHistoryFilter, error: $error, userPlotDataError: $userPlotDataError, overallCondition: $overallCondition, selectedTimeRange: $selectedTimeRange, customStartDate: $customStartDate, customEndDate: $customEndDate, lastReadingTime: $lastReadingTime, historyDateStartFilter: $historyDateStartFilter, historyDateEndFilter: $historyDateEndFilter, isEditingUserPlot: $isEditingUserPlot, isSavingNewCrop: $isSavingNewCrop, isSavingNewSoilType: $isSavingNewSoilType, isSavingNewSoilMoistureSensor: $isSavingNewSoilMoistureSensor, isSavingNewSoilNutrientSensor: $isSavingNewSoilNutrientSensor, isGeneratingAi: $isGeneratingAi)';
+    return 'SoilDashboardState(userPlots: $userPlots, rawPlotMoistureData: $rawPlotMoistureData, rawPlotNutrientData: $rawPlotNutrientData, latestPlotMoistureData: $latestPlotMoistureData, latestPlotNutrientData: $latestPlotNutrientData, userPlotMoistureData: $userPlotMoistureData, userPlotNutrientData: $userPlotNutrientData, nutrientWarnings: $nutrientWarnings, plotsSuggestion: $plotsSuggestion, deviceWarnings: $deviceWarnings, aiAnalysis: $aiAnalysis, filteredAnalysis: $filteredAnalysis, generatedAnalysis: $generatedAnalysis, irrigationLogs: $irrigationLogs, isFetchingUserPlots: $isFetchingUserPlots, isFetchingUserPlotData: $isFetchingUserPlotData, isFetchingHistoryData: $isFetchingHistoryData, selectedPlotId: $selectedPlotId, selectedPlotHistoryId: $selectedPlotHistoryId, selectedAnalysisId: $selectedAnalysisId, loadedPlotId: $loadedPlotId, plotConditions: $plotConditions, plotToggles: $plotToggles, aiAnalysisStatus: $aiAnalysisStatus, currentCardToggled: $currentCardToggled, currentDeviceToggled: $currentDeviceToggled, mainDeviceToggled: $mainDeviceToggled, selectedTimeRangeFilter: $selectedTimeRangeFilter, selectedTimeRangeFilterGeneral: $selectedTimeRangeFilterGeneral, selectedHistoryFilter: $selectedHistoryFilter, error: $error, userPlotDataError: $userPlotDataError, overallCondition: $overallCondition, selectedTimeRange: $selectedTimeRange, customStartDate: $customStartDate, customEndDate: $customEndDate, lastReadingTime: $lastReadingTime, historyDateStartFilter: $historyDateStartFilter, historyDateEndFilter: $historyDateEndFilter, isEditingUserPlot: $isEditingUserPlot, isSavingNewCrop: $isSavingNewCrop, isSavingNewSoilType: $isSavingNewSoilType, isSavingNewSoilMoistureSensor: $isSavingNewSoilMoistureSensor, isSavingNewSoilNutrientSensor: $isSavingNewSoilNutrientSensor, isGeneratingAi: $isGeneratingAi)';
   }
 
   @override
@@ -1008,6 +1042,10 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
                 other.aiAnalysisStatus == aiAnalysisStatus) &&
             (identical(other.currentCardToggled, currentCardToggled) ||
                 other.currentCardToggled == currentCardToggled) &&
+            (identical(other.currentDeviceToggled, currentDeviceToggled) ||
+                other.currentDeviceToggled == currentDeviceToggled) &&
+            (identical(other.mainDeviceToggled, mainDeviceToggled) ||
+                other.mainDeviceToggled == mainDeviceToggled) &&
             (identical(other.selectedTimeRangeFilter, selectedTimeRangeFilter) ||
                 other.selectedTimeRangeFilter == selectedTimeRangeFilter) &&
             (identical(other.selectedTimeRangeFilterGeneral, selectedTimeRangeFilterGeneral) ||
@@ -1036,8 +1074,7 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
                 other.isEditingUserPlot == isEditingUserPlot) &&
             (identical(other.isSavingNewCrop, isSavingNewCrop) ||
                 other.isSavingNewCrop == isSavingNewCrop) &&
-            (identical(other.isSavingNewSoilType, isSavingNewSoilType) ||
-                other.isSavingNewSoilType == isSavingNewSoilType) &&
+            (identical(other.isSavingNewSoilType, isSavingNewSoilType) || other.isSavingNewSoilType == isSavingNewSoilType) &&
             (identical(other.isSavingNewSoilMoistureSensor, isSavingNewSoilMoistureSensor) || other.isSavingNewSoilMoistureSensor == isSavingNewSoilMoistureSensor) &&
             (identical(other.isSavingNewSoilNutrientSensor, isSavingNewSoilNutrientSensor) || other.isSavingNewSoilNutrientSensor == isSavingNewSoilNutrientSensor) &&
             (identical(other.isGeneratingAi, isGeneratingAi) || other.isGeneratingAi == isGeneratingAi));
@@ -1071,6 +1108,8 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
         const DeepCollectionEquality().hash(_plotToggles),
         aiAnalysisStatus,
         currentCardToggled,
+        currentDeviceToggled,
+        mainDeviceToggled,
         selectedTimeRangeFilter,
         selectedTimeRangeFilterGeneral,
         selectedHistoryFilter,
@@ -1128,6 +1167,8 @@ abstract class _SoilDashboardState implements SoilDashboardState {
       final Map<int, String> plotToggles,
       final String aiAnalysisStatus,
       final String currentCardToggled,
+      final String currentDeviceToggled,
+      final String mainDeviceToggled,
       final String selectedTimeRangeFilter,
       final String selectedTimeRangeFilterGeneral,
       final String selectedHistoryFilter,
@@ -1197,6 +1238,10 @@ abstract class _SoilDashboardState implements SoilDashboardState {
   String get aiAnalysisStatus;
   @override
   String get currentCardToggled;
+  @override
+  String get currentDeviceToggled;
+  @override
+  String get mainDeviceToggled;
   @override
   String get selectedTimeRangeFilter;
   @override

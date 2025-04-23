@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/features/home/presentation/device_screen.dart';
 import 'package:soiltrack_mobile/features/home/presentation/landing_dashboard.dart';
 import 'package:soiltrack_mobile/features/home/presentation/settings_screen.dart';
@@ -19,7 +20,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   late int _selectedIndex;
 
-  // Navigation bar icons
   final List<IconData> navIcons = [
     Icons.home,
     Icons.layers_rounded,
@@ -33,43 +33,61 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     _selectedIndex = widget.initialIndex;
   }
 
-  // Navigation bar widget
+  @override
+  void didUpdateWidget(covariant HomeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (oldWidget.initialIndex != widget.initialIndex) {
+      setState(() {
+        _selectedIndex = widget.initialIndex;
+        print('Updated index: $_selectedIndex');
+      });
+    }
+  }
+
   Widget _navBar() {
+    final screenWidth = MediaQuery.of(context).size.width;
+
     return Container(
       width: double.infinity,
       height: 65,
-      padding: const EdgeInsets.symmetric(horizontal: 2),
-      margin: const EdgeInsets.symmetric(vertical: 20, horizontal: 15),
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+      margin: EdgeInsets.symmetric(
+        vertical: 20,
+        horizontal: screenWidth * 0.05,
+      ),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.onPrimary,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Row(
-        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
         children: List.generate(navIcons.length, (index) {
           final isSelected = _selectedIndex == index;
-          return Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 3),
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? const Color.fromARGB(255, 153, 228, 118)
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: IconButton(
-              icon: Icon(
-                navIcons[index],
-                size: 30,
+          return Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 5),
+              decoration: BoxDecoration(
                 color: isSelected
-                    ? Theme.of(context).colorScheme.onPrimary
-                    : Colors.white.withOpacity(0.9),
+                    ? const Color.fromARGB(255, 153, 228, 118)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(25),
               ),
-              onPressed: () {
-                setState(() {
-                  _selectedIndex = index;
-                });
-              },
+              child: IconButton(
+                icon: Icon(
+                  navIcons[index],
+                  size: screenWidth < 360 ? 24 : 30,
+                  color: isSelected
+                      ? Theme.of(context).colorScheme.onPrimary
+                      : Colors.white.withOpacity(0.9),
+                ),
+                onPressed: () {
+                  setState(() {
+                    _selectedIndex = index;
+                    print('Current index: $_selectedIndex');
+                  });
+                },
+              ),
             ),
           );
         }),
@@ -99,10 +117,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       body: Stack(
         children: [
           _getSelectedScreen(),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: _navBar(),
-          ),
         ],
       ),
     );

@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/core/service/weather_service.dart';
+import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
+import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 
 class WeatherState {
   final Map<String, dynamic>? weatherData;
@@ -41,11 +43,20 @@ class WeatherNotifier extends Notifier<WeatherState> {
     return WeatherState();
   }
 
-  Future<void> fetchWeather(String city) async {
+  Future<void> fetchWeather() async {
     state = state.copyWith(isLoading: true);
     try {
-      final data = await weatherService.getWeatherByCity('Baliuag');
-      final forecast = await weatherService.getHourlyForecastByCity('Baliuag');
+      final authState = ref.read(authProvider);
+
+      final city = authState.userCity ?? 'Baliuag';
+      final province = authState.userProvince ?? 'Bulacan';
+
+      NotifierHelper.logMessage('Fetching weather data for $city, $province');
+
+      final data = await weatherService.getWeatherByCity(province,
+          province: city, countryCode: 'PH');
+      final forecast = await weatherService.getHourlyForecastByCity(province,
+          province: city, countryCode: 'PH');
       final suggestions = weatherService.generateSuggestions(data, forecast);
 
       state = state.copyWith(

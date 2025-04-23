@@ -7,7 +7,7 @@ import 'package:soiltrack_mobile/features/chat_bot/provider/chatbot_provider.dar
 import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
-import 'package:soiltrack_mobile/provider/soil_sensors_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/hardware_provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/provider/weather_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider_state.dart';
@@ -22,7 +22,7 @@ class AuthNotifier extends Notifier<UserAuthState> {
     final session = supabase.auth.currentSession;
     if (session != null) {
       await fetchUserRecord(session.user.id);
-      await fetchRelatedData();
+      await fetchRelatedData(true);
     } else {
       state = state.copyWith(isAuthenticated: false);
     }
@@ -33,7 +33,10 @@ class AuthNotifier extends Notifier<UserAuthState> {
       final userRecord = await supabase.from('users').select('''
       user_fname,
       user_lname,
-      user_email
+      user_email,
+      user_municipality,
+      user_province,
+      user_barangay
     ''').eq('user_id', userId).single();
 
       final userIotDevice = await supabase
@@ -52,6 +55,8 @@ class AuthNotifier extends Notifier<UserAuthState> {
           userName: userRecord['user_fname'],
           userLastName: userRecord['user_lname'],
           userEmail: userRecord['user_email'],
+          userCity: userRecord['user_province'],
+          userProvince: userRecord['user_municipality'],
           macAddress: macAddress,
           isAuthenticated: true,
           isSetupComplete: macAddress.isNotEmpty);
@@ -80,7 +85,16 @@ class AuthNotifier extends Notifier<UserAuthState> {
         NotifierHelper.showLoadingToast(context, 'Fetching your data');
         await fetchUserRecord(response.user!.id);
         NotifierHelper.showLoadingToast(context, 'Checking your device');
-        await fetchRelatedData();
+
+        if (state.macAddress != null && state.macAddress!.isNotEmpty) {
+          await fetchRelatedData(true);
+        } else {
+          NotifierHelper.showErrorToast(
+              context, 'No device found. Please register a device.');
+          state = state.copyWith(isAuthenticated: false);
+          return;
+        }
+
         NotifierHelper.closeToast(context);
         state = state.copyWith(
           user: response.user,
@@ -125,13 +139,15 @@ class AuthNotifier extends Notifier<UserAuthState> {
   }
 
   Future<void> signUp(
-      BuildContext context,
-      String email,
-      String password,
-      String firstName,
-      String lastName,
-      String municipality,
-      String city) async {
+    BuildContext context,
+    String email,
+    String password,
+    String firstName,
+    String lastName,
+    String municipality,
+    String city,
+    String barangay,
+  ) async {
     state = state.copyWith(isRegistering: true);
     NotifierHelper.showLoadingToast(context, 'Signing up...');
     try {
@@ -161,7 +177,8 @@ class AuthNotifier extends Notifier<UserAuthState> {
           'user_fname': firstName,
           'user_lname': lastName,
           'user_municipality': municipality,
-          'user_city': city,
+          'user_province': city,
+          'user_barangay': barangay,
         });
       }
 
@@ -234,7 +251,7 @@ class AuthNotifier extends Notifier<UserAuthState> {
     }
   }
 
-  Future<void> fetchRelatedData() async {
+  Future<void> fetchRelatedData(bool isInitialLoad) async {
     final sensorNotifier = ref.read(sensorsProvider.notifier);
     final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
     final deviceNotifier = ref.read(deviceProvider.notifier);
@@ -244,10 +261,11 @@ class AuthNotifier extends Notifier<UserAuthState> {
 
     await sensorNotifier.fetchSensors();
     await soilDashboardNotifier.fetchUserPlots();
-    await weatherNotifier.fetchWeather('Baliuag');
-    await deviceNotifier.checkDeviceStatus();
-    await cropsNotifier.fetchAllCrops();
+    // await weatherNotifier.fetchWeather();
     await chatbotNotifier.fetchConversations();
+    await cropsNotifier.fetchAllCrops();
+
+    // if (isInitialLoad) await deviceNotifier.checkDeviceStatus();
   }
 
   Future<void> signOut(BuildContext context) async {

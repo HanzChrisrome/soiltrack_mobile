@@ -13,16 +13,24 @@ class TimeSelectionWidget extends ConsumerWidget {
     final selectedOption = soilDashboardState.selectedTimeRangeFilterGeneral;
     final List<String> options = ['1D', '1W', '1M', '3M'];
 
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isSmallScreen = screenWidth < 360;
+
     return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
             borderRadius: BorderRadius.circular(10),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+          padding: EdgeInsets.symmetric(
+            horizontal: screenWidth * 0.03,
+            vertical: screenWidth * 0.02,
+          ),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: options.map((option) {
               return Row(
                 children: [
@@ -74,7 +82,10 @@ class TimeSelectionWidget extends ConsumerWidget {
             await _selectDateRange(context, ref);
           },
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            padding: EdgeInsets.symmetric(
+              horizontal: screenWidth * 0.03,
+              vertical: screenWidth * 0.02,
+            ),
             decoration: BoxDecoration(
               color: Theme.of(context).colorScheme.surface,
               borderRadius: BorderRadius.circular(10),
@@ -84,17 +95,25 @@ class TimeSelectionWidget extends ConsumerWidget {
                       : null,
             ),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
                   Icons.calendar_today,
-                  size: 16,
+                  size: isSmallScreen ? 14 : 16,
                   color: Theme.of(context).colorScheme.onPrimary,
                 ),
                 SizedBox(width: 5),
-                Text('Custom'),
-                SizedBox(width: 30),
-                Icon(Icons.keyboard_arrow_down_rounded),
+                Text(
+                  'Custom',
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 12 : 14,
+                  ),
+                ),
+                SizedBox(width: 5),
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: isSmallScreen ? 18 : 22,
+                ),
               ],
             ),
           ),
@@ -116,6 +135,8 @@ class TimeSelectionWidget extends ConsumerWidget {
       builder: (BuildContext context) {
         return StatefulBuilder(
           builder: (context, setState) {
+            final screenWidth = MediaQuery.of(context).size.width;
+            final isSmallScreen = screenWidth < 360;
             return Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
@@ -182,6 +203,8 @@ class TimeSelectionWidget extends ConsumerWidget {
                   FilledCustomButton(
                     icon: Icons.filter_alt_outlined,
                     buttonText: 'Filter Date',
+                    width: screenWidth * 0.8,
+                    fontSize: isSmallScreen ? 14 : 16,
                     onPressed: startDate != null
                         ? () {
                             ref

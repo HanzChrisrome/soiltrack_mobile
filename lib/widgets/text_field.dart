@@ -9,7 +9,8 @@ class TextFieldWidget extends StatefulWidget {
   final String? Function(String?)? validator;
   final IconData? prefixIcon;
   final FocusNode? focusNode;
-  final bool isNumberOnly; // Add this flag for number-only fields
+  final bool isNumberOnly;
+  final double fontSize;
 
   const TextFieldWidget({
     super.key,
@@ -20,7 +21,8 @@ class TextFieldWidget extends StatefulWidget {
     this.validator,
     this.prefixIcon,
     this.focusNode,
-    this.isNumberOnly = false, // Default is false
+    this.isNumberOnly = false,
+    this.fontSize = 16.0,
   });
 
   @override
@@ -41,15 +43,13 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
         obscureText: widget.isPasswordField ? _isObscured : false,
         keyboardType:
             widget.isNumberOnly ? TextInputType.number : TextInputType.text,
-        inputFormatters: widget.isNumberOnly
-            ? [
-                FilteringTextInputFormatter.digitsOnly
-              ] // Restrict input to digits
-            : [],
+        inputFormatters:
+            widget.isNumberOnly ? [FilteringTextInputFormatter.digitsOnly] : [],
         decoration: InputDecoration(
           hintText: widget.label,
           hintStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
                 color: Colors.grey,
+                fontSize: widget.fontSize,
               ),
           contentPadding:
               const EdgeInsets.symmetric(vertical: 13.0, horizontal: 12.0),
@@ -81,6 +81,7 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
                 )
               : null,
         ),
+        style: TextStyle(fontSize: widget.fontSize),
         validator: widget.validator,
       ),
     );

@@ -35,6 +35,7 @@ class AuthController {
     String password,
     String municipality,
     String city,
+    String barangay,
     // String confirmPassword,
   ) async {
     final authNotifier = ref.read(authProvider.notifier);
@@ -59,8 +60,8 @@ class AuthController {
     }
 
     try {
-      await authNotifier.signUp(
-          context, email, password, userFname, userLname, municipality, city);
+      await authNotifier.signUp(context, email, password, userFname, userLname,
+          municipality, city, barangay);
       context.pushNamed('email-verification');
     } catch (e) {
       NotifierHelper.logError(e, context, e.toString());

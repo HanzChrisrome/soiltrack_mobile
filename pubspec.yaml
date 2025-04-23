@@ -136,6 +136,10 @@ flutter:
     - assets/hardware/esp_not_connected_with_shadow.png
     - assets/hardware/nano_not_connected_with_shadow.png
     - assets/hardware/nano_with_shadow.png
+    - assets/hardware/moisture_colored.png
+    - assets/hardware/npk_colored.png
+    - assets/hardware/waterpump_connected.png
+    - assets/hardware/valves.png
 
     #MASCOTS AI
     - assets/ai_mascot/FIRST.png

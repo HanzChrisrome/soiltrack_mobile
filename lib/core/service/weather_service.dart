@@ -8,31 +8,66 @@ import 'package:intl/intl.dart';
 class WeatherService {
   final String apiKey = dotenv.env['OPENWEATHER_API_KEY'] ?? "";
   final String baseUrl = "https://api.openweathermap.org/data/2.5";
+  final String geoUrl = "http://api.openweathermap.org/geo/1.0";
 
-  Future<Map<String, dynamic>> getWeatherByCity(String city) async {
-    final url = "$baseUrl/weather?q=$city&appid=$apiKey&units=metric";
+  // Helper: Get Coordinates
+  Future<Map<String, double>> _getCoordinates(String city,
+      {String? province, String countryCode = 'PH'}) async {
+    final location = province != null
+        ? "$city,$province,$countryCode"
+        : "$city,$countryCode";
+    final url = "$geoUrl/direct?q=$location&limit=1&appid=$apiKey";
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data = jsonDecode(response.body);
+      if (data.isNotEmpty) {
+        return {
+          "lat": data[0]['lat'],
+          "lon": data[0]['lon'],
+        };
+      } else {
+        throw Exception("Location not found");
+      }
+    } else {
+      print('Error fetching coordinates');
+      throw Exception("Failed to load location data");
+    }
+  }
+
+  Future<Map<String, dynamic>> getWeatherByCity(String city,
+      {String? province, String countryCode = 'PH'}) async {
+    final coords = await _getCoordinates(city,
+        province: province, countryCode: countryCode);
+    final url =
+        "$baseUrl/weather?lat=${coords['lat']}&lon=${coords['lon']}&appid=$apiKey&units=metric";
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      print('Error in fetching');
+      print('Error fetching weather data');
       throw Exception("Failed to load weather data");
     }
   }
 
-  Future<Map<String, dynamic>> getHourlyForecastByCity(String city) async {
-    final url = "$baseUrl/forecast?q=$city&appid=$apiKey&units=metric";
+  Future<Map<String, dynamic>> getHourlyForecastByCity(String city,
+      {String? province, String countryCode = 'PH'}) async {
+    final coords = await _getCoordinates(city,
+        province: province, countryCode: countryCode);
+    final url =
+        "$baseUrl/forecast?lat=${coords['lat']}&lon=${coords['lon']}&appid=$apiKey&units=metric";
     final response = await http.get(Uri.parse(url));
 
     if (response.statusCode == 200) {
       return jsonDecode(response.body);
     } else {
-      print('Error in fetching hourly forecast data');
-      throw Exception("Failed to load hourly forecast data");
+      print('Error fetching forecast data');
+      throw Exception("Failed to load forecast data");
     }
   }
 
+  // Your existing generateSuggestions method remains the same
   List<Map<String, dynamic>> generateSuggestions(
       Map<String, dynamic> weatherData, Map<String, dynamic> forecastData) {
     final double temp = (weatherData["main"]["temp"] as num).toDouble();

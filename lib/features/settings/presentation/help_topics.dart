@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:soiltrack_mobile/features/settings/presentation/widgets/accordion_widget.dart';
-import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/custom_accordion.dart';
+import 'package:soiltrack_mobile/widgets/custom_accordion.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
-import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
 class HelpTopics extends ConsumerWidget {

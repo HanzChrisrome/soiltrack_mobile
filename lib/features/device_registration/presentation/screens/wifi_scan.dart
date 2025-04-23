@@ -1,5 +1,3 @@
-// ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -28,39 +26,37 @@ class _WifiScanScreenState extends ConsumerState<WifiScanScreen> {
   Widget build(BuildContext context) {
     final deviceState = ref.watch(deviceProvider);
 
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final bool isSmallScreen = screenHeight <= 650 || screenWidth <= 360;
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.onPrimary,
       body: Container(
         width: double.infinity,
-        margin: const EdgeInsets.only(top: 40),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.surface,
-          borderRadius: const BorderRadius.only(
-            topLeft: Radius.circular(30),
-            topRight: Radius.circular(30),
-          ),
         ),
         child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.only(top: 10, bottom: 40),
               child: Container(
-                width: 50,
-                height: 4,
-                decoration: BoxDecoration(
-                  color: Colors.grey[300],
-                  borderRadius: BorderRadius.circular(10),
-                ),
+                width: isSmallScreen ? 35 : 50,
+                height: isSmallScreen ? 3 : 4,
               ),
             ),
             Center(
               child: GestureDetector(
                 onTap: () => Navigator.of(context).pop(),
-                child: const Row(
+                child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.arrow_back_ios, size: 20),
-                    Text('Go back'),
+                    Icon(Icons.arrow_back_ios, size: isSmallScreen ? 16 : 20),
+                    Text(
+                      'Go back',
+                      style: TextStyle(fontSize: isSmallScreen ? 14 : 16),
+                    ),
                   ],
                 ),
               ),
@@ -72,21 +68,21 @@ class _WifiScanScreenState extends ConsumerState<WifiScanScreen> {
                 children: [
                   Image.asset(
                     'assets/elements/handphone.png',
-                    height: 250,
+                    height: isSmallScreen ? 180 : 250,
                   ),
                   const SizedBox(height: 20),
-                  const TextGradient(
+                  TextGradient(
                     text: 'Connect to your',
-                    fontSize: 42,
+                    fontSize: isSmallScreen ? 35 : 42,
                     letterSpacing: -2.5,
                     textAlign: TextAlign.center,
                   ),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const TextGradient(
+                      TextGradient(
                         text: 'SoilTracker',
-                        fontSize: 42,
+                        fontSize: isSmallScreen ? 35 : 42,
                         letterSpacing: -2.5,
                       ),
                       const SizedBox(width: 10),
@@ -106,7 +102,7 @@ class _WifiScanScreenState extends ConsumerState<WifiScanScreen> {
                   ),
                   const SizedBox(height: 10),
                   SizedBox(
-                    width: 350,
+                    width: isSmallScreen ? 300 : 350,
                     child: Text(
                       'Please wait while we scan for your SoilTracker device and connect it to the internet.',
                       textAlign: TextAlign.center,

@@ -16,40 +16,51 @@ class Esp32Card extends ConsumerWidget {
     final isEspConnected = ref.watch(deviceProvider).isEspConnected;
     final macAddress = ref.watch(authProvider).macAddress;
 
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      height: 700,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildDragIndicator(),
-          const SizedBox(height: 35),
-          _buildDeviceStatus(context, isEspConnected),
-          const SizedBox(height: 15),
-          TextGradient(
-            text: 'Espressif32',
-            fontSize: 40,
-          ),
-          const Text(
-            'Soil Data Transmitter and Receiver',
-            style: TextStyle(fontSize: 12),
-          ),
-          const Spacer(),
-          _buildDeviceImage(isEspConnected),
-          const Spacer(),
-          isEspConnected
-              ? _buildToolOptions(context, ref)
-              : _connectionTools(context, ref),
-          isEspConnected ? SizedBox(height: 30) : SizedBox.shrink(),
-          isEspConnected
-              ? Text('Device ID: ${macAddress}', style: TextStyle(fontSize: 12))
-              : SizedBox.shrink(),
-        ],
+    final size = MediaQuery.of(context).size;
+    final isSmallDevice = size.height < 700;
+
+    return SingleChildScrollView(
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(16),
+        constraints: BoxConstraints(
+          minHeight: size.height * 0.5,
+        ),
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.primary,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(25)),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _buildDragIndicator(),
+            SizedBox(height: size.height * 0.03),
+            _buildDeviceStatus(context, isEspConnected),
+            const SizedBox(height: 15),
+            TextGradient(
+              text: 'Espressif32',
+              fontSize: isSmallDevice ? 30 : 40,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Soil Data Transmitter and Receiver',
+              style: TextStyle(fontSize: 12),
+            ),
+            SizedBox(height: size.height * 0.02),
+            _buildDeviceImage(isEspConnected, size),
+            SizedBox(height: size.height * 0.03),
+            isEspConnected
+                ? _buildToolOptions(context, ref, size)
+                : _connectionTools(context, ref, size),
+            if (isEspConnected) ...[
+              const SizedBox(height: 20),
+              Text(
+                'Device ID: $macAddress',
+                style: const TextStyle(fontSize: 12),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -67,7 +78,7 @@ class Esp32Card extends ConsumerWidget {
     );
   }
 
-  Widget _buildDeviceStatus(BuildContext context, isConnected) {
+  Widget _buildDeviceStatus(BuildContext context, bool isConnected) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -75,10 +86,10 @@ class Esp32Card extends ConsumerWidget {
           isConnected
               ? 'assets/elements/power.png'
               : 'assets/elements/no_power.png',
-          height: 15,
-          width: 15,
+          height: 18,
+          width: 18,
         ),
-        const SizedBox(width: 5),
+        const SizedBox(width: 8),
         Text(
           isConnected ? 'Device Connected' : 'Device Disconnected',
           style: TextStyle(
@@ -92,7 +103,19 @@ class Esp32Card extends ConsumerWidget {
     );
   }
 
-  Widget _buildToolOptions(BuildContext context, WidgetRef ref) {
+  Widget _buildDeviceImage(bool isConnected, Size size) {
+    return Center(
+      child: Image.asset(
+        isConnected
+            ? 'assets/hardware/esp32_with_shadow.png'
+            : 'assets/hardware/esp_not_connected_with_shadow.png',
+        height: size.height * 0.25,
+        fit: BoxFit.contain,
+      ),
+    );
+  }
+
+  Widget _buildToolOptions(BuildContext context, WidgetRef ref, Size size) {
     final deviceNotifier = ref.watch(deviceProvider.notifier);
 
     return Wrap(
@@ -100,30 +123,33 @@ class Esp32Card extends ConsumerWidget {
       runSpacing: 10,
       alignment: WrapAlignment.center,
       children: [
-        _buildOption(context,
-            icon: Icons.wifi, label: 'Change Wi-Fi Connection', onTap: () {
-          showCustomBottomSheet(
-            context: context,
-            title: 'Change Wi-Fi Connection',
-            description: 'Proceeding will redirect you to setup screen',
-            icon: Icons.arrow_forward_ios,
-            buttonText: 'Continue',
-            onPressed: () {
-              Navigator.pop(context);
-              deviceNotifier.changeWifi(context);
-            },
-          );
-        }),
         _buildOption(
           context,
-          icon: Icons.wifi_off_rounded,
-          label: 'Disconnect from Wi-Fi',
+          icon: Icons.wifi,
+          label: 'Change Wi-Fi\nConnection',
           onTap: () {
             showCustomBottomSheet(
               context: context,
-              title: 'Disconnect Device from Internet',
-              description:
-                  'Are you sure you want to disconnect this device from the internet connection?',
+              title: 'Change Wi-Fi Connection',
+              description: 'Proceeding will redirect you to setup screen',
+              icon: Icons.arrow_forward_ios,
+              buttonText: 'Continue',
+              onPressed: () {
+                Navigator.pop(context);
+                deviceNotifier.changeWifi(context);
+              },
+            );
+          },
+        ),
+        _buildOption(
+          context,
+          icon: Icons.wifi_off_rounded,
+          label: 'Disconnect\nWi-Fi',
+          onTap: () {
+            showCustomBottomSheet(
+              context: context,
+              title: 'Disconnect Device',
+              description: 'Are you sure you want to disconnect this device?',
               icon: Icons.arrow_forward_ios,
               buttonText: 'Continue',
               onPressed: () {
@@ -137,49 +163,39 @@ class Esp32Card extends ConsumerWidget {
     );
   }
 
-  Widget _buildDeviceImage(isConnected) {
-    return Center(
-      child: Image.asset(
-        isConnected
-            ? 'assets/hardware/esp32_with_shadow.png'
-            : 'assets/hardware/esp_not_connected_with_shadow.png',
-        height: 250,
-        fit: BoxFit.cover,
-      ),
-    );
-  }
-
-  Widget _buildOption(BuildContext context,
-      {required IconData icon,
-      required String label,
-      required VoidCallback onTap}) {
+  Widget _buildOption(
+    BuildContext context, {
+    required IconData icon,
+    required String label,
+    required VoidCallback onTap,
+  }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 150,
-        width: 160,
-        margin: const EdgeInsets.symmetric(horizontal: 5),
+        height: 140,
+        width: 150,
+        padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
           borderRadius: BorderRadius.circular(15),
         ),
         child: Center(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: [
               Icon(
                 icon,
                 color: Theme.of(context).colorScheme.onPrimary,
-                size: 35,
+                size: 32,
               ),
               const SizedBox(height: 10),
-              SizedBox(
-                width: 100,
-                child: Text(
-                  label,
-                  style: const TextStyle(fontSize: 15),
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 14,
+                  height: 1.2,
                 ),
+                textAlign: TextAlign.center,
               ),
             ],
           ),
@@ -188,7 +204,7 @@ class Esp32Card extends ConsumerWidget {
     );
   }
 
-  Widget _connectionTools(BuildContext context, WidgetRef ref) {
+  Widget _connectionTools(BuildContext context, WidgetRef ref, Size size) {
     final deviceNotifier = ref.watch(deviceProvider.notifier);
 
     return Container(
@@ -198,7 +214,7 @@ class Esp32Card extends ConsumerWidget {
         gradient: LinearGradient(
           colors: [
             Theme.of(context).colorScheme.onPrimary,
-            const Color.fromARGB(255, 19, 100, 23)
+            const Color.fromARGB(255, 19, 100, 23),
           ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -218,26 +234,27 @@ class Esp32Card extends ConsumerWidget {
           ),
           const SizedBox(height: 20),
           SizedBox(
-            width: 300,
+            width: size.width * 0.8,
             child: Text(
-                'Make sure your device is turn on and located within the connection range. Follow on-screen instructions if necessary.',
-                style: Theme.of(context).textTheme.bodySmall!.copyWith(
-                    color: Theme.of(context).colorScheme.primary, fontSize: 14),
-                textAlign: TextAlign.center),
+              'Make sure your device is turned on and within range. Follow on-screen instructions if necessary.',
+              style: Theme.of(context).textTheme.bodySmall!.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                    fontSize: 14,
+                  ),
+              textAlign: TextAlign.center,
+            ),
           ),
           const SizedBox(height: 20),
           FilledCustomButton(
             buttonText: 'Connect your Device',
             backgroundColor: const Color.fromARGB(255, 26, 109, 29),
             onPressed: () async {
-              NotifierHelper.showLoadingToast(context, 'Checking Device First');
-              final restartFirst = await deviceNotifier.checkDeviceStatus();
+              final restartFirst =
+                  await deviceNotifier.checkDeviceStatus(context);
               if (!restartFirst) {
-                NotifierHelper.closeToast(context);
                 Navigator.of(context).pop();
                 context.pushNamed('wifi-scan');
               }
-              NotifierHelper.closeToast(context);
             },
           ),
         ],

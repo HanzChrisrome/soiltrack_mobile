@@ -46,7 +46,7 @@ class StepsWidget extends StatelessWidget {
                   ),
             ),
             SizedBox(
-              width: 280,
+              width: 250,
               child: Text(
                 description,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(

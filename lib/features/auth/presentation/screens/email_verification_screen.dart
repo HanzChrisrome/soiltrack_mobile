@@ -48,6 +48,20 @@ class _EmailVerificationScreenState
     final authState = ref.watch(authProvider);
     final authNotifier = ref.read(authProvider.notifier);
 
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    // Check if small screen
+    final bool isSmallDevice = screenHeight < 700 || screenWidth < 360;
+
+    // Set values based on device size
+    final double logoWidth = isSmallDevice ? 120 : 150;
+    final double titleFontSize = isSmallDevice ? 32 : 35;
+    final double subtitleFontSize = isSmallDevice ? 13 : 15;
+    final double bottomPadding = isSmallDevice ? 20 : 40;
+    final double mainSpacing = isSmallDevice ? 10 : 20;
+    final double buttonSpacing = isSmallDevice ? 20 : 30;
+
     return Scaffold(
       body: Stack(
         children: [
@@ -70,7 +84,7 @@ class _EmailVerificationScreenState
             ),
           ),
           Positioned(
-            bottom: 60,
+            bottom: bottomPadding,
             left: 25,
             right: 25,
             child: Column(
@@ -79,27 +93,27 @@ class _EmailVerificationScreenState
               children: [
                 Image.asset(
                   'assets/logo/DARK HORIZONTAL.png',
-                  width: 150,
+                  width: logoWidth,
                 ),
-                const SizedBox(height: 20),
-                const TextGradient(
+                SizedBox(height: mainSpacing),
+                TextGradient(
                   text: 'Verify your Email Address to proceed.',
-                  fontSize: 35,
+                  fontSize: titleFontSize,
                   textAlign: TextAlign.center,
                   letterSpacing: -2.5,
                 ),
                 const SizedBox(height: 5),
-                const Text(
+                Text(
                   'Check your email for the verification link.',
                   style: TextStyle(
                     color: Color.fromARGB(255, 122, 122, 122),
-                    fontSize: 15,
+                    fontSize: subtitleFontSize,
                     fontWeight: FontWeight.w600,
                     letterSpacing: -0.3,
                     fontStyle: FontStyle.italic,
                   ),
                 ),
-                const SizedBox(height: 30),
+                SizedBox(height: buttonSpacing),
                 FilledCustomButton(
                   buttonText: 'Continue',
                   onPressed: () {
@@ -109,8 +123,10 @@ class _EmailVerificationScreenState
                       authState.userPassword as String,
                     );
                   },
+                  height: isSmallDevice ? 40 : null,
+                  fontSize: isSmallDevice ? 14 : null,
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 5),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
