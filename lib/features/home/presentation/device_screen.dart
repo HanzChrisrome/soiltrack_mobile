@@ -174,6 +174,7 @@ class DeviceScreen extends ConsumerWidget {
                             ),
                             ValveGridView(
                                 userPlots: userPlotDetails, isConnected: true),
+                            const SizedBox(height: 10),
                           ],
                         ),
                       WarningWidget(

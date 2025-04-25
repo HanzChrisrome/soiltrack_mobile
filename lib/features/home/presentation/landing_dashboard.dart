@@ -8,10 +8,14 @@ import 'package:soiltrack_mobile/features/home/presentation/widgets/home/greetin
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/soil_condition.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/weather_widget.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/features/user_plots/controller/user_plot_controller.dart';
+import 'package:soiltrack_mobile/features/user_plots/helper/user_plots_helper.dart';
 import 'package:soiltrack_mobile/provider/weather_provider.dart';
 import 'package:soiltrack_mobile/widgets/bottom_navigation_bar.dart';
+import 'package:soiltrack_mobile/widgets/custom_accordion.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
+import 'package:soiltrack_mobile/widgets/filled_button.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
@@ -29,6 +33,7 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(deviceProvider.notifier).checkDeviceStatus(context);
       await ref.read(weatherProvider.notifier).fetchWeather();
+      await ref.read(soilDashboardProvider.notifier).generateDailyAnalysis();
     });
   }
 
@@ -37,6 +42,7 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
     final authState = ref.watch(authProvider);
     final userPlotState = ref.watch(soilDashboardProvider);
     final deviceState = ref.watch(deviceProvider);
+    final dashboardState = ref.read(soilDashboardProvider.notifier);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -54,26 +60,29 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
                     GreetingWidget(userName: authState.userName!),
                     const SizedBox(height: 10),
                     SoilCondition(),
-                    const SizedBox(height: 10),
+                    // FilledCustomButton(
+                    //   buttonText: 'Testing',
+                    //   onPressed: () {
+                    //     ref
+                    //         .read(soilDashboardProvider.notifier)
+                    //         .generateDailyAnalysis();
+                    //   },
+                    // ),
                     const WeatherWidget(),
                     if (userPlotState.deviceWarnings.isNotEmpty ||
                         deviceState.isEspConnected == false)
-                      DynamicContainer(
-                        backgroundColor: Colors.transparent,
-                        borderColor: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withOpacity(0.2),
-                        child: Column(
+                      CustomAccordion(
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        titleWidget: const TextGradient(
+                            text: 'Device Warnings', fontSize: 20),
+                        content: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const TextGradient(
-                                text: 'Device Warnings', fontSize: 20),
                             if (!deviceState.isEspConnected)
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const DividerWidget(verticalHeight: 5),
+                                  const SizedBox(height: 5),
                                   Text(
                                     'Device Connection Warning',
                                     style: Theme.of(context)
@@ -152,26 +161,22 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
                         ),
                       ),
                     if (userPlotState.nutrientWarnings.isNotEmpty)
-                      DynamicContainer(
-                        backgroundColor: Colors.transparent,
-                        borderColor: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withOpacity(0.2),
-                        child: Column(
+                      CustomAccordion(
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                        titleWidget: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const TextGradient(
+                                text: 'Plot Warnings', fontSize: 20),
+                            TextRoundedEnclose(
+                                text: 'Farm Related Warnings',
+                                color: Colors.white,
+                                textColor: Colors.grey[500]!),
+                          ],
+                        ),
+                        content: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const TextGradient(
-                                    text: 'Plot Warnings', fontSize: 20),
-                                TextRoundedEnclose(
-                                    text: 'Farm Related Warnings',
-                                    color: Colors.white,
-                                    textColor: Colors.grey[500]!),
-                              ],
-                            ),
                             ...userPlotState.nutrientWarnings
                                 .map((plotWarning) {
                               final plotName = plotWarning['plot_name'];
@@ -183,7 +188,10 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const DividerWidget(verticalHeight: 5),
+                                  if (plotName !=
+                                      userPlotState
+                                          .nutrientWarnings.first['plot_name'])
+                                    const DividerWidget(verticalHeight: 5),
                                   Text(
                                     '$plotName Warning',
                                     style: Theme.of(context)

@@ -38,6 +38,8 @@ mixin _$SoilDashboardState {
       throw _privateConstructorUsedError;
   List<Map<String, dynamic>> get aiAnalysis =>
       throw _privateConstructorUsedError;
+  List<Map<String, dynamic>> get aiSummaryHistory =>
+      throw _privateConstructorUsedError;
   List<Map<String, dynamic>> get filteredAnalysis =>
       throw _privateConstructorUsedError;
   List<Map<String, dynamic>> get generatedAnalysis =>
@@ -102,6 +104,7 @@ abstract class $SoilDashboardStateCopyWith<$Res> {
       List<Map<String, dynamic>> plotsSuggestion,
       List<Map<String, dynamic>> deviceWarnings,
       List<Map<String, dynamic>> aiAnalysis,
+      List<Map<String, dynamic>> aiSummaryHistory,
       List<Map<String, dynamic>> filteredAnalysis,
       List<Map<String, dynamic>> generatedAnalysis,
       List<Map<String, dynamic>> irrigationLogs,
@@ -164,6 +167,7 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
     Object? plotsSuggestion = null,
     Object? deviceWarnings = null,
     Object? aiAnalysis = null,
+    Object? aiSummaryHistory = null,
     Object? filteredAnalysis = null,
     Object? generatedAnalysis = null,
     Object? irrigationLogs = null,
@@ -243,6 +247,10 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
       aiAnalysis: null == aiAnalysis
           ? _value.aiAnalysis
           : aiAnalysis // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+      aiSummaryHistory: null == aiSummaryHistory
+          ? _value.aiSummaryHistory
+          : aiSummaryHistory // ignore: cast_nullable_to_non_nullable
               as List<Map<String, dynamic>>,
       filteredAnalysis: null == filteredAnalysis
           ? _value.filteredAnalysis
@@ -404,6 +412,7 @@ abstract class _$$SoilDashboardStateImplCopyWith<$Res>
       List<Map<String, dynamic>> plotsSuggestion,
       List<Map<String, dynamic>> deviceWarnings,
       List<Map<String, dynamic>> aiAnalysis,
+      List<Map<String, dynamic>> aiSummaryHistory,
       List<Map<String, dynamic>> filteredAnalysis,
       List<Map<String, dynamic>> generatedAnalysis,
       List<Map<String, dynamic>> irrigationLogs,
@@ -464,6 +473,7 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
     Object? plotsSuggestion = null,
     Object? deviceWarnings = null,
     Object? aiAnalysis = null,
+    Object? aiSummaryHistory = null,
     Object? filteredAnalysis = null,
     Object? generatedAnalysis = null,
     Object? irrigationLogs = null,
@@ -543,6 +553,10 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
       aiAnalysis: null == aiAnalysis
           ? _value._aiAnalysis
           : aiAnalysis // ignore: cast_nullable_to_non_nullable
+              as List<Map<String, dynamic>>,
+      aiSummaryHistory: null == aiSummaryHistory
+          ? _value._aiSummaryHistory
+          : aiSummaryHistory // ignore: cast_nullable_to_non_nullable
               as List<Map<String, dynamic>>,
       filteredAnalysis: null == filteredAnalysis
           ? _value._filteredAnalysis
@@ -699,6 +713,7 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
       final List<Map<String, dynamic>> plotsSuggestion = const [],
       final List<Map<String, dynamic>> deviceWarnings = const [],
       final List<Map<String, dynamic>> aiAnalysis = const [],
+      final List<Map<String, dynamic>> aiSummaryHistory = const [],
       final List<Map<String, dynamic>> filteredAnalysis = const [],
       final List<Map<String, dynamic>> generatedAnalysis = const [],
       final List<Map<String, dynamic>> irrigationLogs = const [],
@@ -744,6 +759,7 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
         _plotsSuggestion = plotsSuggestion,
         _deviceWarnings = deviceWarnings,
         _aiAnalysis = aiAnalysis,
+        _aiSummaryHistory = aiSummaryHistory,
         _filteredAnalysis = filteredAnalysis,
         _generatedAnalysis = generatedAnalysis,
         _irrigationLogs = irrigationLogs,
@@ -854,6 +870,16 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
     if (_aiAnalysis is EqualUnmodifiableListView) return _aiAnalysis;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableListView(_aiAnalysis);
+  }
+
+  final List<Map<String, dynamic>> _aiSummaryHistory;
+  @override
+  @JsonKey()
+  List<Map<String, dynamic>> get aiSummaryHistory {
+    if (_aiSummaryHistory is EqualUnmodifiableListView)
+      return _aiSummaryHistory;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_aiSummaryHistory);
   }
 
   final List<Map<String, dynamic>> _filteredAnalysis;
@@ -984,7 +1010,7 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
 
   @override
   String toString() {
-    return 'SoilDashboardState(userPlots: $userPlots, rawPlotMoistureData: $rawPlotMoistureData, rawPlotNutrientData: $rawPlotNutrientData, latestPlotMoistureData: $latestPlotMoistureData, latestPlotNutrientData: $latestPlotNutrientData, userPlotMoistureData: $userPlotMoistureData, userPlotNutrientData: $userPlotNutrientData, nutrientWarnings: $nutrientWarnings, plotsSuggestion: $plotsSuggestion, deviceWarnings: $deviceWarnings, aiAnalysis: $aiAnalysis, filteredAnalysis: $filteredAnalysis, generatedAnalysis: $generatedAnalysis, irrigationLogs: $irrigationLogs, isFetchingUserPlots: $isFetchingUserPlots, isFetchingUserPlotData: $isFetchingUserPlotData, isFetchingHistoryData: $isFetchingHistoryData, selectedPlotId: $selectedPlotId, selectedPlotHistoryId: $selectedPlotHistoryId, selectedAnalysisId: $selectedAnalysisId, loadedPlotId: $loadedPlotId, plotConditions: $plotConditions, plotToggles: $plotToggles, aiAnalysisStatus: $aiAnalysisStatus, currentCardToggled: $currentCardToggled, currentDeviceToggled: $currentDeviceToggled, mainDeviceToggled: $mainDeviceToggled, selectedTimeRangeFilter: $selectedTimeRangeFilter, selectedTimeRangeFilterGeneral: $selectedTimeRangeFilterGeneral, selectedHistoryFilter: $selectedHistoryFilter, error: $error, userPlotDataError: $userPlotDataError, overallCondition: $overallCondition, selectedTimeRange: $selectedTimeRange, customStartDate: $customStartDate, customEndDate: $customEndDate, lastReadingTime: $lastReadingTime, historyDateStartFilter: $historyDateStartFilter, historyDateEndFilter: $historyDateEndFilter, isEditingUserPlot: $isEditingUserPlot, isSavingNewCrop: $isSavingNewCrop, isSavingNewSoilType: $isSavingNewSoilType, isSavingNewSoilMoistureSensor: $isSavingNewSoilMoistureSensor, isSavingNewSoilNutrientSensor: $isSavingNewSoilNutrientSensor, isGeneratingAi: $isGeneratingAi)';
+    return 'SoilDashboardState(userPlots: $userPlots, rawPlotMoistureData: $rawPlotMoistureData, rawPlotNutrientData: $rawPlotNutrientData, latestPlotMoistureData: $latestPlotMoistureData, latestPlotNutrientData: $latestPlotNutrientData, userPlotMoistureData: $userPlotMoistureData, userPlotNutrientData: $userPlotNutrientData, nutrientWarnings: $nutrientWarnings, plotsSuggestion: $plotsSuggestion, deviceWarnings: $deviceWarnings, aiAnalysis: $aiAnalysis, aiSummaryHistory: $aiSummaryHistory, filteredAnalysis: $filteredAnalysis, generatedAnalysis: $generatedAnalysis, irrigationLogs: $irrigationLogs, isFetchingUserPlots: $isFetchingUserPlots, isFetchingUserPlotData: $isFetchingUserPlotData, isFetchingHistoryData: $isFetchingHistoryData, selectedPlotId: $selectedPlotId, selectedPlotHistoryId: $selectedPlotHistoryId, selectedAnalysisId: $selectedAnalysisId, loadedPlotId: $loadedPlotId, plotConditions: $plotConditions, plotToggles: $plotToggles, aiAnalysisStatus: $aiAnalysisStatus, currentCardToggled: $currentCardToggled, currentDeviceToggled: $currentDeviceToggled, mainDeviceToggled: $mainDeviceToggled, selectedTimeRangeFilter: $selectedTimeRangeFilter, selectedTimeRangeFilterGeneral: $selectedTimeRangeFilterGeneral, selectedHistoryFilter: $selectedHistoryFilter, error: $error, userPlotDataError: $userPlotDataError, overallCondition: $overallCondition, selectedTimeRange: $selectedTimeRange, customStartDate: $customStartDate, customEndDate: $customEndDate, lastReadingTime: $lastReadingTime, historyDateStartFilter: $historyDateStartFilter, historyDateEndFilter: $historyDateEndFilter, isEditingUserPlot: $isEditingUserPlot, isSavingNewCrop: $isSavingNewCrop, isSavingNewSoilType: $isSavingNewSoilType, isSavingNewSoilMoistureSensor: $isSavingNewSoilMoistureSensor, isSavingNewSoilNutrientSensor: $isSavingNewSoilNutrientSensor, isGeneratingAi: $isGeneratingAi)';
   }
 
   @override
@@ -1014,6 +1040,8 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
                 .equals(other._deviceWarnings, _deviceWarnings) &&
             const DeepCollectionEquality()
                 .equals(other._aiAnalysis, _aiAnalysis) &&
+            const DeepCollectionEquality()
+                .equals(other._aiSummaryHistory, _aiSummaryHistory) &&
             const DeepCollectionEquality()
                 .equals(other._filteredAnalysis, _filteredAnalysis) &&
             const DeepCollectionEquality()
@@ -1094,6 +1122,7 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
         const DeepCollectionEquality().hash(_plotsSuggestion),
         const DeepCollectionEquality().hash(_deviceWarnings),
         const DeepCollectionEquality().hash(_aiAnalysis),
+        const DeepCollectionEquality().hash(_aiSummaryHistory),
         const DeepCollectionEquality().hash(_filteredAnalysis),
         const DeepCollectionEquality().hash(_generatedAnalysis),
         const DeepCollectionEquality().hash(_irrigationLogs),
@@ -1153,6 +1182,7 @@ abstract class _SoilDashboardState implements SoilDashboardState {
       final List<Map<String, dynamic>> plotsSuggestion,
       final List<Map<String, dynamic>> deviceWarnings,
       final List<Map<String, dynamic>> aiAnalysis,
+      final List<Map<String, dynamic>> aiSummaryHistory,
       final List<Map<String, dynamic>> filteredAnalysis,
       final List<Map<String, dynamic>> generatedAnalysis,
       final List<Map<String, dynamic>> irrigationLogs,
@@ -1210,6 +1240,8 @@ abstract class _SoilDashboardState implements SoilDashboardState {
   List<Map<String, dynamic>> get deviceWarnings;
   @override
   List<Map<String, dynamic>> get aiAnalysis;
+  @override
+  List<Map<String, dynamic>> get aiSummaryHistory;
   @override
   List<Map<String, dynamic>> get filteredAnalysis;
   @override

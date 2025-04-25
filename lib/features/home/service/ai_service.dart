@@ -5,40 +5,54 @@ import 'dart:convert';
 class AiService {
   String generateAIAnalysisPrompt(
       String dataToAnalyze, String cropType, String soilType, String plotName) {
-    // Extract all ISO date strings from the data
     final dateRegex = RegExp(r'\d{4}-\d{2}-\d{2}');
     final allMatches =
         dateRegex.allMatches(dataToAnalyze).map((m) => m.group(0)!);
     final uniqueDates = allMatches.toSet().toList()..sort();
 
-    // Default fallback in case there are not enough dates
     final firstDate = uniqueDates.isNotEmpty ? uniqueDates[0] : "2025-04-04";
     final secondDate = uniqueDates.length > 1 ? uniqueDates[1] : "2025-04-05";
+    final thirdDate = uniqueDates.length > 2 ? uniqueDates[2] : "2025-04-06";
+    final latestDate = uniqueDates.isNotEmpty ? uniqueDates.last : "2025-04-06";
 
     return '''
-    You are an agricultural analysis assistant for a system called **SoilTrack**. Your task is to analyze the provided soil and crop data and respond strictly in the **exact JSON format** defined below.
+    You are a helpful farm assistant working for a tool called **SoilTrack**. Each day, you help farmers understand what their soil and crop data means and what they need to do **today**.
 
-    ⚠️ **IMPORTANT**:
-    - DO NOT add any text before or after the JSON.
-    - DO NOT change any keys or structure.
-    - Ensure all fields are filled appropriately (no missing keys).
-    - Use `"text"` for string values and numbers (e.g., 42.5, 7) for numeric ones.
-    - Dates must match the format used in the data (e.g., "$firstDate").
-    - Ensure the response is **valid JSON**. No explanations or comments.
+    Your goal is to generate a clear, farmer-friendly daily action plan based on the latest data.
+
+    ⚠️ VERY IMPORTANT:
+    - Focus on **daily action** (what should the farmer do today).
+    - DO NOT recommend external tests, expert advice, or tools.
+    - DO NOT include any text outside the JSON.
+    - Use language that is very simple and localized (can be understood by Filipino farmers).
+    - Use dates from the data provided (latest date is "$latestDate").
+    - All values must be in valid JSON format. Do not leave out any fields.
+    - In today's focus, there can be multiple points or text.
+
+    Here is the required format:
 
     {
       "AI_Analysis": {
+        "date": "$latestDate",
+        "today_focus": [
+          "text",
+        ],
         "summary": {
           "findings": "text",
           "predictions": "text",
           "recommendations": "text"
         },
         "summary_of_findings": {
-          "moisture_trends": { "$firstDate": ..., "$secondDate": ..., "trend": "..." },
+          "moisture_trends": {
+            "$firstDate": ..., 
+            "$secondDate": ..., 
+            "$thirdDate": ..., 
+            "trend": "..."
+          },
           "nutrient_trends": {
-            "N": { "$firstDate": ..., "$secondDate": ..., "trend": "..." },
-            "P": { "$firstDate": ..., "$secondDate": ..., "trend": "..." },
-            "K": { "$firstDate": ..., "$secondDate": ..., "trend": "..." }
+            "N": { "$firstDate": ..., "$secondDate": ..., "$thirdDate": ..., "trend": "..." },
+            "P": { "$firstDate": ..., "$secondDate": ..., "$thirdDate": ..., "trend": "..." },
+            "K": { "$firstDate": ..., "$secondDate": ..., "$thirdDate": ..., "trend": "..." }
           }
         },
         "predictive_insights": {
@@ -46,9 +60,9 @@ class AiService {
           "nutrients": "text"
         },
         "recommended_fertilizers": {
-          "N": { "type": "text", "application_instructions": "text" },
-          "P": { "type": "text", "application_instructions": "text" },
-          "K": { "type": "text", "application_instructions": "text" }
+          "N": { "type": "text", "application_instructions": "text", "where_to_buy": "text" },
+          "P": { "type": "text", "application_instructions": "text", "where_to_buy": "text" },
+          "K": { "type": "text", "application_instructions": "text", "where_to_buy": "text" }
         },
         "irrigation_plan": {
           "recommended_schedule": "text",
@@ -167,6 +181,38 @@ class AiService {
     Crop Type: $cropType
     Soil Type: $soilType
     ''';
+  }
+
+  String generateAISummaryPrompt(String rawFormattedData) {
+    return '''
+  You are a smart assistant for **SoilTrack**, an agriculture analysis platform. Your role is to summarize data collected from multiple crop plots over a specific period. Respond in **valid JSON** using the structure below.
+
+  ⚠️ IMPORTANT:
+  - Do NOT include any text before or after the JSON.
+  - Strictly follow the keys and structure.
+  - Do NOT suggest consulting experts or external tests.
+  - Do NOT recommend buying or installing tools or tests.
+  - Keep suggestions **practical and immediate**, based only on the data provided.
+  - Use 1–2 sentence explanations.
+  - Use simple, actionable language and can be understand by old farmers.
+
+  🧠 TASKS:
+  - Analyze all moisture and NPK trends across plots.
+  - Identify concerning trends (e.g., rapid drops, spikes).
+  - Provide a short summary headline.
+  - Provide clear warnings and practical recommendations.
+
+  📤 FORMAT:
+  {
+    "headline": "text",
+    "summary": "text",
+    "warnings": [ "text", "text" ],
+    "recommendations": [ "text", "text" ]
+  }
+
+  Here is the data to analyze:
+  $rawFormattedData
+  ''';
   }
 
   Future<Map<String, dynamic>> getAiAnalysis(

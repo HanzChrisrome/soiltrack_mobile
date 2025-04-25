@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/provider/weather_provider.dart';
+import 'package:soiltrack_mobile/widgets/custom_accordion.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
@@ -16,7 +17,7 @@ class WeatherWidget extends ConsumerWidget {
     final weatherState = ref.watch(weatherProvider);
     final authState = ref.watch(authProvider);
 
-    if (weatherState.isLoading) {
+    if (weatherState.isLoading || weatherState.weatherData == null) {
       return DynamicContainer(
         backgroundColor: Colors.transparent,
         borderColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
@@ -188,23 +189,22 @@ class WeatherWidget extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 10),
-        DynamicContainer(
-          backgroundColor: Colors.transparent,
-          borderColor: Theme.of(context).colorScheme.onSurface.withOpacity(0.2),
-          child: Column(
+        CustomAccordion(
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          titleWidget: Row(
+            children: [
+              const TextGradient(text: 'Suggestions', fontSize: 20),
+              const SizedBox(width: 10),
+              TextRoundedEnclose(
+                  text: 'Based on weather data',
+                  color: Colors.white,
+                  textColor: Colors.grey[500]!),
+            ],
+          ),
+          content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const TextGradient(text: 'Suggestions', fontSize: 20),
-                  TextRoundedEnclose(
-                      text: 'Based on weather data',
-                      color: Colors.white,
-                      textColor: Colors.grey[500]!),
-                ],
-              ),
-              DividerWidget(verticalHeight: 5),
+              const SizedBox(height: 5),
               if (weatherState.suggestionData != null &&
                   weatherState.suggestionData!.isNotEmpty)
                 ListView.separated(

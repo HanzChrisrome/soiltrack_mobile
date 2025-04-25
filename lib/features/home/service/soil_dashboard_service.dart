@@ -382,9 +382,28 @@ class SoilDashboardService {
         .inFilter('plot_id', plotIds)
         .gte('analysis_date', formattedStartDate)
         .lte('analysis_date', formattedEndDate)
-        .order('created_at', ascending: false);
+        .order('analysis_date', ascending: false);
 
     return response;
+  }
+
+  Future<List<Map<String, dynamic>>> fetchSummaryAnalysis(String userId) async {
+    final now = DateTime.now();
+    final todayStart =
+        DateTime(now.year, now.month, now.day).toUtc().toIso8601String();
+    final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59)
+        .toUtc()
+        .toIso8601String();
+
+    return supabase
+        .from('ai_summary')
+        .select('''
+      analysis_date,
+      summary_analysis
+      ''')
+        .eq('user_id', userId)
+        .gte('analysis_date', todayStart)
+        .lte('analysis_date', todayEnd);
   }
 
   Future<List<Map<String, dynamic>>> fetchIrrigationLogs(

@@ -38,6 +38,7 @@ dependencies:
   philippines_rpcmb: ^0.0.3
   app_links: ^6.4.0
   table_calendar: ^3.0.0
+  google_generative_ai: ^0.2.2
 
 dev_dependencies:
   flutter_test:

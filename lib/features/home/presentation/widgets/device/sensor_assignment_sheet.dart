@@ -28,7 +28,6 @@ class _SensorAssignmentSheetState extends State<SensorAssignmentSheet> {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 300, // Adjust the height as needed
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.center,

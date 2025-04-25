@@ -3,12 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
+import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
 import 'package:soiltrack_mobile/features/home/helper/soilDashboardHelper.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_state.dart';
 import 'package:soiltrack_mobile/features/home/service/ai_service.dart';
 import 'package:soiltrack_mobile/features/home/service/soil_dashboard_service.dart';
 import 'package:soiltrack_mobile/features/home/provider/hardware_provider/soil_sensors_provider.dart';
+import 'package:soiltrack_mobile/features/user_plots/controller/user_plot_controller.dart';
+import 'package:soiltrack_mobile/features/user_plots/helper/user_plots_helper.dart';
 
 class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
   final SoilDashboardService soilDashboardService = SoilDashboardService();
@@ -188,6 +191,8 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
   Future<void> fetchUserAnalytics(
       {DateTime? customStartDate, DateTime? customEndDate}) async {
     state = state.copyWith(isFetchingHistoryData: true);
+    final userId = ref.watch(authProvider).userId;
+
     try {
       final List<String> plotIds =
           state.userPlots.map((plot) => plot['plot_id'].toString()).toList();
@@ -200,12 +205,18 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
 
       final results = await Future.wait([
         soilDashboardService.fetchLatestAiAnalyses(plotIds, startDate, endDate),
+        soilDashboardService.fetchSummaryAnalysis(userId!),
       ]);
       final aiAnalysis = results[0];
+      final summaryAnalysis = results[1];
+
+      NotifierHelper.logMessage('Summary analysis: $summaryAnalysis');
 
       if (state.selectedHistoryFilter != 'Custom') {
         state = state.copyWith(
-            aiAnalysis: aiAnalysis, filteredAnalysis: aiAnalysis);
+            aiAnalysis: aiAnalysis,
+            aiSummaryHistory: summaryAnalysis,
+            filteredAnalysis: aiAnalysis);
       } else {
         state = state.copyWith(
           filteredAnalysis: aiAnalysis,
@@ -310,63 +321,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     }
   }
 
-  Future<void> fetchAi(String rawData, String cropType, String soilType,
-      String plotName, int plotId) async {
-    try {
-      NotifierHelper.logMessage('Fetching AI analysis...');
-      state = state.copyWith(isGeneratingAi: true);
-      final prompt = aiService.generateAIAnalysisPrompt(
-          rawData, cropType, soilType, plotName);
-
-      final aiResponse = await aiService.getAiAnalysis(prompt);
-      final aiRaw = aiResponse['choices'][0]['message']['content'];
-      final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
-      final today = DateTime.now().toIso8601String().split('T').first;
-
-      final newAnalysis = {
-        "plot_id": plotId,
-        "analysis_date": today,
-        "analysis": parsedJson,
-        "analysis_type": 'Daily',
-      };
-
-      await supabase.from('ai_analysis').insert(newAnalysis);
-      await fetchUserAnalytics();
-    } catch (e) {
-      NotifierHelper.logError(e);
-    } finally {
-      state = state.copyWith(isGeneratingAi: false);
-    }
-  }
-
-  Future<void> fetchWeeklyAnalysis(String rawData, String cropType,
-      String soilType, String plotName, int plotId) async {
-    try {
-      NotifierHelper.logMessage('Fetching Weekly AI Analysis');
-      state = state.copyWith(isGeneratingAi: true);
-      final prompt = aiService.generateWeeklyAIAnalysisPrompt(
-          rawData, cropType, soilType, plotName);
-      final aiResponse = await aiService.getAiAnalysis(prompt);
-      final aiRaw = aiResponse['choices'][0]['message']['content'];
-      final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
-      final today = DateTime.now().toIso8601String().split('T').first;
-
-      final newAnalysis = {
-        "plot_id": plotId,
-        "analysis_date": today,
-        "analysis": parsedJson,
-        "analysis_type": 'Weekly',
-      };
-
-      await supabase.from('ai_analysis').insert(newAnalysis);
-      await fetchUserAnalytics();
-    } catch (e) {
-      NotifierHelper.logError(e);
-    } finally {
-      state = state.copyWith(isGeneratingAi: false);
-    }
-  }
-
   void updateHistoryFilterSelection(String selectedWeek,
       {DateTime? customStartDate, DateTime? customEndDate}) {
     final bool wasCustom = state.selectedHistoryFilter == 'Custom';
@@ -427,6 +381,193 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       } else {
         filterPlotData(state.rawPlotMoistureData, state.rawPlotNutrientData);
       }
+    }
+  }
+
+  Future<void> generateDailyAnalysis() async {
+    if (state.isGeneratingAi) return;
+    state = state.copyWith(isGeneratingAi: true);
+
+    final plotHelper = UserPlotsHelper();
+    final rawMoistureData = state.rawPlotMoistureData;
+    final rawNutrientData = state.rawPlotNutrientData;
+    final userId = ref.watch(authProvider).userId;
+
+    try {
+      final today = DateTime.now().toLocal().toIso8601String().split('T').first;
+
+      final todayAiAnalysis = state.aiAnalysis.firstWhere(
+        (entry) =>
+            entry['analysis_date'] == today &&
+            entry['analysis_type'] == 'Daily' &&
+            state.userPlots.any((plot) => plot['plot_id'] == entry['plot_id']),
+        orElse: () => {},
+      );
+
+      if (todayAiAnalysis.isNotEmpty) {
+        NotifierHelper.logMessage('AI analysis already exists for today.');
+        return;
+      }
+
+      NotifierHelper.logMessage('No AI analysis for today, generating...');
+      for (final plot in state.userPlots) {
+        final plotId = plot['plot_id'];
+        final cropType = plot['user_crops']?['crop_name'] ?? 'No crop assigned';
+        final soilType = plot['soil_type'] ?? 'No soil type';
+        final plotName = plot['plot_name'] ?? 'No plot name';
+
+        final filtered = plotHelper.getFilteredAiReadyData(
+            selectedPlotId: plotId,
+            rawMoistureData: rawMoistureData,
+            rawNutrientData: rawNutrientData);
+
+        if (filtered != null) {
+          final aiFormattedPrompt =
+              plotHelper.getFormattedAiPrompt(data: filtered);
+
+          final forPrompting = aiService.generateAIAnalysisPrompt(
+            aiFormattedPrompt,
+            cropType,
+            soilType,
+            plotName,
+          );
+
+          final aiResponse = await aiService.getAiAnalysis(forPrompting);
+          final aiRaw = aiResponse['choices'][0]['message']['content'];
+          final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
+          final today = DateTime.now().toIso8601String().split('T').first;
+
+          final newAnalysis = {
+            "plot_id": plotId,
+            "analysis_date": today,
+            "analysis": parsedJson,
+            "analysis_type": 'Daily',
+          };
+
+          await supabase.from('ai_analysis').insert(newAnalysis);
+        }
+      }
+
+      final validPlotIds = {
+        ...rawMoistureData.map((data) => data['plot_id']),
+        ...rawNutrientData.map((data) => data['plot_id']),
+      };
+
+      final threeDaysAgo = DateTime.now().subtract(const Duration(days: 3));
+      final plotsWithRecentData = rawMoistureData
+          .where((data) {
+            final readTime = DateTime.parse(data['read_time']).toLocal();
+            return readTime.isAfter(threeDaysAgo);
+          })
+          .map((data) => data['plot_id'])
+          .toSet();
+
+      final validPlotIdsWithRecentData =
+          validPlotIds.intersection(plotsWithRecentData);
+
+      final Map<int, Map<String, dynamic>> plotMetadata = {};
+      for (var plot in state.userPlots) {
+        final int plotId = plot['plot_id'];
+        if (!validPlotIdsWithRecentData.contains(plotId)) continue;
+
+        final crop = plot['user_crops']?['crop_name'] ?? 'No crop assigned';
+        final soil = plot['soil_type'] ?? 'No soil type';
+        final plotName = plot['plot_name'] ?? 'No plot name';
+
+        plotMetadata[plotId] = {
+          'crop': crop,
+          'soil': soil,
+          'plotName': plotName,
+        };
+      }
+
+      final forSummary = plotHelper.getDataForSummary(
+          rawMoistureData: rawMoistureData, rawNutrientData: rawNutrientData);
+
+      if (forSummary != null) {
+        final aiSummaryPrompt = plotHelper.getFormattedSummaryPrompt(
+            data: forSummary, plotMetadata: plotMetadata);
+
+        NotifierHelper.logMessage('AI summary prompt: $aiSummaryPrompt');
+
+        final aiSummaryPromptFinal =
+            aiService.generateAISummaryPrompt(aiSummaryPrompt);
+
+        final aiAnalysis =
+            await aiService.getAiAnalysis(aiSummaryPromptFinal, maxTokens: 900);
+
+        final aiSummaryRaw = aiAnalysis['choices'][0]['message']['content'];
+        final parsedSummary =
+            soilDashboardHelper.extractCleanAIJson(aiSummaryRaw);
+
+        await supabase.from('ai_summary').insert({
+          "user_id": userId,
+          "analysis_date": today,
+          "summary_analysis": parsedSummary,
+          "summary_type": 'Daily',
+        });
+      }
+    } catch (e) {
+      NotifierHelper.logError(e);
+    } finally {
+      state = state.copyWith(isGeneratingAi: false);
+    }
+  }
+
+  Future<void> fetchAi(String rawData, String cropType, String soilType,
+      String plotName, int plotId) async {
+    try {
+      NotifierHelper.logMessage('Fetching AI analysis...');
+      state = state.copyWith(isGeneratingAi: true);
+      final prompt = aiService.generateAIAnalysisPrompt(
+          rawData, cropType, soilType, plotName);
+
+      final aiResponse = await aiService.getAiAnalysis(prompt);
+      final aiRaw = aiResponse['choices'][0]['message']['content'];
+      final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
+      final today = DateTime.now().toIso8601String().split('T').first;
+
+      final newAnalysis = {
+        "plot_id": plotId,
+        "analysis_date": today,
+        "analysis": parsedJson,
+        "analysis_type": 'Daily',
+      };
+
+      await supabase.from('ai_analysis').insert(newAnalysis);
+      await fetchUserAnalytics();
+    } catch (e) {
+      NotifierHelper.logError(e);
+    } finally {
+      state = state.copyWith(isGeneratingAi: false);
+    }
+  }
+
+  Future<void> fetchWeeklyAnalysis(String rawData, String cropType,
+      String soilType, String plotName, int plotId) async {
+    try {
+      NotifierHelper.logMessage('Fetching Weekly AI Analysis');
+      state = state.copyWith(isGeneratingAi: true);
+      final prompt = aiService.generateWeeklyAIAnalysisPrompt(
+          rawData, cropType, soilType, plotName);
+      final aiResponse = await aiService.getAiAnalysis(prompt);
+      final aiRaw = aiResponse['choices'][0]['message']['content'];
+      final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
+      final today = DateTime.now().toIso8601String().split('T').first;
+
+      final newAnalysis = {
+        "plot_id": plotId,
+        "analysis_date": today,
+        "analysis": parsedJson,
+        "analysis_type": 'Weekly',
+      };
+
+      await supabase.from('ai_analysis').insert(newAnalysis);
+      await fetchUserAnalytics();
+    } catch (e) {
+      NotifierHelper.logError(e);
+    } finally {
+      state = state.copyWith(isGeneratingAi: false);
     }
   }
 

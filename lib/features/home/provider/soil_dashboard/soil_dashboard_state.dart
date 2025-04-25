@@ -16,6 +16,7 @@ class SoilDashboardState with _$SoilDashboardState {
     @Default([]) List<Map<String, dynamic>> plotsSuggestion,
     @Default([]) List<Map<String, dynamic>> deviceWarnings,
     @Default([]) List<Map<String, dynamic>> aiAnalysis,
+    @Default([]) List<Map<String, dynamic>> aiSummaryHistory,
     @Default([]) List<Map<String, dynamic>> filteredAnalysis,
     @Default([]) List<Map<String, dynamic>> generatedAnalysis,
     @Default([]) List<Map<String, dynamic>> irrigationLogs,

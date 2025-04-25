@@ -1,5 +1,4 @@
 import 'package:intl/intl.dart';
-import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/user_plots/helper/formatter_helper.dart';
 
 class UserPlotsHelper {
@@ -89,49 +88,75 @@ class UserPlotsHelper {
       required List<Map<String, dynamic>> rawMoistureData,
       required List<Map<String, dynamic>> rawNutrientData}) {
     final now = DateTime.now();
-    final yesterday = now.subtract(const Duration(days: 1));
-    final dayBefore = now.subtract(const Duration(days: 2));
+    final fiveDaysAgo = now.subtract(const Duration(days: 3));
 
-    final moistureYesterday = _filterDataByDate(
+    final moistureForDailyAnalysis = _filterDataByDate(
       rawMoistureData,
       selectedPlotId,
-      DateTime(yesterday.year, yesterday.month, yesterday.day),
-      DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59),
+      DateTime(fiveDaysAgo.year, fiveDaysAgo.month, fiveDaysAgo.day),
+      DateTime(now.year, now.month, now.day, 23, 59, 59),
     );
 
-    final moistureDayBefore = _filterDataByDate(
-      rawMoistureData,
-      selectedPlotId,
-      DateTime(dayBefore.year, dayBefore.month, dayBefore.day),
-      DateTime(dayBefore.year, dayBefore.month, dayBefore.day, 23, 59, 59),
-    );
-
-    final nutrientYesterday = _filterDataByDate(
+    final nutrientsForDailyAnalysis = _filterDataByDate(
       rawNutrientData,
       selectedPlotId,
-      DateTime(yesterday.year, yesterday.month, yesterday.day),
-      DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59),
+      DateTime(fiveDaysAgo.year, fiveDaysAgo.month, fiveDaysAgo.day),
+      DateTime(now.year, now.month, now.day, 23, 59, 59),
     );
 
-    final nutrientDayBefore = _filterDataByDate(
-      rawNutrientData,
-      selectedPlotId,
-      DateTime(dayBefore.year, dayBefore.month, dayBefore.day),
-      DateTime(dayBefore.year, dayBefore.month, dayBefore.day, 23, 59, 59),
-    );
-
-    if (moistureYesterday.isEmpty ||
-        moistureDayBefore.isEmpty ||
-        nutrientYesterday.isEmpty ||
-        nutrientDayBefore.isEmpty) {
+    if (moistureForDailyAnalysis.isEmpty || nutrientsForDailyAnalysis.isEmpty) {
       return null;
     }
 
     return {
-      'moistureYesterday': moistureYesterday,
-      'moistureDayBefore': moistureDayBefore,
-      'nutrientYesterday': nutrientYesterday,
-      'nutrientDayBefore': nutrientDayBefore,
+      'moistureForDaily': moistureForDailyAnalysis,
+      'nutrientsForDaily': nutrientsForDailyAnalysis,
+    };
+  }
+
+  Map<String, List<Map<String, dynamic>>>? getDataForSummary(
+      {required List<Map<String, dynamic>> rawMoistureData,
+      required List<Map<String, dynamic>> rawNutrientData}) {
+    final now = DateTime.now();
+    final threeDaysAgo = now.subtract(const Duration(days: 3));
+    final yesterday = now.subtract(const Duration(days: 1));
+    final twoDaysAgo = now.subtract(const Duration(days: 2));
+
+    final moistureForSummary = _filterDataOnly(
+      rawMoistureData,
+      DateTime(threeDaysAgo.year, threeDaysAgo.month, threeDaysAgo.day),
+      DateTime(now.year, now.month, now.day, 23, 59, 59),
+    );
+
+    final nutrientsForSummary = _filterDataOnly(
+      rawNutrientData,
+      DateTime(threeDaysAgo.year, threeDaysAgo.month, threeDaysAgo.day),
+      DateTime(now.year, now.month, now.day, 23, 59, 59),
+    );
+
+    final hasIncompleteData = (DateTime date) {
+      final moistureDataForDate = moistureForSummary.where((entry) {
+        final readTimeString = entry['read_time'];
+        if (readTimeString == null) return false;
+        final readTime = DateTime.tryParse(readTimeString);
+        return readTime != null && isSameDay(readTime, date);
+      }).toList();
+
+      final nutrientDataForDate = nutrientsForSummary.where((entry) {
+        final readTime = DateTime.tryParse(entry['read_time'] ?? '');
+        return readTime != null && isSameDay(readTime, date);
+      }).toList();
+
+      return moistureDataForDate.isEmpty || nutrientDataForDate.isEmpty;
+    };
+
+    if (hasIncompleteData(yesterday) || hasIncompleteData(twoDaysAgo)) {
+      return null;
+    }
+
+    return {
+      'moistureForSummary': moistureForSummary,
+      'nutrientsForSummary': nutrientsForSummary,
     };
   }
 
@@ -182,32 +207,45 @@ class UserPlotsHelper {
     }).toList();
   }
 
+  List<Map<String, dynamic>> _filterDataOnly(
+    List<Map<String, dynamic>> data,
+    DateTime start,
+    DateTime end,
+  ) {
+    return data.where((entry) {
+      final readTime = DateTime.tryParse(entry['read_time'] ?? '');
+      return readTime != null &&
+          !readTime.isBefore(start) &&
+          !readTime.isAfter(end);
+    }).toList();
+  }
+
   String getFormattedAiPrompt({
     required Map<String, List<Map<String, dynamic>>> data,
   }) {
-    String getDateLabel(List<Map<String, dynamic>> readings) {
-      if (readings.isNotEmpty) {
-        final date = DateTime.tryParse(readings.first['read_time'] ?? '');
-        if (date != null) {
-          return "${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}";
-        }
-      }
-      return "No data";
-    }
+    final dayStart = DateTime.now().subtract(const Duration(days: 3));
+    final dayEnd = DateTime.now().subtract(const Duration(days: 1));
 
-    final moistureYDate = getDateLabel(data['moistureYesterday'] ?? []);
-    final moistureDBYDate = getDateLabel(data['moistureDayBefore'] ?? []);
-    final nutrientYDate = getDateLabel(data['nutrientYesterday'] ?? []);
-    final nutrientDBYDate = getDateLabel(data['nutrientDayBefore'] ?? []);
+    String rangeLabel =
+        "${dayStart.year}-${dayStart.month.toString().padLeft(2, '0')}-${dayStart.day.toString().padLeft(2, '0')} to "
+        "${dayEnd.year}-${dayEnd.month.toString().padLeft(2, '0')}-${dayEnd.day.toString().padLeft(2, '0')}";
 
-    return '''🗓️ Moisture ($moistureYDate):
-    ${formatter.formatMoistureDataForPrompt(data['moistureYesterday'] ?? [])}
-    🗓️ Moisture ($moistureDBYDate):
-    ${formatter.formatMoistureDataForPrompt(data['moistureDayBefore'] ?? [])}
-    🗓️ Nutrients (NPK) ($nutrientYDate):
-    ${formatter.formatNutrientDataForPrompt(data['nutrientYesterday'] ?? [])}
-    🗓️ Nutrients (NPK) ($nutrientDBYDate):
-    ${formatter.formatNutrientDataForPrompt(data['nutrientDayBefore'] ?? [])}''';
+    final buffer = StringBuffer();
+    buffer.writeln("📅 Daily Moisture & Nutrient Report ($rangeLabel):\n");
+    buffer.writeln("💧 Moisture Data:");
+    buffer.writeln(
+      formatter
+          .formatWeeklyMoistureDataForPrompt(data['moistureForDaily'] ?? []),
+    );
+
+    // Add nutrient data
+    buffer.writeln("\n🌱 Nutrient Data (NPK):");
+    buffer.writeln(
+      formatter
+          .formatWeeklyNutrientDataForPrompt(data['nutrientsForDaily'] ?? []),
+    );
+
+    return buffer.toString();
   }
 
   String getFormattedWeeklyPrompt({
@@ -227,6 +265,48 @@ class UserPlotsHelper {
       Nutrient Data (NPK):
       ${formatter.formatWeeklyNutrientDataForPrompt(data['weeklyNutrients'] ?? [])}
     ''';
+  }
+
+  String getFormattedSummaryPrompt({
+    required Map<String, List<Map<String, dynamic>>> data,
+    required Map<int, Map<String, dynamic>> plotMetadata,
+  }) {
+    final weekStart = DateTime.now().subtract(const Duration(days: 3));
+    final weekEnd = DateTime.now().subtract(const Duration(days: 1));
+
+    String rangeLabel =
+        "${weekStart.year}-${weekStart.month.toString().padLeft(2, '0')}-${weekStart.day.toString().padLeft(2, '0')} to "
+        "${weekEnd.year}-${weekEnd.month.toString().padLeft(2, '0')}-${weekEnd.day.toString().padLeft(2, '0')}";
+
+    final buffer = StringBuffer();
+    buffer.writeln("📅 Daily Moisture & Nutrient Report ($rangeLabel):\n");
+
+    buffer.writeln("📋 Plot Details:");
+    plotMetadata.forEach((plotId, meta) {
+      final name = meta['plotName'] ?? 'Plot $plotId';
+      final crop = meta['crop'] ?? 'Not Planted';
+      final soil = meta['soil'] ?? 'Unknown';
+
+      buffer.writeln("$name (ID: $plotId)");
+      buffer.writeln("Crop: $crop");
+      buffer.writeln("Soil Type: $soil\n");
+    });
+
+    // Add moisture data
+    buffer.writeln("💧 Moisture Data:");
+    buffer.writeln(
+      formatter
+          .formatWeeklyMoistureDataForPrompt(data['moistureForSummary'] ?? []),
+    );
+
+    // Add nutrient data
+    buffer.writeln("\n🌱 Nutrient Data (NPK):");
+    buffer.writeln(
+      formatter
+          .formatWeeklyNutrientDataForPrompt(data['nutrientsForSummary'] ?? []),
+    );
+
+    return buffer.toString();
   }
 
   List<Map<String, dynamic>> getIrrigationLogs(
