@@ -2,7 +2,6 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/features/home/presentation/device_screen.dart';
 import 'package:soiltrack_mobile/features/home/presentation/landing_dashboard.dart';
 import 'package:soiltrack_mobile/features/home/presentation/settings_screen.dart';

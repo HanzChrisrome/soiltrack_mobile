@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/features/user_plots/helper/plant_analyzer.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/tools_button.dart';
 import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
 import 'package:soiltrack_mobile/widgets/customizable_bottom_sheet.dart';
@@ -74,7 +75,7 @@ class ToolsSectionWidget extends ConsumerWidget {
             buttonName: 'Change Soil',
             icon: Icons.layers_rounded,
             action: () {
-              context.pushNamed('soil-assigning');
+              analyzePlantPhase(context);
             },
           ),
           const SizedBox(width: 5),
