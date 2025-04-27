@@ -7,6 +7,7 @@ import 'package:soiltrack_mobile/features/crops_registration/presentation/custom
 import 'package:soiltrack_mobile/features/user_plots/presentation/ai_analytics_screen.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/ai_history_screen.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/irrigation_log.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/polygon_map_screen.dart';
 
 final plotRoutes = [
   GoRoute(
@@ -55,5 +56,10 @@ final plotRoutes = [
     path: '/irrigation-logs',
     name: 'irrigation-logs',
     builder: (context, state) => const IrrigationLogScreen(),
+  ),
+  GoRoute(
+    path: '/polygon-maps',
+    name: 'polygon-maps',
+    builder: (context, state) => const PolygonMapScreen(),
   ),
 ];

@@ -6,25 +6,29 @@ void showCustomizableBottomSheet({
   required BuildContext context,
   required Widget centerContent,
   required String buttonText,
-  required VoidCallback onPressed,
-  double height = 400, // Base height of the bottom sheet
-  VoidCallback? onSheetCreated,
-  VoidCallback? onCancelPressed,
+  required void Function(BuildContext bottomSheetContext) onPressed,
+  double height = 400,
+  void Function(BuildContext bottomSheetContext)? onCancelPressed,
   bool showCancelButton = true,
   bool showActionButton = true,
+  bool enableDrag = true,
+  bool isDismissible = true,
 }) {
   showModalBottomSheet(
     context: context,
-    isScrollControlled: true, // Allows the bottom sheet to move with keyboard
+    isScrollControlled: true,
+    enableDrag: enableDrag,
+    isDismissible: isDismissible,
     backgroundColor: Colors.transparent,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(50)),
     ),
-    builder: (context) {
+    builder: (bottomSheetContext) {
+      // <-- Note: bottomSheetContext!
       return StatefulBuilder(
         builder: (context, setState) {
           return AnimatedPadding(
-            duration: const Duration(milliseconds: 1), // No animation lag
+            duration: const Duration(milliseconds: 1),
             padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom),
             child: Container(
@@ -45,7 +49,6 @@ void showCustomizableBottomSheet({
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Drag handle
                   Center(
                     child: Container(
                       width: 80,
@@ -56,15 +59,13 @@ void showCustomizableBottomSheet({
                       ),
                     ),
                   ),
-                  const SizedBox(height: 30),
-
                   Expanded(
                     child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         Center(child: centerContent),
                         const SizedBox(height: 20),
-
-                        // Conditionally show buttons
                         if (showCancelButton || showActionButton)
                           Row(
                             children: [
@@ -73,9 +74,8 @@ void showCustomizableBottomSheet({
                                   child: OutlineCustomButton(
                                     buttonText: 'Cancel',
                                     onPressed: () {
-                                      Navigator.of(context).pop();
                                       if (onCancelPressed != null) {
-                                        onCancelPressed();
+                                        onCancelPressed(bottomSheetContext);
                                       }
                                     },
                                   ),
@@ -86,7 +86,9 @@ void showCustomizableBottomSheet({
                                 Expanded(
                                   child: FilledCustomButton(
                                     buttonText: buttonText,
-                                    onPressed: onPressed,
+                                    onPressed: () {
+                                      onPressed(bottomSheetContext);
+                                    },
                                   ),
                                 ),
                             ],

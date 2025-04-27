@@ -189,67 +189,6 @@ class WeatherWidget extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 10),
-        CustomAccordion(
-          backgroundColor: Theme.of(context).colorScheme.surface,
-          titleWidget: Row(
-            children: [
-              const TextGradient(text: 'Suggestions', fontSize: 20),
-              const SizedBox(width: 10),
-              TextRoundedEnclose(
-                  text: 'Based on weather data',
-                  color: Colors.white,
-                  textColor: Colors.grey[500]!),
-            ],
-          ),
-          content: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 5),
-              if (weatherState.suggestionData != null &&
-                  weatherState.suggestionData!.isNotEmpty)
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: weatherState.suggestionData!.length,
-                  itemBuilder: (context, index) {
-                    final suggestion = weatherState.suggestionData![index];
-
-                    return SizedBox(
-                      width: 300,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            suggestion["title"], // Use the dynamic title
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodyLarge!
-                                .copyWith(
-                                  fontWeight: FontWeight.w600,
-                                  height: 0.8,
-                                  color: const Color.fromARGB(255, 44, 44, 44),
-                                ),
-                          ),
-                          const SizedBox(height: 5),
-                          Text(
-                            suggestion["message"], // Use the dynamic message
-                            style: Theme.of(context)
-                                .textTheme
-                                .bodySmall!
-                                .copyWith(
-                                  color: const Color.fromARGB(255, 97, 97, 97),
-                                ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  separatorBuilder: (context, index) =>
-                      const DividerWidget(verticalHeight: 5),
-                ),
-            ],
-          ),
-        ),
       ],
     );
   }

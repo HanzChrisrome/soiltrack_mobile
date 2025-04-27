@@ -102,13 +102,13 @@ class NutrientProgressChart extends ConsumerWidget {
                           color: Colors.red),
                     ],
                   ),
-                FilledCustomButton(
-                  buttonText: 'View Statistics',
-                  icon: Icons.remove_red_eye_outlined,
-                  onPressed: () {
-                    context.pushNamed('plot-analytics');
-                  },
-                ),
+                // FilledCustomButton(
+                //   buttonText: 'View Statistics',
+                //   icon: Icons.remove_red_eye_outlined,
+                //   onPressed: () {
+                //     context.pushNamed('plot-analytics');
+                //   },
+                // ),
               ],
             ),
           );

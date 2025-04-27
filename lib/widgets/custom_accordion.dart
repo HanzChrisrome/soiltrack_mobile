@@ -50,7 +50,7 @@ class _CustomAccordionState extends State<CustomAccordion>
     return DynamicContainer(
       backgroundColor:
           widget.backgroundColor ?? Theme.of(context).colorScheme.primary,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
       borderColor: widget.borderColor ??
           Theme.of(context).colorScheme.onSurface.withOpacity(0.1),
       margin: const EdgeInsets.only(bottom: 5),

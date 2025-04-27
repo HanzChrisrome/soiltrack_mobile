@@ -50,24 +50,25 @@ class ToolsSectionWidget extends ConsumerWidget {
                 : Icons.close_fullscreen_outlined,
             action: () {
               showCustomBottomSheet(
-                  context: context,
-                  title: isValveOpen ? 'Close Valve' : 'Open Valve',
-                  description:
-                      'Are you sure you want to ${isValveOpen ? 'close' : 'open'} the valve?',
-                  icon: isValveOpen
-                      ? Icons.close_fullscreen_sharp
-                      : Icons.open_in_full_sharp,
-                  buttonText: isValveOpen ? 'Close' : 'Open',
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                    if (isValveOpen) {
-                      deviceNotifier.openPump(context, "VLVE OFF", valveTagging,
-                          selectedPlot['plot_id']);
-                    } else {
-                      deviceNotifier.openPump(context, "VLVE ON", valveTagging,
-                          selectedPlot['plot_id']);
-                    }
-                  });
+                context: context,
+                title: isValveOpen ? 'Close Valve' : 'Open Valve',
+                description:
+                    'Are you sure you want to ${isValveOpen ? 'close' : 'open'} the valve?',
+                icon: isValveOpen
+                    ? Icons.close_fullscreen_sharp
+                    : Icons.open_in_full_sharp,
+                buttonText: isValveOpen ? 'Close' : 'Open',
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  if (isValveOpen) {
+                    deviceNotifier.openPump(context, "VLVE OFF", valveTagging,
+                        selectedPlot['plot_id']);
+                  } else {
+                    deviceNotifier.openPump(context, "VLVE ON", valveTagging,
+                        selectedPlot['plot_id']);
+                  }
+                },
+              );
             },
           ),
           const SizedBox(width: 5),
@@ -75,7 +76,7 @@ class ToolsSectionWidget extends ConsumerWidget {
             buttonName: 'Change Soil',
             icon: Icons.layers_rounded,
             action: () {
-              analyzePlantPhase(context);
+              context.pushNamed('soil-assigning');
             },
           ),
           const SizedBox(width: 5),
@@ -106,12 +107,16 @@ class ToolsSectionWidget extends ConsumerWidget {
                   ],
                 ),
                 buttonText: 'Proceed',
-                onPressed: () {
+                onPressed: (bottomSheetContext) {
                   Navigator.of(context).pop();
                   userPlotNotifier.editPlotName(
                     context,
                     plotNameController.text,
                   );
+                  plotNameController.clear();
+                },
+                onCancelPressed: (bottomSheetContext) {
+                  Navigator.of(context).pop();
                   plotNameController.clear();
                 },
               );

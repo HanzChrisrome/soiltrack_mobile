@@ -6,6 +6,8 @@ import 'package:soiltrack_mobile/features/chat_bot/provider/chatbot_provider.dar
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/greeting_widget.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/soil_condition.dart';
+import 'package:soiltrack_mobile/features/home/presentation/widgets/home/user_plot_warnings.dart';
+import 'package:soiltrack_mobile/features/home/presentation/widgets/home/weather_suggestions.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/weather_widget.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/controller/user_plot_controller.dart';
@@ -31,9 +33,8 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.watch(soilDashboardProvider.notifier).generateDailyAnalysis();
       await ref.read(deviceProvider.notifier).checkDeviceStatus(context);
-      await ref.read(weatherProvider.notifier).fetchWeather();
-      await ref.read(soilDashboardProvider.notifier).generateDailyAnalysis();
     });
   }
 
@@ -42,7 +43,7 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
     final authState = ref.watch(authProvider);
     final userPlotState = ref.watch(soilDashboardProvider);
     final deviceState = ref.watch(deviceProvider);
-    final dashboardState = ref.read(soilDashboardProvider.notifier);
+    final weatherState = ref.watch(weatherProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -53,25 +54,27 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
             SingleChildScrollView(
               child: Padding(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 20),
+                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    GreetingWidget(userName: authState.userName!),
-                    const SizedBox(height: 10),
-                    SoilCondition(),
-                    // FilledCustomButton(
-                    //   buttonText: 'Testing',
-                    //   onPressed: () {
-                    //     ref
-                    //         .read(soilDashboardProvider.notifier)
-                    //         .generateDailyAnalysis();
-                    //   },
-                    // ),
+                    // GreetingWidget(userName: authState.userName!),
+                    // const SizedBox(height: 10),
+                    FilledCustomButton(
+                      buttonText: 'Testing',
+                      onPressed: () {
+                        context.pushNamed('polygon-maps');
+                      },
+                    ),
                     const WeatherWidget(),
+                    SoilCondition(),
+                    if (weatherState.weatherData != null) WeatherSuggestions(),
+                    if (userPlotState.nutrientWarnings.isNotEmpty)
+                      UserPlotWarnings(),
                     if (userPlotState.deviceWarnings.isNotEmpty ||
                         deviceState.isEspConnected == false)
                       CustomAccordion(
+                        initiallyExpanded: true,
                         backgroundColor: Theme.of(context).colorScheme.surface,
                         titleWidget: const TextGradient(
                             text: 'Device Warnings', fontSize: 20),
@@ -157,73 +160,6 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
                                   ],
                                 );
                               }),
-                          ],
-                        ),
-                      ),
-                    if (userPlotState.nutrientWarnings.isNotEmpty)
-                      CustomAccordion(
-                        backgroundColor: Theme.of(context).colorScheme.surface,
-                        titleWidget: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const TextGradient(
-                                text: 'Plot Warnings', fontSize: 20),
-                            TextRoundedEnclose(
-                                text: 'Farm Related Warnings',
-                                color: Colors.white,
-                                textColor: Colors.grey[500]!),
-                          ],
-                        ),
-                        content: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            ...userPlotState.nutrientWarnings
-                                .map((plotWarning) {
-                              final plotName = plotWarning['plot_name'];
-                              final warnings =
-                                  List<String>.from(plotWarning['warnings']);
-
-                              if (warnings.isEmpty) return const SizedBox();
-
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  if (plotName !=
-                                      userPlotState
-                                          .nutrientWarnings.first['plot_name'])
-                                    const DividerWidget(verticalHeight: 5),
-                                  Text(
-                                    '$plotName Warning',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge!
-                                        .copyWith(
-                                          fontWeight: FontWeight.w600,
-                                          height: 0.8,
-                                          color: const Color.fromARGB(
-                                              255, 141, 19, 10),
-                                        ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  ...warnings.map((warning) {
-                                    return Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                          vertical: 2),
-                                      child: Text(
-                                        warning,
-                                        style: Theme.of(context)
-                                            .textTheme
-                                            .bodySmall!
-                                            .copyWith(
-                                              color: const Color.fromARGB(
-                                                  255, 97, 97, 97),
-                                            ),
-                                      ),
-                                    );
-                                  }),
-                                ],
-                              );
-                            }),
                           ],
                         ),
                       ),

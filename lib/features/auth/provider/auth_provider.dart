@@ -261,7 +261,7 @@ class AuthNotifier extends Notifier<UserAuthState> {
 
     await sensorNotifier.fetchSensors();
     await soilDashboardNotifier.fetchUserPlots();
-    // await weatherNotifier.fetchWeather();
+    await weatherNotifier.fetchWeather();
     await chatbotNotifier.fetchConversations();
     await cropsNotifier.fetchAllCrops();
 

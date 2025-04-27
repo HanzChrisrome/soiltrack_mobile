@@ -1,8 +1,12 @@
+import 'package:dotted_border/dotted_border.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/soil_card.dart';
 import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/features/user_plots/helper/plant_analyzer.dart';
 import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
+import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
 class SoilAssigningScreen extends ConsumerWidget {
@@ -11,6 +15,7 @@ class SoilAssigningScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final cropsNotifier = ref.read(cropProvider.notifier);
+    final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -128,6 +133,48 @@ class SoilAssigningScreen extends ConsumerWidget {
                                   },
                                 );
                               },
+                            ),
+                            const SizedBox(height: 10),
+                            DottedBorder(
+                              borderType: BorderType.RRect,
+                              radius: Radius.circular(12),
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurface
+                                  .withOpacity(0.4),
+                              child: GestureDetector(
+                                onTap: () {
+                                  soilDashboardNotifier.askSoilType(context);
+                                },
+                                child: DynamicContainer(
+                                  margin: const EdgeInsets.all(0),
+                                  padding: const EdgeInsets.all(20),
+                                  backgroundColor: Colors.transparent,
+                                  borderColor: Colors.transparent,
+                                  width: double.infinity,
+                                  child: Column(
+                                    children: [
+                                      Icon(
+                                        Icons.camera_alt_outlined,
+                                        size: 50,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
+                                      ),
+                                      const SizedBox(height: 10),
+                                      Text(
+                                        'Take a photo of your soil',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          color: Theme.of(context)
+                                              .colorScheme
+                                              .secondary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
                             ),
                           ],
                         ),

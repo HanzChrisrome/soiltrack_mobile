@@ -197,6 +197,10 @@ class SoilDashboardHelper {
         : null;
   }
 
+  String getTodayString() {
+    return DateTime.now().toLocal().toIso8601String().split('T').first;
+  }
+
   DateTime getStartOfDay(DateTime date) {
     return DateTime(date.year, date.month, date.day);
   }

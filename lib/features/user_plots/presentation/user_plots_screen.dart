@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/controller/user_plot_controller.dart';
+import 'package:soiltrack_mobile/features/user_plots/helper/plant_analyzer.dart';
 import 'package:soiltrack_mobile/features/user_plots/helper/user_plots_helper.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_widgets/ai_display_section.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_widgets/ai_toggle.dart';
@@ -31,7 +32,7 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       final soilDashboard = ref.read(soilDashboardProvider.notifier);
       final soilDashboardState = ref.watch(soilDashboardProvider);
       if (soilDashboardState.irrigationLogs.isEmpty) {
@@ -76,80 +77,91 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          CustomScrollView(
-            slivers: [
-              _buildSilverAppBar(
-                  context, plotName, selectedPlot, userPlotNotifier),
-              SliverPadding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate([
-                    PlotCondition(
-                      plotName: plotName,
-                    ),
-                    ToolsSectionWidget(
-                      assignedSensor: assignedNutrientSensor,
-                      plotName: plotName,
-                      plotNameController: plotNameController,
-                    ),
-                    AiToggle(plotId: plotId),
-                    AiDisplaySection(
-                      plotId: plotId,
-                      hasSufficientDailyData: hasSufficientDailyData,
-                      hasSufficientWeeklyData: hasSufficientWeeklyData,
-                      aiAnalysisWeekly: aiAnalysisWeekly,
-                      isAiReady: aiAnalysisToday.isEmpty,
-                      onGenerateTap: userPlot.isGeneratingAi
-                          ? null
-                          : () {
-                              if (currentToggle == 'Daily') {
-                                if (dailyAiPrompt.isNotEmpty) {
-                                  userPlotNotifier.fetchAi(dailyAiPrompt,
-                                      cropType, soilType, plotName, plotId);
-                                }
-                              } else if (currentToggle == 'Weekly') {
-                                if (weeklyAiPrompt.isNotEmpty) {
-                                  userPlotNotifier.fetchWeeklyAnalysis(
-                                      weeklyAiPrompt,
-                                      cropType,
-                                      soilType,
-                                      plotName,
-                                      plotId);
-                                }
-                              }
-                            },
-                      onViewAnalysis: () => context.pushNamed(
-                        'ai-analysis-detail',
-                        pathParameters: currentToggle == 'Daily'
-                            ? {'analysisId': aiAnalysisToday['id'].toString()}
-                            : {'analysisId': aiAnalysisWeekly['id'].toString()},
+      body: RefreshIndicator(
+        color: Theme.of(context).colorScheme.onPrimary,
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        onRefresh: () async {
+          await userPlotNotifier.fetchUserPlotData();
+          await userPlotNotifier.fetchIrrigationLogs();
+        },
+        child: Stack(
+          children: [
+            CustomScrollView(
+              slivers: [
+                _buildSilverAppBar(
+                    context, plotName, selectedPlot, userPlotNotifier),
+                SliverPadding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      PlotCondition(
+                        plotName: plotName,
                       ),
-                    ),
-                    if (aiHistory.isNotEmpty)
-                      OutlineCustomButton(
-                        buttonText: 'View AI Analysis History',
-                        iconData: Icons.history,
-                        onPressed: () {
-                          context.pushNamed('ai-history');
-                        },
+                      ToolsSectionWidget(
+                        assignedSensor: assignedNutrientSensor,
+                        plotName: plotName,
+                        plotNameController: plotNameController,
                       ),
-                    NutrientProgressChart(),
-                    PlotWarnings(plotWarningsData: plotWarningsData),
-                    PlotSuggestions(plotSuggestions: plotSuggestions),
-                    PlotDetailsWidget(
-                        assignedSensor: assignedMoistureSensor,
-                        assignedNutrientSensor: assignedNutrientSensor,
-                        soilType: soilType),
-                    CropThresholdWidget(plotDetails: selectedPlot),
-                  ]),
+                      AiToggle(plotId: plotId),
+                      AiDisplaySection(
+                        plotId: plotId,
+                        hasSufficientDailyData: hasSufficientDailyData,
+                        hasSufficientWeeklyData: hasSufficientWeeklyData,
+                        aiAnalysisWeekly: aiAnalysisWeekly,
+                        isAiReady: aiAnalysisToday.isEmpty,
+                        onGenerateTap: userPlot.isGeneratingAi
+                            ? null
+                            : () {
+                                if (currentToggle == 'Daily') {
+                                  if (dailyAiPrompt.isNotEmpty) {
+                                    userPlotNotifier.fetchAi(dailyAiPrompt,
+                                        cropType, soilType, plotName, plotId);
+                                  }
+                                } else if (currentToggle == 'Weekly') {
+                                  if (weeklyAiPrompt.isNotEmpty) {
+                                    userPlotNotifier.fetchWeeklyAnalysis(
+                                        weeklyAiPrompt,
+                                        cropType,
+                                        soilType,
+                                        plotName,
+                                        plotId);
+                                  }
+                                }
+                              },
+                        onViewAnalysis: () => context.pushNamed(
+                          'ai-analysis-detail',
+                          pathParameters: currentToggle == 'Daily'
+                              ? {'analysisId': aiAnalysisToday['id'].toString()}
+                              : {
+                                  'analysisId':
+                                      aiAnalysisWeekly['id'].toString()
+                                },
+                        ),
+                      ),
+                      if (aiHistory.isNotEmpty)
+                        OutlineCustomButton(
+                          buttonText: 'View AI Analysis History',
+                          iconData: Icons.history,
+                          onPressed: () {
+                            context.pushNamed('ai-history');
+                          },
+                        ),
+                      NutrientProgressChart(),
+                      PlotWarnings(plotWarningsData: plotWarningsData),
+                      PlotSuggestions(plotSuggestions: plotSuggestions),
+                      PlotDetailsWidget(
+                          assignedSensor: assignedMoistureSensor,
+                          assignedNutrientSensor: assignedNutrientSensor,
+                          soilType: soilType),
+                      CropThresholdWidget(plotDetails: selectedPlot),
+                    ]),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

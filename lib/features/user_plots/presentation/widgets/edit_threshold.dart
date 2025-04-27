@@ -44,8 +44,8 @@ void editThreshold({
       ],
     ),
     buttonText: 'Proceed',
-    onPressed: () {
-      Navigator.of(context).pop();
+    onPressed: (bottomSheetContext) {
+      Navigator.of(bottomSheetContext).pop();
       int minThreshold = int.tryParse(minController.text) ?? currentMin;
       int maxThreshold = int.tryParse(maxController.text) ?? currentMax;
 

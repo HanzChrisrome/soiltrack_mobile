@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:shimmer/shimmer.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_widgets/ai_toggle.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_widgets/history_filter.dart';
@@ -92,13 +93,14 @@ class AiHistoryScreen extends ConsumerWidget {
 
   Widget _buildLoadingState(BuildContext context) {
     return SizedBox(
-      height: MediaQuery.of(context).size.height - 300,
+      height: MediaQuery.of(context).size.height - 450,
       child: Center(
         child: DynamicContainer(
+          width: double.infinity,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              LoadingAnimationWidget.threeArchedCircle(
+              LoadingAnimationWidget.horizontalRotatingDots(
                 color: Theme.of(context).colorScheme.onPrimary,
                 size: 30,
               ),
@@ -180,6 +182,7 @@ class AiHistoryScreen extends ConsumerWidget {
       height: MediaQuery.of(context).size.height - 300,
       child: Center(
         child: DynamicContainer(
+          width: double.infinity,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [

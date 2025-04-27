@@ -14,15 +14,18 @@ class SoilCondition extends ConsumerWidget {
     final condition = ref.watch(soilDashboardProvider).overallCondition;
     final lastRead = ref.watch(soilDashboardProvider).lastReadingTime;
     final isGenerating = ref.watch(soilDashboardProvider).isGeneratingAi;
-
     final summaryAnalysis = ref.watch(soilDashboardProvider).aiSummaryHistory;
 
     final headline = summaryAnalysis.isNotEmpty
         ? summaryAnalysis.first['summary_analysis']['headline'] as String?
-        : 'No headline available';
+        : null;
     final shortSummary = summaryAnalysis.isNotEmpty
         ? summaryAnalysis.first['summary_analysis']['summary'] as String?
-        : 'No summary available';
+        : 'This summary is system generated and may not be accurate. The data for your plot might be incomplete for our analysis.';
+    final summaryAnalysisDate = summaryAnalysis.isNotEmpty
+        ? DateFormat('MMM dd, yyyy')
+            .format(DateTime.parse(summaryAnalysis.first['analysis_date']))
+        : 'No Analysis Available';
 
     if (isGenerating)
       return Container(
@@ -40,6 +43,9 @@ class SoilCondition extends ConsumerWidget {
       );
 
     return DynamicContainer(
+      backgroundImage: DecorationImage(
+          image: AssetImage('assets/background/container_background.png'),
+          fit: BoxFit.cover),
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),
       backgroundColor: Theme.of(context).colorScheme.onPrimary,
       child: Column(
@@ -56,9 +62,7 @@ class SoilCondition extends ConsumerWidget {
                 ),
               ),
               Text(
-                lastRead != null
-                    ? 'As of ${DateFormat('MMMM d, yyyy').format(lastRead)}'
-                    : 'No recent data', // Handle null case
+                summaryAnalysisDate, // Handle null case
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSecondary,
                   fontSize: 14,
@@ -70,7 +74,9 @@ class SoilCondition extends ConsumerWidget {
           const SizedBox(height: 15),
           RichText(
             text: TextSpan(
-              text: '$headline.',
+              text: (headline != null && headline.isNotEmpty)
+                  ? headline
+                  : 'Your plots are $condition',
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
                     color: Theme.of(context).colorScheme.primary,
                     height: 1.1,

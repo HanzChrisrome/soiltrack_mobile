@@ -1,4 +1,5 @@
 import 'package:intl/intl.dart';
+import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/user_plots/helper/formatter_helper.dart';
 
 class UserPlotsHelper {
@@ -88,24 +89,41 @@ class UserPlotsHelper {
       required List<Map<String, dynamic>> rawMoistureData,
       required List<Map<String, dynamic>> rawNutrientData}) {
     final now = DateTime.now();
-    final fiveDaysAgo = now.subtract(const Duration(days: 3));
+    final threeDaysAgo = now.subtract(const Duration(days: 3));
 
     final moistureForDailyAnalysis = _filterDataByDate(
       rawMoistureData,
       selectedPlotId,
-      DateTime(fiveDaysAgo.year, fiveDaysAgo.month, fiveDaysAgo.day),
+      DateTime(threeDaysAgo.year, threeDaysAgo.month, threeDaysAgo.day),
       DateTime(now.year, now.month, now.day, 23, 59, 59),
     );
 
     final nutrientsForDailyAnalysis = _filterDataByDate(
       rawNutrientData,
       selectedPlotId,
-      DateTime(fiveDaysAgo.year, fiveDaysAgo.month, fiveDaysAgo.day),
+      DateTime(threeDaysAgo.year, threeDaysAgo.month, threeDaysAgo.day),
       DateTime(now.year, now.month, now.day, 23, 59, 59),
     );
 
     if (moistureForDailyAnalysis.isEmpty || nutrientsForDailyAnalysis.isEmpty) {
       return null;
+    }
+
+    bool hasDataForEachDay(List<Map<String, dynamic>> data) {
+      for (int i = 1; i <= 3; i++) {
+        final dateToCheck = now.subtract(Duration(days: i));
+        final hasDataForDay = data.any((entry) {
+          final readTime = DateTime.tryParse(entry['read_time'] ?? '');
+          return readTime != null && isSameDay(readTime, dateToCheck);
+        });
+        if (!hasDataForDay) return false;
+      }
+      return true;
+    }
+
+    if (!hasDataForEachDay(moistureForDailyAnalysis) ||
+        !hasDataForEachDay(nutrientsForDailyAnalysis)) {
+      return null; // Skip this plot if it doesn't have valid data.
     }
 
     return {

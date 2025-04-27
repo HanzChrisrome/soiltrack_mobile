@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
@@ -12,6 +13,12 @@ import 'package:soiltrack_mobile/features/home/service/soil_dashboard_service.da
 import 'package:soiltrack_mobile/features/home/provider/hardware_provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/controller/user_plot_controller.dart';
 import 'package:soiltrack_mobile/features/user_plots/helper/user_plots_helper.dart';
+import 'package:soiltrack_mobile/provider/weather_provider.dart';
+import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
+import 'package:soiltrack_mobile/widgets/customizable_bottom_sheet.dart';
+import 'package:soiltrack_mobile/widgets/dynamic_bottom_sheet.dart';
+import 'package:soiltrack_mobile/widgets/filled_button.dart';
+import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
 class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
   final SoilDashboardService soilDashboardService = SoilDashboardService();
@@ -72,9 +79,9 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         );
       }
 
-      await fetchUserAnalytics();
       await fetchLatestData(plotIds);
       await filterPlotData(rawMoistureData, rawNutrientData);
+      await fetchUserAnalytics();
     } catch (e) {
       NotifierHelper.logError(e);
     } finally {
@@ -391,9 +398,12 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     final plotHelper = UserPlotsHelper();
     final rawMoistureData = state.rawPlotMoistureData;
     final rawNutrientData = state.rawPlotNutrientData;
-    final userId = ref.watch(authProvider).userId;
+    final weatherReport =
+        ref.read(weatherProvider).weatherReport ?? 'No report';
+    final userId = ref.read(authProvider).userId;
 
     try {
+      NotifierHelper.logMessage('Generating daily AI analysis...');
       final today = DateTime.now().toLocal().toIso8601String().split('T').first;
 
       final todayAiAnalysis = state.aiAnalysis.firstWhere(
@@ -403,6 +413,8 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
             state.userPlots.any((plot) => plot['plot_id'] == entry['plot_id']),
         orElse: () => {},
       );
+
+      NotifierHelper.logMessage('Today\'s AI analysis: $todayAiAnalysis');
 
       if (todayAiAnalysis.isNotEmpty) {
         NotifierHelper.logMessage('AI analysis already exists for today.');
@@ -416,6 +428,7 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         final soilType = plot['soil_type'] ?? 'No soil type';
         final plotName = plot['plot_name'] ?? 'No plot name';
 
+        // Get the filtered data for this plot
         final filtered = plotHelper.getFilteredAiReadyData(
             selectedPlotId: plotId,
             rawMoistureData: rawMoistureData,
@@ -430,8 +443,10 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
             cropType,
             soilType,
             plotName,
+            weatherReport,
           );
 
+          //Continue with AI analysis
           final aiResponse = await aiService.getAiAnalysis(forPrompting);
           final aiRaw = aiResponse['choices'][0]['message']['content'];
           final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
@@ -445,6 +460,9 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
           };
 
           await supabase.from('ai_analysis').insert(newAnalysis);
+        } else {
+          NotifierHelper.logMessage(
+              'No valid moisture or nutrient data for plot $plotId');
         }
       }
 
@@ -486,16 +504,14 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
 
       if (forSummary != null) {
         final aiSummaryPrompt = plotHelper.getFormattedSummaryPrompt(
-            data: forSummary, plotMetadata: plotMetadata);
-
-        NotifierHelper.logMessage('AI summary prompt: $aiSummaryPrompt');
+          data: forSummary,
+          plotMetadata: plotMetadata,
+        );
 
         final aiSummaryPromptFinal =
-            aiService.generateAISummaryPrompt(aiSummaryPrompt);
+            aiService.generateAISummaryPrompt(aiSummaryPrompt, weatherReport);
 
-        final aiAnalysis =
-            await aiService.getAiAnalysis(aiSummaryPromptFinal, maxTokens: 900);
-
+        final aiAnalysis = await aiService.getAiAnalysis(aiSummaryPromptFinal);
         final aiSummaryRaw = aiAnalysis['choices'][0]['message']['content'];
         final parsedSummary =
             soilDashboardHelper.extractCleanAIJson(aiSummaryRaw);
@@ -506,6 +522,8 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
           "summary_analysis": parsedSummary,
           "summary_type": 'Daily',
         });
+
+        fetchUserAnalytics();
       }
     } catch (e) {
       NotifierHelper.logError(e);
@@ -517,25 +535,25 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
   Future<void> fetchAi(String rawData, String cropType, String soilType,
       String plotName, int plotId) async {
     try {
-      NotifierHelper.logMessage('Fetching AI analysis...');
-      state = state.copyWith(isGeneratingAi: true);
-      final prompt = aiService.generateAIAnalysisPrompt(
-          rawData, cropType, soilType, plotName);
+      // NotifierHelper.logMessage('Fetching AI analysis...');
+      // state = state.copyWith(isGeneratingAi: true);
+      // final prompt = aiService.generateAIAnalysisPrompt(
+      //     rawData, cropType, soilType, plotName);
 
-      final aiResponse = await aiService.getAiAnalysis(prompt);
-      final aiRaw = aiResponse['choices'][0]['message']['content'];
-      final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
-      final today = DateTime.now().toIso8601String().split('T').first;
+      // final aiResponse = await aiService.getAiAnalysis(prompt);
+      // final aiRaw = aiResponse['choices'][0]['message']['content'];
+      // final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
+      // final today = DateTime.now().toIso8601String().split('T').first;
 
-      final newAnalysis = {
-        "plot_id": plotId,
-        "analysis_date": today,
-        "analysis": parsedJson,
-        "analysis_type": 'Daily',
-      };
+      // final newAnalysis = {
+      //   "plot_id": plotId,
+      //   "analysis_date": today,
+      //   "analysis": parsedJson,
+      //   "analysis_type": 'Daily',
+      // };
 
-      await supabase.from('ai_analysis').insert(newAnalysis);
-      await fetchUserAnalytics();
+      // await supabase.from('ai_analysis').insert(newAnalysis);
+      // await fetchUserAnalytics();
     } catch (e) {
       NotifierHelper.logError(e);
     } finally {
@@ -568,6 +586,89 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       NotifierHelper.logError(e);
     } finally {
       state = state.copyWith(isGeneratingAi: false);
+    }
+  }
+
+  Future<void> askSoilType(BuildContext context) async {
+    try {
+      final cropNotifier = ref.read(cropProvider.notifier);
+      final picker = ImagePicker();
+      final XFile? image = await picker.pickImage(source: ImageSource.camera);
+
+      if (image == null) {
+        NotifierHelper.logMessage('No image selected');
+        return;
+      }
+
+      NotifierHelper.showLoadingToast(context, 'Analyzing image.');
+      final soilResult = await aiService.analyzeSoil(context, image);
+      final parsedResult = soilDashboardHelper.extractCleanAIJson(soilResult);
+
+      final isAboutSoil =
+          (parsedResult['is_about_soil']?.toLowerCase() == 'yes');
+
+      NotifierHelper.closeToast(context);
+      showCustomizableBottomSheet(
+        context: context,
+        enableDrag: false,
+        isDismissible: false,
+        centerContent: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            isAboutSoil
+                ? Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextGradient(
+                        text: 'Confirm and assign your soil type.',
+                        fontSize: 35,
+                        heightSpacing: 1,
+                        textAlign: TextAlign.start,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Your soil type is ${parsedResult['soil_type']}',
+                        style: Theme.of(context).textTheme.bodyMedium!.copyWith(
+                              fontSize: 20,
+                            ),
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'Explanation: ${parsedResult['explanation']}',
+                      ),
+                    ],
+                  )
+                : Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextGradient(
+                        text: 'Error in analyzing soil type.',
+                        fontSize: 35,
+                        heightSpacing: 1,
+                        textAlign: TextAlign.start,
+                      ),
+                      const SizedBox(height: 10),
+                      Text(
+                        'The image you provided does not contain soil, and we cannot analyze it as soil type.',
+                      ),
+                    ],
+                  ),
+          ],
+        ),
+        showActionButton: isAboutSoil ? true : false,
+        buttonText: 'Assign',
+        onCancelPressed: (bottomSheetContext) {
+          Navigator.of(bottomSheetContext).pop();
+        },
+        onPressed: (bottomSheetContext) {
+          Navigator.of(bottomSheetContext).pop();
+          cropNotifier.setSoilType(parsedResult['soil_type'], context);
+        },
+      );
+    } catch (e) {
+      NotifierHelper.logError(e);
     }
   }
 
