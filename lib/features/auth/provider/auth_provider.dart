@@ -48,7 +48,6 @@ class AuthNotifier extends Notifier<UserAuthState> {
 
       final macAddress =
           userIotDevice.isNotEmpty ? userIotDevice.first['mac_address'] : '';
-      NotifierHelper.logMessage('User Device: $macAddress');
 
       state = state.copyWith(
           userId: userId,
@@ -83,12 +82,9 @@ class AuthNotifier extends Notifier<UserAuthState> {
 
       if (response.user != null) {
         NotifierHelper.showLoadingToast(context, 'Fetching your data');
-        await fetchUserRecord(response.user!.id);
-        NotifierHelper.showLoadingToast(context, 'Checking your device');
+        await initializeAuth();
 
-        if (state.macAddress != null && state.macAddress!.isNotEmpty) {
-          await fetchRelatedData(true);
-        } else {
+        if (state.macAddress == null && state.macAddress!.isEmpty) {
           NotifierHelper.showErrorToast(
               context, 'No device found. Please register a device.');
           state = state.copyWith(isAuthenticated: false);
@@ -253,14 +249,11 @@ class AuthNotifier extends Notifier<UserAuthState> {
 
   Future<void> fetchRelatedData(bool isInitialLoad) async {
     final sensorNotifier = ref.read(sensorsProvider.notifier);
-    final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
-    final deviceNotifier = ref.read(deviceProvider.notifier);
     final weatherNotifier = ref.read(weatherProvider.notifier);
     final cropsNotifier = ref.read(cropProvider.notifier);
     final chatbotNotifier = ref.read(chatbotProvider.notifier);
 
     await sensorNotifier.fetchSensors();
-    await soilDashboardNotifier.fetchUserPlots();
     await weatherNotifier.fetchWeather();
     await chatbotNotifier.fetchConversations();
     await cropsNotifier.fetchAllCrops();

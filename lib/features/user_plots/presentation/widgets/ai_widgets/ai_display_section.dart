@@ -10,7 +10,7 @@ class AiDisplaySection extends ConsumerWidget {
   final bool hasSufficientDailyData;
   final bool hasSufficientWeeklyData;
   final Map<dynamic, dynamic> aiAnalysisWeekly;
-  final bool isAiReady;
+  final Map<dynamic, dynamic> aiAnalysisDaily;
   final VoidCallback? onGenerateTap;
   final VoidCallback? onViewAnalysis;
 
@@ -20,7 +20,7 @@ class AiDisplaySection extends ConsumerWidget {
     required this.hasSufficientDailyData,
     required this.hasSufficientWeeklyData,
     required this.aiAnalysisWeekly,
-    required this.isAiReady,
+    required this.aiAnalysisDaily,
     this.onGenerateTap,
     this.onViewAnalysis,
   }) : super(key: key);
@@ -32,14 +32,9 @@ class AiDisplaySection extends ConsumerWidget {
 
     if (currentToggle == 'Weekly') {
       if (aiAnalysisWeekly.isEmpty) {
-        if (hasSufficientWeeklyData) {
-          return AiReadyCard(
-            onTap: onGenerateTap ?? () {},
-            currentToggle: currentToggle,
-          );
-        } else {
-          return const AiUnreadyCard();
-        }
+        return AiUnreadyCard(
+          currentToggle: currentToggle,
+        );
       } else {
         return AiGeneratedCard(
           onTap: onViewAnalysis ?? () {},
@@ -47,15 +42,8 @@ class AiDisplaySection extends ConsumerWidget {
         );
       }
     } else if (currentToggle == 'Daily') {
-      if (isAiReady) {
-        if (hasSufficientDailyData) {
-          return AiReadyCard(
-            onTap: onGenerateTap ?? () {},
-            currentToggle: currentToggle,
-          );
-        } else {
-          return const AiUnreadyCard();
-        }
+      if (aiAnalysisDaily.isEmpty) {
+        return AiUnreadyCard(currentToggle: currentToggle);
       } else {
         return AiGeneratedCard(
           onTap: onViewAnalysis ?? () {},

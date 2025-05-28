@@ -136,24 +136,24 @@ class RegisteredPlots extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 5),
-          if (warnings > 0)
-            Row(
-              children: [
-                const Icon(
-                  Icons.warning_rounded,
-                  color: Color.fromARGB(255, 160, 27, 17),
-                ),
-                const SizedBox(width: 5),
-                Text(
-                  'You have $warnings warnings',
-                  style: const TextStyle(
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                    color: Color.fromARGB(255, 160, 27, 17),
-                  ),
-                ),
-              ],
-            ),
+          // if (warnings > 0)
+          //   Row(
+          //     children: [
+          //       const Icon(
+          //         Icons.warning_rounded,
+          //         color: Color.fromARGB(255, 160, 27, 17),
+          //       ),
+          //       const SizedBox(width: 5),
+          //       Text(
+          //         'You have $warnings warnings',
+          //         style: const TextStyle(
+          //           fontSize: 13,
+          //           fontWeight: FontWeight.w500,
+          //           color: Color.fromARGB(255, 160, 27, 17),
+          //         ),
+          //       ),
+          //     ],
+          //   ),
         ],
       ),
     );

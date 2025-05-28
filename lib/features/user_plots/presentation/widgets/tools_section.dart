@@ -122,6 +122,15 @@ class ToolsSectionWidget extends ConsumerWidget {
               );
             },
           ),
+          const SizedBox(width: 5),
+          ToolsButton(
+            buttonName: 'Add Polygon',
+            icon: Icons.add_location_alt_rounded,
+            action: () {
+              userPlotNotifier.setEditingUserPlot(true);
+              context.pushNamed('polygon-maps');
+            },
+          ),
         ],
       ),
     );

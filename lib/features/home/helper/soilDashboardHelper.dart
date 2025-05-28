@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:latlong2/latlong.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 
 class SoilDashboardHelper {
@@ -225,5 +226,24 @@ class SoilDashboardHelper {
     } catch (e) {
       throw Exception('Failed to parse JSON: $e');
     }
+  }
+
+  List<Map<String, double>> polygonToSimpleJson(List<LatLng> points) {
+    return points.map((p) => {'lat': p.latitude, 'lng': p.longitude}).toList();
+  }
+
+  LatLng calculateCentroid(List<LatLng> points) {
+    double lat = 0;
+    double lng = 0;
+
+    for (var point in points) {
+      lat += point.latitude;
+      lng += point.longitude;
+    }
+
+    lat /= points.length;
+    lng /= points.length;
+
+    return LatLng(lat, lng);
   }
 }

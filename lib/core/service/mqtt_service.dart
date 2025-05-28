@@ -34,7 +34,6 @@ class MQTTService {
         .startClean();
 
     try {
-      NotifierHelper.logMessage('🔌 Connecting to MQTT Broker...');
       await _client.connect();
 
       _client.updates!
@@ -62,7 +61,6 @@ class MQTTService {
       _topicListeners[topic] = StreamController<String>.broadcast();
     }
     _client.subscribe(topic, MqttQos.atMostOnce);
-    print('📡 Subscribed to $topic');
   }
 
   void publish(String topic, String message) {

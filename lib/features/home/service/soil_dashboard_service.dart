@@ -1,9 +1,12 @@
 // ignore_for_file: avoid_print
 
+import 'dart:convert';
+
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
+import 'package:http/http.dart' as http;
 
 class SoilDashboardService {
   Future<List<Map<String, dynamic>>> userPlots(String userId) async {
@@ -21,6 +24,7 @@ class SoilDashboardService {
         soil_type,
         date_added,
         valve_tagging,
+        polygons,
         user_crops (
             crop_name,
             category,
@@ -60,8 +64,6 @@ class SoilDashboardService {
           .gte('time_started', todayStart)
           .lt('time_started', todayEnd);
 
-      print('Irrigation Logs: $irrigationLogs');
-
       final updatedPlots = userPlots.map((plot) {
         final plotId = plot['plot_id'];
 
@@ -89,9 +91,6 @@ class SoilDashboardService {
       final DateTime adjustedEndDate =
           endDate.add(Duration(days: 1)).subtract(Duration(seconds: 1));
       final String formattedEndDate = formatter.format(adjustedEndDate.toUtc());
-
-      NotifierHelper.logMessage('Start Date: $formattedStartDate');
-      NotifierHelper.logMessage('End Date: $formattedEndDate');
 
       final userPlotsData = await supabase
           .from('moisture_readings')
@@ -147,12 +146,22 @@ class SoilDashboardService {
   Future<List<Map<String, dynamic>>> fetchLatestMoistureReadings(
       List<String> plotIds) async {
     try {
-      final userPlotsData = await supabase.from('moisture_readings').select('''
+      final now = DateTime.now();
+      final todayStart = DateTime(now.year, now.month, now.day);
+      final todayEnd = todayStart.add(Duration(days: 1));
+
+      final userPlotsData = await supabase
+          .from('moisture_readings')
+          .select('''
           plot_id,
           sensor_id,
           soil_moisture,
           read_time
-        ''').inFilter('plot_id', plotIds).order('read_time', ascending: false);
+        ''')
+          .inFilter('plot_id', plotIds)
+          .gte('read_time', todayStart.toIso8601String())
+          .lt('read_time', todayEnd.toIso8601String())
+          .order('read_time', ascending: false);
 
       final Map<String, Map<String, dynamic>> latestReadings = {};
       for (var reading in userPlotsData) {
@@ -164,7 +173,7 @@ class SoilDashboardService {
 
       return latestReadings.values.toList();
     } catch (e) {
-      NotifierHelper.logError('Error fetching latest moisture readings: $e');
+      NotifierHelper.logError('Error fetching today\'s moisture readings: $e');
       rethrow;
     }
   }
@@ -172,14 +181,24 @@ class SoilDashboardService {
   Future<List<Map<String, dynamic>>> fetchLatestNutrientsReadings(
       List<String> plotIds) async {
     try {
-      final userPlotsData = await supabase.from('nutrient_readings').select('''
+      final now = DateTime.now();
+      final todayStart = DateTime(now.year, now.month, now.day);
+      final todayEnd = todayStart.add(Duration(days: 1));
+
+      final userPlotsData = await supabase
+          .from('nutrient_readings')
+          .select('''
           plot_id,
           sensor_id,
           read_time,
           readed_nitrogen,
           readed_phosphorus,
           readed_potassium
-        ''').inFilter('plot_id', plotIds).order('read_time', ascending: false);
+        ''')
+          .inFilter('plot_id', plotIds)
+          .gte('read_time', todayStart.toIso8601String())
+          .lt('read_time', todayEnd.toIso8601String())
+          .order('read_time', ascending: false);
 
       final Map<String, Map<String, dynamic>> latestReadings = {};
 
@@ -190,7 +209,6 @@ class SoilDashboardService {
         }
       }
 
-      NotifierHelper.logMessage('Latest Nutrient Readings: $latestReadings');
       return latestReadings.values.toList();
     } catch (e) {
       NotifierHelper.logError('Error fetching latest moisture readings: $e');
@@ -463,5 +481,51 @@ class SoilDashboardService {
   Future<String> getMacAddress() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('mac_address') ?? '';
+  }
+
+  Future<String> reverseGeocode(double lat, double lon) async {
+    final url =
+        'https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon';
+
+    NotifierHelper.logMessage('Lat: $lat, Lon: $lon');
+
+    final response = await http.get(Uri.parse(url));
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      NotifierHelper.logMessage('Reverse geocode response: $data');
+
+      final address = data['address'] ?? {};
+
+      final road = address['road'] ?? '';
+      final quarter = address['quarter'] ?? '';
+      final village = address['village'] ?? '';
+      final neighbourhood = address['neighbourhood'] ?? '';
+      final town = address['town'] ?? '';
+      final city = address['city'] ?? '';
+      final municipality = address['municipality'] ?? '';
+      final state = address['state'] ?? '';
+
+      final resolvedCity = city.isNotEmpty
+          ? city
+          : town.isNotEmpty
+              ? town
+              : municipality;
+
+      final locationParts = [
+        road,
+        neighbourhood,
+        quarter,
+        village,
+        resolvedCity,
+        state
+      ]
+          .where((part) => part != null && part.toString().trim().isNotEmpty)
+          .toList();
+
+      return locationParts.join(', ');
+    } else {
+      throw Exception('Failed to reverse geocode: ${response.body}');
+    }
   }
 }

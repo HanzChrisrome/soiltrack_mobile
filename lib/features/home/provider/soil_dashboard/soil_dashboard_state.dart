@@ -36,6 +36,7 @@ class SoilDashboardState with _$SoilDashboardState {
     @Default("1D") String selectedTimeRangeFilter,
     @Default("1D") String selectedTimeRangeFilterGeneral,
     @Default("1W") String selectedHistoryFilter,
+    @Default("en") String selectedLanguage,
     String? error,
     String? userPlotDataError,
     String? overallCondition,

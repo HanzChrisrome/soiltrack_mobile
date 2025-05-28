@@ -4,12 +4,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_links/app_links.dart';
 
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
+import 'package:soiltrack_mobile/provider/shared_preferences.dart';
 import 'package:soiltrack_mobile/theme/theme.dart';
 import 'package:soiltrack_mobile/core/router/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SupabaseConfig().initialize();
+  await LanguagePreferences.init();
   runApp(
     const ProviderScope(
       child: MyApp(),

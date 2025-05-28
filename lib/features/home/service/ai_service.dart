@@ -10,8 +10,14 @@ import 'package:image_picker/image_picker.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 
 class AiService {
-  String generateAIAnalysisPrompt(String dataToAnalyze, String cropType,
-      String soilType, String plotName, String weatherForecast) {
+  String generateAIAnalysisPrompt(
+    String dataToAnalyze,
+    String cropType,
+    String soilType,
+    String plotName,
+    String weatherForecast, {
+    String language = 'en',
+  }) {
     final dateRegex = RegExp(r'\d{4}-\d{2}-\d{2}');
     final allMatches =
         dateRegex.allMatches(dataToAnalyze).map((m) => m.group(0)!);
@@ -22,8 +28,14 @@ class AiService {
     final thirdDate = uniqueDates.length > 2 ? uniqueDates[2] : "2025-04-06";
     final latestDate = uniqueDates.isNotEmpty ? uniqueDates.last : "2025-04-06";
 
+    final langInstruction = language == 'tl'
+        ? "Translate all your output into Filipino (Tagalog) please. Make it farmer-friendly, and conversational but still accurate."
+        : "";
+
     return '''
     You are a helpful farm assistant working for a tool called **SoilTrack**. Each day, you help farmers understand what their soil and crop data means and what they need to do **today**.
+
+    $langInstruction
 
     Your goal is to generate a clear, farmer-friendly daily action plan based on the latest data.
 
@@ -36,10 +48,12 @@ class AiService {
     - Use dates from the data provided (latest date is "$latestDate").
     - All values must be in valid JSON format. Do not leave out any fields.
     - Provide at least 2 sentences of context or analysis for each section (findings, predictions, recommendations).
+    - Make the detailed analysis easy to understand for farmers, so avoid using complex terms or jargon.
     - In today's focus, there can be multiple points or text.
     - The data for the NPK is in ppm, and the moisture is in percentage.
     - In the headline section, summarize the most important findings in a few words.
     - In the status, provide only if it is **good**, **bad**, **moderate**, or **excellent**.
+    - If the drop in moisture or any nutrients, does not exceed 5% or 10ppm, reassure the farmer and compliment the farmer that it is still within the acceptable range and does not need to be worried about it.
     - Before saying an acceptable range for the crop planted, please check first the general recommendations or guideline for the NPK nutrient concentrations for the crop planted in the stated soil type.
     - When recommending fertilizers, **only suggest fertilizers for nutrients that are deficient or imbalanced** based on the analysis. For each nutrient (N, P, K), if it is within the acceptable range or not needed, do not recommend fertilizers for it and skip the fertilizer recommendation part.
     - **If nutrient levels are too high, recommend corrective actions, such as irrigation or monitoring for toxicity.** Be sure to reassure the farmer if the levels are still within an acceptable range.
@@ -68,11 +82,12 @@ class AiService {
             "$secondDate": ..., 
             "$thirdDate": ..., 
             "trend": "... "
+            "condition": "text" // Very low, low, Moderately low, Moderately high, High, Very High
           },
           "nutrient_trends": {
-            "N": { "$firstDate": ..., "$secondDate": ..., "$thirdDate": ..., "trend": "..." },
-            "P": { "$firstDate": ..., "$secondDate": ..., "$thirdDate": ..., "trend": "..." },
-            "K": { "$firstDate": ..., "$secondDate": ..., "$thirdDate": ..., "trend": "..." }
+            "N": { "$firstDate": ..., "$secondDate": ..., "$thirdDate": ..., "trend": "...", "condition": "text" // Very low, low, Moderately low, Moderately high, High, Very High },
+            "P": { "$firstDate": ..., "$secondDate": ..., "$thirdDate": ..., "trend": "...", "condition": "text" // Very low, low, Moderately low, Moderately high, High, Very High },
+            "K": { "$firstDate": ..., "$secondDate": ..., "$thirdDate": ..., "trend": "...", "condition": "text" // Very low, low, Moderately low, Moderately high, High, Very High }
           }
         },
         "predictive_insights": {
@@ -113,7 +128,13 @@ class AiService {
   }
 
   String generateWeeklyAIAnalysisPrompt(
-      String dataToAnalyze, String cropType, String soilType, String plotName) {
+    String dataToAnalyze,
+    String cropType,
+    String soilType,
+    String plotName,
+    String weatherForecast, {
+    String language = 'en',
+  }) {
     final dateRegex = RegExp(r'\d{4}-\d{2}-\d{2}');
     final allMatches =
         dateRegex.allMatches(dataToAnalyze).map((m) => m.group(0)!);
@@ -125,17 +146,32 @@ class AiService {
 
     final formattedDateList = recentDates.map((d) => '"$d": ...').join(", ");
 
+    final langInstruction = language == 'tl'
+        ? "Translate all your output into Filipino (Tagalog) please. Make it farmer-friendly, and conversational but still accurate."
+        : "";
+
     return '''
     You are an agricultural analysis assistant for a system called **SoilTrack**. Your task is to analyze the provided weekly soil and crop data and respond strictly in the **exact JSON format** defined below.
 
-    ⚠️ **IMPORTANT**:
-    - DO NOT add any text before or after the JSON.
-    - DO NOT change any keys or structure.
-    - Ensure all fields are filled appropriately (no missing keys).
+    $langInstruction
+
+    Your goal is to generate a clear, farmer-friendly daily action plan based on the latest data.
+
+    ⚠️ VERY IMPORTANT:
+    - Focus on **Weekly actionable tasks** (what should the farmer do **for the specific week**).
+    - Provide a **detailed weekly analysis** of findings, predictions, and recommendations.
+    - DO NOT recommend external tests, expert advice, or tools.
+    - DO NOT include any text outside the JSON.
     - Use "text" for string values and numbers (e.g., 42.5, 7) for numeric ones.
-    - Dates must match the format used in the data (e.g., those listed below).
-    - Ensure the response is **valid JSON**. No explanations or comments.
+    - All values must be in valid JSON format. Do not leave out any fields.
+    - Make the detailed analysis easy to understand for farmers, so avoid using complex terms or jargon.
+    - In today's focus, there can be multiple points or text.
     - The data for the NPK is in ppm, and the moisture is in percentage.
+    - In the headline section, summarize the most important findings in a few words.
+    - If the drop in moisture or any nutrients, does not exceed 5% or 10ppm, reassure the farmer and compliment the farmer that it is still within the acceptable range and does not need to be worried about it.
+    - Before saying an acceptable range for the crop planted, please check first the general recommendations or guideline for the NPK nutrient concentrations for the crop planted in the stated soil type.
+    - When recommending fertilizers, **only suggest fertilizers for nutrients that are deficient or imbalanced** based on the analysis. For each nutrient (N, P, K), if it is within the acceptable range or not needed, do not recommend fertilizers for it and skip the fertilizer recommendation part.
+    - **If nutrient levels are too high, recommend corrective actions, such as irrigation or monitoring for toxicity.** Be sure to reassure the farmer if the levels are still within an acceptable range.
 
     🧠 **TREND ANALYSIS INSTRUCTIONS**:
     - For each `"trend"` field under `"moisture_trends"` and `"nutrient_trends"`:
@@ -148,51 +184,63 @@ class AiService {
     
     {
       "AI_Analysis": {
+        "date_range": "text",
+        "headline": "text",
+        "short_summary": "text",  // A brief summary of the weekly analysis
+        "weekly_focus": [
+          "text",  // Task 1
+          "text",  // Task 2
+          "... more tasks if needed"
+        ],
+        "status": "text",  // e.g., good, bad, moderate, excellent
         "summary": {
-          "date_range": "text",
-          "findings": "text",
-          "predictions": "text",
-          "recommendations": "text"
+          "findings": "text",  // In-depth analysis of current soil and crop conditions
+          "predictions": "text",  // Predictions based on trends (e.g., moisture, nutrients, weather impact)
+          "recommendations": "text"  // Concrete advice based on the analysis
         },
         "summary_of_findings": {
           "moisture_trends": {
             $formattedDateList,
             "trend": "text"
+            "condition": "text" // Very low, low, Moderately low, Moderately high, High, Very High
           },
           "nutrient_trends": {
             "N": {
               $formattedDateList,
               "trend": "text"
+              "condition": "text" // Very low, low, Moderately low, Moderately high, High, Very High
             },
             "P": {
               $formattedDateList,
               "trend": "text"
+              "condition": "text" // Very low, low, Moderately low, Moderately high, High, Very High
             },
             "K": {
               $formattedDateList,
               "trend": "text"
+              "condition": "text" // Very low, low, Moderately low, Moderately high, High, Very High
             }
           }
         },
         "predictive_insights": {
-          "moisture": "text",
-          "nutrients": "text"
+          "moisture": "text",  // Predictive analysis of moisture levels
+          "nutrients": "text"  // Predictive insights on nutrient levels (N, P, K)
         },
         "recommended_fertilizers": {
-          "N": { "type": "text", "application_instructions": "text" },
-          "P": { "type": "text", "application_instructions": "text" },
-          "K": { "type": "text", "application_instructions": "text" }
-        },
-        "irrigation_plan": {
-          "recommended_schedule": "text",
-          "evaluation_methods": "text"
+          "type_of_nutrient": "text": { 
+            "type": "text", 
+            "application_instructions": "text", 
+            "where_to_buy": "text" 
+          },
+          "... more if needed"
         },
         "warnings": {
-          "nutrient_imbalances": "text",
-          "drought_risks": "text"
+          "nutrient_imbalances": "text",  // Nutrient imbalances that need addressing
+          "drought_risks": "text"  // Drought risk based on weather forecast
         },
         "final_actionable_recommendations": [
-          "text", "text", "text"
+          "text",  // Concrete step to take today
+          "... more if needed"
         ]
       }
     }
@@ -204,6 +252,10 @@ class AiService {
     Plot Name: $plotName
     Crop Type: $cropType
     Soil Type: $soilType
+    Crop growth stage: Vegetative
+
+    Weather forecast context:
+    $weatherForecast
     ''';
   }
 
@@ -219,8 +271,20 @@ class AiService {
   - List **as many warnings, recommendations, and suggestions as needed** (1–5+).
   - **Do not invent** warnings or suggestions if not shown by the input data.
   - **If no concerning weather is detected, leave weather_suggestions as an empty list** (`[]`).
-  - Use the plot name like instead of crop name. Don't use the crop name in the headline please.
-  - Make the **headline meaningful**: Focus on the most urgent or important trend detected (e.g., severe moisture loss, nutrient imbalance, weather risk). Avoid just listing plot names.
+  - Always **numerically compare** old and new values for moisture and nutrients:
+    - If the new value is **higher** than the old value, describe it as an **increase**.
+    - If the new value is **lower** than the old value, describe it as a **decrease**.
+    - Only consider moisture drops significant if they **exceed 5%** decrease.
+    - Only consider nutrient (NPK) drops significant if they **exceed 10 ppm** decrease.
+    - If an increase or decrease is **within acceptable limits**, reassure the farmer that it's still within the safe range and compliment them.
+    - If nutrients rise but stay within acceptable safe ranges, compliment the farmer.
+  - **Only analyze and report on the latest data**:
+    - Ignore all data from previous dates when generating warnings, recommendations, headlines, and summaries.
+    - Use previous data **only as historical reference** to understand trends for the latest data.
+    - Do not mention past dates (e.g., April 26–27) in any warning, summary, or recommendation.
+    - Focus purely on today's/latest data conditions and today's measurements.
+  - Use the **plot name** when mentioning problems or praises — **never** use the crop name in the headline or summary.
+  - Make the **headline meaningful**: Focus on the **most urgent or important trend detected** (e.g., severe moisture loss, nutrient imbalance, or weather risk). **Avoid just listing plot names**.
 
   🧠 TASKS:
   - Analyze moisture and NPK (nitrogen, phosphorus, potassium) trends for each plot.
@@ -228,7 +292,8 @@ class AiService {
   - Provide a short, one-line summary headline.
   - List **all** important warnings (if any).
   - List **all** practical, immediate recommendations.
-  - Suggest actions **based only on actual weather data** provided.
+  - Suggest actions **based only on today's actual weather forecast** provided.
+  - Focus on giving advice for **today** only — previous dates are for reference only.
 
   🌦️ WEATHER RULES:
   - Only generate `weather_suggestions` if the weather forecast provided indicates:
@@ -277,7 +342,12 @@ class AiService {
     String prompt, {
     double temperature = 0.7,
     int maxTokens = 1500,
+    String language = 'en',
   }) async {
+    if (language == 'tl') {
+      return await getGeminiAnalysis(prompt);
+    }
+
     final String? apiKey = dotenv.env['OPEN_AI_API_KEY'];
     if (apiKey == null) {
       throw Exception('API key not found in environment variables.');
@@ -383,6 +453,51 @@ class AiService {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to fetch AI analysis');
+    }
+  }
+
+  Future<Map<String, dynamic>> getGeminiAnalysis(String prompt) async {
+    final String? geminiApiKey = dotenv.env['GEMINI_API_KEY'];
+    if (geminiApiKey == null) {
+      throw Exception('Gemini API key not found in environment variables.');
+    }
+
+    final response = await http.post(
+      Uri.parse(
+          'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=$geminiApiKey'),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({
+        "contents": [
+          {
+            "role": "user",
+            "parts": [
+              {"text": prompt}
+            ]
+          }
+        ],
+        "generationConfig": {
+          "temperature": 0.7,
+          "maxOutputTokens": 1500,
+        }
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final json = jsonDecode(response.body);
+      final text = json['candidates'][0]['content']['parts'][0]['text'];
+      return {
+        "choices": [
+          {
+            "message": {"content": text}
+          }
+        ]
+      };
+    } else {
+      print("Status Code: ${response.statusCode}");
+      print("Response Body: ${response.body}");
+      throw Exception('Failed to fetch Gemini AI analysis');
     }
   }
 }

@@ -31,7 +31,7 @@ class SensorGridView extends StatelessWidget {
         crossAxisCount: 2,
         crossAxisSpacing: 5,
         mainAxisSpacing: 5,
-        childAspectRatio: 0.85,
+        childAspectRatio: 0.75,
       ),
       itemCount: sensors.length,
       itemBuilder: (context, index) {

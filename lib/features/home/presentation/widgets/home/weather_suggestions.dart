@@ -98,7 +98,7 @@ class WeatherSuggestions extends ConsumerWidget {
                       );
                     },
                     separatorBuilder: (context, index) =>
-                        const DividerWidget(verticalHeight: 10),
+                        const DividerWidget(verticalHeight: 1),
                   ),
                 if (weatherSuggestions == null || weatherSuggestions.isEmpty)
                   Text(

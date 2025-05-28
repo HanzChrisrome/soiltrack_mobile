@@ -16,35 +16,44 @@ class SoilCondition extends ConsumerWidget {
     final isGenerating = ref.watch(soilDashboardProvider).isGeneratingAi;
     final summaryAnalysis = ref.watch(soilDashboardProvider).aiSummaryHistory;
 
-    final headline = summaryAnalysis.isNotEmpty
-        ? summaryAnalysis.first['summary_analysis']['headline'] as String?
+    final today = DateTime.now();
+    final todayAnalyses = summaryAnalysis.where((entry) {
+      final date = DateTime.parse(entry['analysis_date']);
+      return date.year == today.year &&
+          date.month == today.month &&
+          date.day == today.day;
+    }).toList();
+
+    final headline = todayAnalyses.isNotEmpty
+        ? todayAnalyses.first['summary_analysis']['headline'] as String?
         : null;
-    final shortSummary = summaryAnalysis.isNotEmpty
-        ? summaryAnalysis.first['summary_analysis']['summary'] as String?
+
+    final shortSummary = todayAnalyses.isNotEmpty
+        ? todayAnalyses.first['summary_analysis']['summary'] as String?
         : 'This summary is system generated and may not be accurate. The data for your plot might be incomplete for our analysis.';
-    final summaryAnalysisDate = summaryAnalysis.isNotEmpty
+
+    final summaryAnalysisDate = todayAnalyses.isNotEmpty
         ? DateFormat('MMM dd, yyyy')
-            .format(DateTime.parse(summaryAnalysis.first['analysis_date']))
+            .format(DateTime.parse(todayAnalyses.first['analysis_date']))
         : 'No Analysis Available';
 
     if (isGenerating)
       return Container(
-        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),
+        margin: const EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.onPrimary,
           borderRadius: BorderRadius.circular(25),
         ),
-        child: Center(
-          child: LoadingAnimationWidget.progressiveDots(
-            color: Theme.of(context).colorScheme.primary,
-            size: 50,
-          ),
+        clipBehavior: Clip.hardEdge,
+        child: Image.asset(
+          'assets/elements/soiltrack_loading.gif',
+          fit: BoxFit.cover,
         ),
       );
 
     return DynamicContainer(
       backgroundImage: DecorationImage(
-          image: AssetImage('assets/background/container_background.png'),
+          image: AssetImage('assets/background/container_background_3.png'),
           fit: BoxFit.cover),
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),
       backgroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -62,7 +71,7 @@ class SoilCondition extends ConsumerWidget {
                 ),
               ),
               Text(
-                summaryAnalysisDate, // Handle null case
+                summaryAnalysisDate,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSecondary,
                   fontSize: 14,

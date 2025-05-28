@@ -29,7 +29,7 @@ class ChatBotScreen extends ConsumerWidget {
             child: SafeArea(
               child: GestureDetector(
                 onTap: () {
-                  context.pop(); // go_router back
+                  context.pop();
                 },
                 child: Container(
                   decoration: BoxDecoration(

@@ -30,7 +30,7 @@ class AiGeneratedCard extends StatelessWidget {
             image: AssetImage(
               currentToggle == 'Weekly'
                   ? 'assets/elements/ai_weekly_analysis.png'
-                  : 'assets/elements/ai_is_here.png',
+                  : 'assets/elements/ai_is_here_2.png',
             ),
             fit: BoxFit.cover,
           ),

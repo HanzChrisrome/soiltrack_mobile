@@ -35,17 +35,6 @@ class ChatBotNotifier extends Notifier<ChatBotState> {
             'Sample Name', userId!);
         state = state.copyWith(currentConversationId: conversationId);
       }
-
-      final aiResponseRaw = await aiService.getChatbotResponse(
-        message,
-        temperature: 0.8,
-        maxTokens: 500,
-      );
-
-      final aiContent = aiResponseRaw['choices'][0]['message']['content'];
-      NotifierHelper.logMessage('AI Response: $aiContent');
-
-      await chatbotService.saveMessage(message, aiContent, conversationId);
     } catch (e) {
       NotifierHelper.logError(e.toString());
     }

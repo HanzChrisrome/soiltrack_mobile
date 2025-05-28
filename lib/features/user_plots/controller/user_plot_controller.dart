@@ -1,16 +1,20 @@
 import 'package:intl/intl.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_state.dart';
 import 'package:soiltrack_mobile/features/user_plots/helper/user_plots_helper.dart';
+import 'package:soiltrack_mobile/provider/shared_preferences.dart';
 
 class UserPlotController {
   final SoilDashboardState state;
   final UserPlotsHelper plotHelper;
+  final selectedLanguage = LanguagePreferences.getLanguage();
 
   UserPlotController({
     required this.state,
     required this.plotHelper,
   });
 
+  //MAIN DATA
   Map<String, dynamic> get selectedPlot {
     return state.userPlots.firstWhere(
       (plot) => plot['plot_id'] == state.selectedPlotId,
@@ -23,6 +27,17 @@ class UserPlotController {
   String get soilType => selectedPlot['soil_type'] ?? 'No soil type';
   String get cropType =>
       selectedPlot['user_crops']?['crop_name'] ?? 'No crop assigned';
+
+  List<LatLng> get selectedPolygon {
+    final List<dynamic> polygonData = selectedPlot['polygons'] ?? [];
+
+    return polygonData.map<LatLng>((point) {
+      return LatLng(
+        (point['lat'] as num).toDouble(),
+        (point['lng'] as num).toDouble(),
+      );
+    }).toList();
+  }
 
   String get assignedMoistureSensor => plotHelper.getSensorName(
       selectedPlot['user_plot_sensors'] ?? [], 'Moisture Sensor');
@@ -50,8 +65,20 @@ class UserPlotController {
     return state.aiAnalysis.firstWhere(
       (entry) =>
           entry['plot_id'] == plotId &&
+          entry['language_type'] == selectedLanguage &&
           entry['analysis_date'] == today &&
           entry['analysis_type'] == 'Daily',
+      orElse: () => {},
+    );
+  }
+
+  Map<String, dynamic> get weeklyAnalysis {
+    return state.aiAnalysis.firstWhere(
+      (entry) =>
+          entry['plot_id'] == plotId &&
+          entry['language_type'] == selectedLanguage &&
+          entry['analysis_date'] == today &&
+          entry['analysis_type'] == 'Weekly',
       orElse: () => {},
     );
   }
@@ -139,21 +166,6 @@ class UserPlotController {
         .compareTo(DateTime.parse(a['analysis_date'])));
 
     return weeklyAnalyses.isNotEmpty ? weeklyAnalyses.first : {};
-  }
-
-  String generateWeeklyPrompt() {
-    if (hasSufficientWeeklyData) {
-      final filtered = plotHelper.getWeeklyAiReadyData(
-        selectedPlotId: plotId,
-        rawMoistureData: state.rawPlotMoistureData,
-        rawNutrientData: state.rawPlotNutrientData,
-      );
-
-      if (filtered != null) {
-        return plotHelper.getFormattedWeeklyPrompt(data: filtered);
-      }
-    }
-    return '';
   }
 
   String get currentToggle {

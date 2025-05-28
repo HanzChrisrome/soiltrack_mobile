@@ -9,11 +9,14 @@ import 'package:shimmer/shimmer.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_widgets/ai_toggle.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_widgets/history_filter.dart';
+import 'package:soiltrack_mobile/provider/shared_preferences.dart';
 import 'package:soiltrack_mobile/widgets/collapsible_appbar.dart';
 import 'package:soiltrack_mobile/widgets/collapsible_scaffold.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
+
+final languageFilterProvider = StateProvider<String>((ref) => 'en');
 
 class AiHistoryScreen extends ConsumerWidget {
   const AiHistoryScreen({super.key});
@@ -26,6 +29,7 @@ class AiHistoryScreen extends ConsumerWidget {
     final isFetchingHistory = soilDashboard.isFetchingHistoryData;
     final plotId = soilDashboard.selectedPlotId;
     final currentCardToggled = soilDashboard.plotToggles[plotId] ?? 'Daily';
+    final selectedLang = LanguagePreferences.getLanguage();
 
     final startDate = soilDashboard.historyDateStartFilter?.toLocal() ??
         DateTime.now().subtract(const Duration(days: 7));
@@ -45,8 +49,9 @@ class AiHistoryScreen extends ConsumerWidget {
               analysisDate.isAtSameMomentAs(adjustedEndDate));
       final isForPlot = entry['plot_id'] == selectedPlotId;
       final isCorrectType = entry['analysis_type'] == currentCardToggled;
+      final isCorrectLanguage = entry['language_type'] == selectedLang;
 
-      return isInRange && isForPlot && isCorrectType;
+      return isInRange && isForPlot && isCorrectType && isCorrectLanguage;
     }).toList();
 
     return Scaffold(
@@ -197,6 +202,51 @@ class AiHistoryScreen extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildLanguageToggle(WidgetRef ref) {
+    final selectedLang = LanguagePreferences.getLanguage();
+    final primaryColor = Theme.of(ref.context).colorScheme.primary;
+    final onPrimaryColor = Theme.of(ref.context).colorScheme.onPrimary;
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        ChoiceChip(
+          label: Text(
+            'English',
+            style: TextStyle(
+              color: selectedLang == 'en' ? onPrimaryColor : primaryColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          selected: selectedLang == 'en',
+          selectedColor: onPrimaryColor,
+          backgroundColor: primaryColor,
+          onSelected: (selected) {
+            if (selected)
+              ref.read(languageFilterProvider.notifier).state = 'en';
+          },
+        ),
+        const SizedBox(width: 5),
+        ChoiceChip(
+          label: Text(
+            'Tagalog',
+            style: TextStyle(
+              color: selectedLang == 'tl' ? onPrimaryColor : primaryColor,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          selected: selectedLang == 'tl',
+          selectedColor: onPrimaryColor,
+          backgroundColor: primaryColor,
+          onSelected: (selected) {
+            if (selected)
+              ref.read(languageFilterProvider.notifier).state = 'tl';
+          },
+        ),
+      ],
     );
   }
 }

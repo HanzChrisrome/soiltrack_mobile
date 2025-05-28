@@ -22,7 +22,7 @@ class AiChart extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final Map<String, double> readings = {
       for (var entry in data.entries)
-        if (entry.key != 'trend') entry.key: (entry.value as num).toDouble()
+        if (entry.value is num) entry.key: (entry.value as num).toDouble()
     };
 
     String? trendLabel;

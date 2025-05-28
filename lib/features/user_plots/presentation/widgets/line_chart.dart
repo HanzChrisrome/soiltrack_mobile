@@ -24,6 +24,7 @@ class NutrientProgressChart extends ConsumerWidget {
       userPlot.selectedPlotId,
       'soil_moisture',
     );
+
     final nitrogenData = plotHelper.filterData(userPlot.latestPlotNutrientData,
         userPlot.selectedPlotId, 'readed_nitrogen');
     final phosphorusData = plotHelper.filterData(
@@ -102,13 +103,14 @@ class NutrientProgressChart extends ConsumerWidget {
                           color: Colors.red),
                     ],
                   ),
-                // FilledCustomButton(
-                //   buttonText: 'View Statistics',
-                //   icon: Icons.remove_red_eye_outlined,
-                //   onPressed: () {
-                //     context.pushNamed('plot-analytics');
-                //   },
-                // ),
+                const SizedBox(height: 10),
+                FilledCustomButton(
+                  buttonText: 'View Statistics',
+                  icon: Icons.remove_red_eye_outlined,
+                  onPressed: () {
+                    context.pushNamed('plot-analytics');
+                  },
+                ),
               ],
             ),
           );

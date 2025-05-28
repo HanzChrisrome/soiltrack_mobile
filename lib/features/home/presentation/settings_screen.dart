@@ -4,12 +4,19 @@ import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/settings/settings_card.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/settings/settings_item.dart';
+import 'package:soiltrack_mobile/features/settings/presentation/widgets/language_selector.dart';
+import 'package:soiltrack_mobile/provider/shared_preferences.dart';
 import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
 import 'package:soiltrack_mobile/widgets/bottom_navigation_bar.dart';
+import 'package:soiltrack_mobile/widgets/customizable_bottom_sheet.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
+import 'package:soiltrack_mobile/widgets/dynamic_bottom_sheet.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 import 'package:soiltrack_mobile/widgets/outline_button.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
+import 'package:soiltrack_mobile/widgets/text_header.dart';
+
+enum LanguageOption { english, tagalog }
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -34,6 +41,7 @@ class SettingsScreen extends ConsumerWidget {
                     const TextGradient(text: 'Settings', fontSize: 33),
                     const SizedBox(height: 20),
                     DynamicContainer(
+                      width: double.infinity,
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -82,13 +90,70 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 20),
                     Text(
-                      'Help and Support',
+                      'Language',
                       style: Theme.of(context).textTheme.titleSmall!.copyWith(
                             color: Colors.grey[700],
                             fontSize: 16,
                             letterSpacing: -0.8,
                             fontWeight: FontWeight.w500,
                           ),
+                    ),
+                    const SizedBox(height: 20),
+                    SettingsCard(
+                      child: Column(
+                        children: [
+                          SettingsItem(
+                            settingsText: 'Analysis Language',
+                            settingsIcon: Icons.language_outlined,
+                            onTap: () async {
+                              String? currentLangCode =
+                                  await LanguagePreferences.getLanguage();
+
+                              LanguageOption selectedLanguage =
+                                  currentLangCode == 'tl'
+                                      ? LanguageOption.tagalog
+                                      : LanguageOption.english;
+
+                              showCustomModalBottomSheet(
+                                context: context,
+                                builder: (context, _) {
+                                  return StatefulBuilder(
+                                    builder: (context, setState) {
+                                      return Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          LanguageSelectorTile(
+                                            title: 'English',
+                                            isSelected: selectedLanguage ==
+                                                LanguageOption.english,
+                                            onTap: () async {
+                                              setState(() => selectedLanguage =
+                                                  LanguageOption.english);
+                                              await LanguagePreferences
+                                                  .setLanguage('en');
+                                            },
+                                          ),
+                                          LanguageSelectorTile(
+                                            title: 'Tagalog',
+                                            isSelected: selectedLanguage ==
+                                                LanguageOption.tagalog,
+                                            onTap: () async {
+                                              setState(() => selectedLanguage =
+                                                  LanguageOption.tagalog);
+                                              await LanguagePreferences
+                                                  .setLanguage('tl');
+                                            },
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
                     const SizedBox(height: 10),
                     SettingsCard(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/features/chat_bot/provider/chatbot_provider.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
@@ -33,6 +34,8 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await ref.read(soilDashboardProvider.notifier).fetchUserPlots();
+      await ref.watch(soilDashboardProvider.notifier).generateWeeklyAnalysis();
       await ref.watch(soilDashboardProvider.notifier).generateDailyAnalysis();
       await ref.read(deviceProvider.notifier).checkDeviceStatus(context);
     });
@@ -58,12 +61,17 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // GreetingWidget(userName: authState.userName!),
-                    // const SizedBox(height: 10),
+                    GreetingWidget(userName: authState.userName!),
+                    const SizedBox(height: 10),
                     FilledCustomButton(
                       buttonText: 'Testing',
-                      onPressed: () {
-                        context.pushNamed('polygon-maps');
+                      onPressed: () async {
+                        await ref
+                            .watch(soilDashboardProvider.notifier)
+                            .generateWeeklyAnalysis();
+                        await ref
+                            .watch(soilDashboardProvider.notifier)
+                            .generateDailyAnalysis();
                       },
                     ),
                     const WeatherWidget(),

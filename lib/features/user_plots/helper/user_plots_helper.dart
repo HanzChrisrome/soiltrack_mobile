@@ -123,12 +123,68 @@ class UserPlotsHelper {
 
     if (!hasDataForEachDay(moistureForDailyAnalysis) ||
         !hasDataForEachDay(nutrientsForDailyAnalysis)) {
-      return null; // Skip this plot if it doesn't have valid data.
+      return null;
     }
 
     return {
       'moistureForDaily': moistureForDailyAnalysis,
       'nutrientsForDaily': nutrientsForDailyAnalysis,
+    };
+  }
+
+  Map<String, List<Map<String, dynamic>>>? getFilteredAiReadyWeeklyData({
+    required int selectedPlotId,
+    required List<Map<String, dynamic>> rawMoistureData,
+    required List<Map<String, dynamic>> rawNutrientData,
+  }) {
+    final now = DateTime.now();
+    final yesterday = now.subtract(const Duration(days: 1));
+    final sevenDaysAgo = yesterday.subtract(const Duration(days: 6));
+
+    final startOfWeek =
+        DateTime(sevenDaysAgo.year, sevenDaysAgo.month, sevenDaysAgo.day);
+    final endOfWeek =
+        DateTime(yesterday.year, yesterday.month, yesterday.day, 23, 59, 59);
+
+    final moistureForWeeklyAnalysis = _filterDataByDate(
+      rawMoistureData,
+      selectedPlotId,
+      startOfWeek,
+      endOfWeek,
+    );
+
+    final nutrientsForWeeklyAnalysis = _filterDataByDate(
+      rawNutrientData,
+      selectedPlotId,
+      startOfWeek,
+      endOfWeek,
+    );
+
+    if (moistureForWeeklyAnalysis.isEmpty ||
+        nutrientsForWeeklyAnalysis.isEmpty) {
+      return null;
+    }
+
+    bool hasDataForEachDay(List<Map<String, dynamic>> data) {
+      for (int i = 1; i <= 7; i++) {
+        final dateToCheck = now.subtract(Duration(days: i)); // skips today
+        final hasDataForDay = data.any((entry) {
+          final readTime = DateTime.tryParse(entry['read_time'] ?? '');
+          return readTime != null && isSameDay(readTime, dateToCheck);
+        });
+        if (!hasDataForDay) return false;
+      }
+      return true;
+    }
+
+    if (!hasDataForEachDay(moistureForWeeklyAnalysis) ||
+        !hasDataForEachDay(nutrientsForWeeklyAnalysis)) {
+      return null;
+    }
+
+    return {
+      'moistureForWeekly': moistureForWeeklyAnalysis,
+      'nutrientsForWeekly': nutrientsForWeeklyAnalysis,
     };
   }
 
@@ -175,38 +231,6 @@ class UserPlotsHelper {
     return {
       'moistureForSummary': moistureForSummary,
       'nutrientsForSummary': nutrientsForSummary,
-    };
-  }
-
-  Map<String, List<Map<String, dynamic>>>? getWeeklyAiReadyData({
-    required int selectedPlotId,
-    required List<Map<String, dynamic>> rawMoistureData,
-    required List<Map<String, dynamic>> rawNutrientData,
-  }) {
-    final now = DateTime.now();
-    final sevenDaysAgo = now.subtract(const Duration(days: 7));
-
-    final weeklyMoisture = _filterDataByDate(
-      rawMoistureData,
-      selectedPlotId,
-      DateTime(sevenDaysAgo.year, sevenDaysAgo.month, sevenDaysAgo.day),
-      DateTime(now.year, now.month, now.day, 23, 59, 59),
-    );
-
-    final weeklyNutrients = _filterDataByDate(
-      rawNutrientData,
-      selectedPlotId,
-      DateTime(sevenDaysAgo.year, sevenDaysAgo.month, sevenDaysAgo.day),
-      DateTime(now.year, now.month, now.day, 23, 59, 59),
-    );
-
-    if (weeklyMoisture.isEmpty || weeklyNutrients.isEmpty) {
-      return null;
-    }
-
-    return {
-      'weeklyMoisture': weeklyMoisture,
-      'weeklyNutrients': weeklyNutrients,
     };
   }
 
@@ -261,6 +285,36 @@ class UserPlotsHelper {
     buffer.writeln(
       formatter
           .formatWeeklyNutrientDataForPrompt(data['nutrientsForDaily'] ?? []),
+    );
+
+    return buffer.toString();
+  }
+
+  String getFormattedAiWeeklyPrompt({
+    required Map<String, List<Map<String, dynamic>>> data,
+  }) {
+    final today = DateTime.now();
+    final weekEnd = today.subtract(const Duration(days: 1)); // yesterday
+    final weekStart = weekEnd.subtract(const Duration(days: 6)); // 7-day window
+
+    String rangeLabel =
+        "${weekStart.year}-${weekStart.month.toString().padLeft(2, '0')}-${weekStart.day.toString().padLeft(2, '0')} to "
+        "${weekEnd.year}-${weekEnd.month.toString().padLeft(2, '0')}-${weekEnd.day.toString().padLeft(2, '0')}";
+
+    final buffer = StringBuffer();
+    buffer.writeln("📅 Weekly Moisture & Nutrient Report ($rangeLabel):\n");
+    buffer.writeln("💧 Moisture Data:");
+    buffer.writeln(
+      formatter.formatWeeklyMoistureDataForPrompt(
+        data['moistureForWeekly'] ?? [],
+      ),
+    );
+
+    buffer.writeln("\n🌱 Nutrient Data (NPK):");
+    buffer.writeln(
+      formatter.formatWeeklyNutrientDataForPrompt(
+        data['nutrientsForWeekly'] ?? [],
+      ),
     );
 
     return buffer.toString();

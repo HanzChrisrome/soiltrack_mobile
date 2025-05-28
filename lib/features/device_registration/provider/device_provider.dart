@@ -141,6 +141,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
           .eq('mac_address', macAddress)
           .maybeSingle();
 
+      //MEANS THAT THE MAC IS ALREADY SAVED IN A DATABASE OR ANOTHER USER
       if (checkIfMacIsExisting != null) {
         if (checkIfMacIsExisting['user_id'] == userId) {
           NotifierHelper.logMessage('Device already saved to database.');
@@ -224,10 +225,23 @@ class DeviceNotifier extends Notifier<DeviceState> {
 
   Future<void> checkSensorsStatus() async {
     //Check the number of devices associated with the user account first
+    final macAddress = ref.watch(authProvider).macAddress;
 
     //If the user has no device, then return
+    if (macAddress == null) return;
 
-    //If the user has a device, check the number of moisture sensors associated with the account
+    final publishTopic = "soiltrack/device/$macAddress/get-valves";
+    final responseTopic = "soiltrack/device/$macAddress/get-valves/response";
+
+    final response = await mqttService.publishAndWaitForResponse(
+        publishTopic, responseTopic, "GET VALVES");
+    final decoded = jsonDecode(response);
+    List<dynamic> valvePins = decoded['valve_pins'];
+    for (var pin in valvePins) {
+      print('Valve pin: $pin');
+    }
+
+    //SAVE USING THE RELAY ID IN THE DATABASE
 
     //If the user has a device, check the number of nutrient sensors associated with the account
 

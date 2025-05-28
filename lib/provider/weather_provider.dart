@@ -56,16 +56,11 @@ class WeatherNotifier extends Notifier<WeatherState> {
       final city = authState.userCity ?? 'Baliuag';
       final province = authState.userProvince ?? 'Bulacan';
 
-      NotifierHelper.logMessage('Fetching weather data for $city, $province');
-
       final data = await weatherService.getWeatherByCity(province,
           province: city, countryCode: 'PH');
       final forecast = await weatherService.getHourlyForecastByCity(province,
           province: city, countryCode: 'PH');
       final suggestions = weatherService.generateSuggestions(data, forecast);
-
-      // NotifierHelper.logMessage('Weather data: $data');
-      // NotifierHelper.logMessage('Forecast data: ${forecast['list']}');
 
       String weatherReport = generateWeatherSummary(forecast);
 
