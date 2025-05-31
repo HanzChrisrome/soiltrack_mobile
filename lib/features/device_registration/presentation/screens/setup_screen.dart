@@ -18,6 +18,10 @@ class SetupScreen extends ConsumerWidget {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenHeight <= 650 || screenWidth <= 360;
 
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      deviceController.checkPermissionsAndShowWarnings();
+    });
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.onPrimary,
       body: Container(

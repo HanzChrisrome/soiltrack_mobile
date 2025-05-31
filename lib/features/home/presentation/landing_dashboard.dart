@@ -66,12 +66,8 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
                     FilledCustomButton(
                       buttonText: 'Testing',
                       onPressed: () async {
-                        await ref
-                            .watch(soilDashboardProvider.notifier)
-                            .generateWeeklyAnalysis();
-                        await ref
-                            .watch(soilDashboardProvider.notifier)
-                            .generateDailyAnalysis();
+                        NotifierHelper.logMessage(
+                            'Summary: ${userPlotState.aiSummaryHistory}');
                       },
                     ),
                     const WeatherWidget(),

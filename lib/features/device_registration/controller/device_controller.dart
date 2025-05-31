@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:geolocator/geolocator.dart';
@@ -54,6 +56,47 @@ class DeviceController {
     context.pushNamed('wifi-scan');
   }
 
+  Future<void> checkPermissionsAndShowWarnings() async {
+    final locationStatus = await Permission.location.status;
+    if (!locationStatus.isGranted) {
+      ToastService.showToast(
+        context: context,
+        message: 'Location permission is required to scan for devices',
+        type: ToastificationType.error,
+      );
+      return;
+    }
+
+    final isLocationEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!isLocationEnabled) {
+      ToastService.showToast(
+        context: context,
+        message: 'Please enable location to proceed.',
+        type: ToastificationType.error,
+      );
+      return;
+    }
+
+    final isWifiEnabled = await WiFiForIoTPlugin.isEnabled();
+    if (!isWifiEnabled) {
+      ToastService.showToast(
+        context: context,
+        message: 'Please enable Wi-Fi to proceed.',
+        type: ToastificationType.error,
+      );
+      return;
+    }
+  }
+
+  Future<bool> hasInternetConnection() async {
+    try {
+      final result = await InternetAddress.lookup('example.com');
+      return result.isNotEmpty && result[0].rawAddress.isNotEmpty;
+    } catch (_) {
+      return false;
+    }
+  }
+
   Future<void> scanForDevice() async {
     try {
       await ref.read(deviceProvider.notifier).scanForDevices();
@@ -89,8 +132,12 @@ class DeviceController {
         );
         return;
       }
-      await ref.read(deviceProvider.notifier).connectESPToWiFi(password);
-      context.pushNamed('setup-config');
+      final didConnect =
+          await ref.read(deviceProvider.notifier).connectESPToWiFi(password);
+
+      if (didConnect) {
+        context.pushNamed('setup-config');
+      }
     } catch (e) {
       ToastService.showToast(
         context: context,

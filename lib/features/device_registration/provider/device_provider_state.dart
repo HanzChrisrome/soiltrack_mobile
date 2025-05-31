@@ -15,6 +15,7 @@ class DeviceState with _$DeviceState {
     @Default(false) bool isNanoConnected,
     @Default(false) bool isScanning,
     @Default(false) bool isConnecting,
+    @Default(false) bool isSettingUpAccount,
     @Default(false) bool isSaving,
     @Default(false) bool isResetting,
     @Default({}) Map<int, bool> valveStates,

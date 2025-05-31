@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
-import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 
 class Config {
   static String get mqttBroker => dotenv.env['MQTT_BROKER'] ?? "";
@@ -75,18 +74,24 @@ class MQTTService {
     subscribe(topic);
     final completer = Completer<String>();
 
+    late StreamSubscription sub;
+
     final timer = Timer(Duration(milliseconds: timeoutMs), () {
       if (!completer.isCompleted) {
+        sub.cancel();
+        _cleanupTopic(topic);
         completer.completeError('⏳ Timeout: No response received on $topic');
       }
     });
 
-    _topicListeners[topic]!.stream.listen((message) {
+    sub = _topicListeners[topic]!.stream.listen((message) {
       print("📩 Received message on $topic: $message");
 
       if (!completer.isCompleted) {
         if (expectedMessage == null || message == expectedMessage) {
           timer.cancel();
+          sub.cancel();
+          _cleanupTopic(topic);
           completer.complete(message);
         } else {
           print(
@@ -111,6 +116,13 @@ class MQTTService {
     } catch (e) {
       print('❌ Error: $e');
       return '';
+    }
+  }
+
+  void _cleanupTopic(String topic) {
+    if (_topicListeners.containsKey(topic)) {
+      _topicListeners[topic]!.close();
+      _topicListeners.remove(topic);
     }
   }
 }

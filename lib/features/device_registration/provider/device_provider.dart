@@ -80,7 +80,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
     state = state.copyWith(availableNetworks: wifiNetworks, isScanning: false);
   }
 
-  Future<void> connectESPToWiFi(String password) async {
+  Future<bool> connectESPToWiFi(String password) async {
     const String esp32IP = DeviceConstants.esp32IP;
     final ssid = state.selectedDeviceSSID;
     if (ssid == null) throw Exception('No device selected.');
@@ -100,9 +100,13 @@ class DeviceNotifier extends Notifier<DeviceState> {
         String message = responseData["message"];
 
         if (status == "SUCCESS") {
+          NotifierHelper.logMessage('Connected to ESP32 successfully.');
           String macAddress = responseData["mac"];
           WiFiForIoTPlugin.forceWifiUsage(false);
+
+          NotifierHelper.logMessage('Connected to Wi-Fi: $macAddress');
           state = state.copyWith(macAddress: macAddress);
+          return true;
         } else {
           await Future.delayed(const Duration(seconds: 5));
           throw (message);
@@ -111,7 +115,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
         throw Exception("Failed to connect to ESP32.");
       }
     } catch (e) {
-      NotifierHelper.logError(e);
+      throw Exception("${e.toString()}");
     } finally {
       state = state.copyWith(isConnecting: false);
     }
@@ -119,8 +123,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
 
   Future<void> saveToDatabase(BuildContext context) async {
     if (state.isSaving) return;
-    final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
-    final sensorProvider = ref.read(sensorsProvider.notifier);
     state = state.copyWith(isSaving: true, savingError: null);
 
     final macAddress = state.macAddress;
@@ -132,16 +134,28 @@ class DeviceNotifier extends Notifier<DeviceState> {
       return;
     }
 
-    await Future.delayed(const Duration(seconds: 15));
-
     try {
+      final initializer = DeviceHelper(ref);
+
+      final checkUserMacDevice = await supabase
+          .from('iot_device')
+          .select('mac_address')
+          .eq('user_id', userId!)
+          .maybeSingle();
+
+      final userMacAddress = checkUserMacDevice?['mac_address'];
+
+      if (userMacAddress != null) {
+        NotifierHelper.logMessage(
+            'User already has a device registered in the database.');
+      }
+
       final checkIfMacIsExisting = await supabase
           .from('iot_device')
           .select()
           .eq('mac_address', macAddress)
           .maybeSingle();
 
-      //MEANS THAT THE MAC IS ALREADY SAVED IN A DATABASE OR ANOTHER USER
       if (checkIfMacIsExisting != null) {
         if (checkIfMacIsExisting['user_id'] == userId) {
           NotifierHelper.logMessage('Device already saved to database.');
@@ -149,33 +163,36 @@ class DeviceNotifier extends Notifier<DeviceState> {
           await prefs.setBool('device_setup_completed', true);
           await prefs.setString('mac_address', macAddress);
 
-          // await getSensorCount();
-          await soilDashboardNotifier.fetchUserPlots();
-          await sensorProvider.fetchSensors();
-          await mqttService.connect();
+          await initializer.initializeAll(context, macAddress);
+          await checkDeviceStatus(context);
 
-          // await checkDeviceStatus();
           NotifierHelper.logMessage('Device already saved to database.');
           state = state.copyWith(isSaving: false);
-          return;
+          context.go('/home/device-screen');
         } else {
+          NotifierHelper.logMessage(
+              'Device already exists in the database with a different user.');
           context.pushNamed('device-exists');
         }
+      } else {
+        NotifierHelper.logMessage('Saving new device to database...');
+
+        final responseSaving = await supabase.from('iot_device').insert({
+          'mac_address': macAddress,
+          "user_id": userId,
+          "activation_date": DateTime.now().toIso8601String(),
+        });
+
+        if (responseSaving != null && responseSaving.error != null) {
+          throw Exception(responseSaving.error!.message);
+        }
+
+        await initializer.initializeAll(context, macAddress);
+        await checkDeviceStatus(context);
+        state = state.copyWith(isSaving: false);
+        NotifierHelper.logMessage('Device saved to database successfully.');
+        context.go('/home');
       }
-
-      final responseSaving = await supabase.from('iot_device').insert({
-        'mac_address': macAddress,
-        "user_id": userId,
-        "activation_date": DateTime.now().toIso8601String(),
-      });
-
-      if (responseSaving != null && responseSaving.error != null) {
-        throw Exception(responseSaving.error!.message);
-      }
-
-      // await checkDeviceStatus();
-      NotifierHelper.logMessage('Device saved to database.');
-      state = state.copyWith(isSaving: false);
     } catch (e) {
       NotifierHelper.logError(e);
       state = state.copyWith(isSaving: false, savingError: e.toString());
@@ -184,7 +201,11 @@ class DeviceNotifier extends Notifier<DeviceState> {
 
   Future<bool> checkDeviceStatus(BuildContext context) async {
     final authState = ref.watch(authProvider);
-    final macAddress = authState.macAddress;
+    final macAddress = state.macAddress ?? authState.macAddress;
+    if (macAddress == null) {
+      NotifierHelper.showErrorToast(context, 'No device connected.');
+      return false;
+    }
 
     final responseTopic = "soiltrack/device/$macAddress/check-device/response";
     final publishTopic = "soiltrack/device/$macAddress/check-device";
@@ -204,6 +225,8 @@ class DeviceNotifier extends Notifier<DeviceState> {
         return false;
       }
 
+      await Future.delayed(const Duration(seconds: 1));
+
       final nanoResponse = await mqttService.publishAndWaitForResponse(
           nanoTopic, nanoResponseTopic, "CHECK NANO",
           expectedResponse: "NANO_PONG");
@@ -222,37 +245,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
       NotifierHelper.closeToast(context);
     }
   }
-
-  Future<void> checkSensorsStatus() async {
-    //Check the number of devices associated with the user account first
-    final macAddress = ref.watch(authProvider).macAddress;
-
-    //If the user has no device, then return
-    if (macAddress == null) return;
-
-    final publishTopic = "soiltrack/device/$macAddress/get-valves";
-    final responseTopic = "soiltrack/device/$macAddress/get-valves/response";
-
-    final response = await mqttService.publishAndWaitForResponse(
-        publishTopic, responseTopic, "GET VALVES");
-    final decoded = jsonDecode(response);
-    List<dynamic> valvePins = decoded['valve_pins'];
-    for (var pin in valvePins) {
-      print('Valve pin: $pin');
-    }
-
-    //SAVE USING THE RELAY ID IN THE DATABASE
-
-    //If the user has a device, check the number of nutrient sensors associated with the account
-
-    //Request to the ESP32 to get the number of soil moisture devices connected to it
-
-    //Request to the ESP32 to get the number of soil nutrient devices connected to it
-
-    //If the number of devices connected to the ESP32 is not equal to the number of devices associated with the user account, then add a warning
-  }
-
-  Future<void> checkValveStatus() async {}
 
   Future<bool> _openPump(BuildContext context) async {
     NotifierHelper.showLoadingToast(context, 'Opening pump');
@@ -527,6 +519,8 @@ class DeviceNotifier extends Notifier<DeviceState> {
       value.remove('mac_address');
     });
   }
+
+  //HELPER METHODS
 }
 
 final deviceProvider =

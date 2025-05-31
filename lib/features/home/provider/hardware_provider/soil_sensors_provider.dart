@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
+import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/hardware_provider/soil_sensors_state.dart';
 
 class SensorsNotifier extends Notifier<SensorsState> {
@@ -17,7 +18,8 @@ class SensorsNotifier extends Notifier<SensorsState> {
     if (state.isFetchingSensors) return;
     state = state.copyWith(isFetchingSensors: true);
     final authState = ref.read(authProvider);
-    final macAddress = authState.macAddress;
+    final deviceState = ref.read(deviceProvider);
+    final macAddress = deviceState.macAddress ?? authState.macAddress;
 
     try {
       if (macAddress == null) {

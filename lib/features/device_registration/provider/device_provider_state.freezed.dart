@@ -27,6 +27,7 @@ mixin _$DeviceState {
   bool get isNanoConnected => throw _privateConstructorUsedError;
   bool get isScanning => throw _privateConstructorUsedError;
   bool get isConnecting => throw _privateConstructorUsedError;
+  bool get isSettingUpAccount => throw _privateConstructorUsedError;
   bool get isSaving => throw _privateConstructorUsedError;
   bool get isResetting => throw _privateConstructorUsedError;
   Map<int, bool> get valveStates => throw _privateConstructorUsedError;
@@ -56,6 +57,7 @@ abstract class $DeviceStateCopyWith<$Res> {
       bool isNanoConnected,
       bool isScanning,
       bool isConnecting,
+      bool isSettingUpAccount,
       bool isSaving,
       bool isResetting,
       Map<int, bool> valveStates,
@@ -87,6 +89,7 @@ class _$DeviceStateCopyWithImpl<$Res, $Val extends DeviceState>
     Object? isNanoConnected = null,
     Object? isScanning = null,
     Object? isConnecting = null,
+    Object? isSettingUpAccount = null,
     Object? isSaving = null,
     Object? isResetting = null,
     Object? valveStates = null,
@@ -130,6 +133,10 @@ class _$DeviceStateCopyWithImpl<$Res, $Val extends DeviceState>
           ? _value.isConnecting
           : isConnecting // ignore: cast_nullable_to_non_nullable
               as bool,
+      isSettingUpAccount: null == isSettingUpAccount
+          ? _value.isSettingUpAccount
+          : isSettingUpAccount // ignore: cast_nullable_to_non_nullable
+              as bool,
       isSaving: null == isSaving
           ? _value.isSaving
           : isSaving // ignore: cast_nullable_to_non_nullable
@@ -172,6 +179,7 @@ abstract class _$$DeviceStateImplCopyWith<$Res>
       bool isNanoConnected,
       bool isScanning,
       bool isConnecting,
+      bool isSettingUpAccount,
       bool isSaving,
       bool isResetting,
       Map<int, bool> valveStates,
@@ -201,6 +209,7 @@ class __$$DeviceStateImplCopyWithImpl<$Res>
     Object? isNanoConnected = null,
     Object? isScanning = null,
     Object? isConnecting = null,
+    Object? isSettingUpAccount = null,
     Object? isSaving = null,
     Object? isResetting = null,
     Object? valveStates = null,
@@ -244,6 +253,10 @@ class __$$DeviceStateImplCopyWithImpl<$Res>
           ? _value.isConnecting
           : isConnecting // ignore: cast_nullable_to_non_nullable
               as bool,
+      isSettingUpAccount: null == isSettingUpAccount
+          ? _value.isSettingUpAccount
+          : isSettingUpAccount // ignore: cast_nullable_to_non_nullable
+              as bool,
       isSaving: null == isSaving
           ? _value.isSaving
           : isSaving // ignore: cast_nullable_to_non_nullable
@@ -281,6 +294,7 @@ class _$DeviceStateImpl implements _DeviceState {
       this.isNanoConnected = false,
       this.isScanning = false,
       this.isConnecting = false,
+      this.isSettingUpAccount = false,
       this.isSaving = false,
       this.isResetting = false,
       final Map<int, bool> valveStates = const {},
@@ -330,6 +344,9 @@ class _$DeviceStateImpl implements _DeviceState {
   final bool isConnecting;
   @override
   @JsonKey()
+  final bool isSettingUpAccount;
+  @override
+  @JsonKey()
   final bool isSaving;
   @override
   @JsonKey()
@@ -351,7 +368,7 @@ class _$DeviceStateImpl implements _DeviceState {
 
   @override
   String toString() {
-    return 'DeviceState(availableDevices: $availableDevices, availableNetworks: $availableNetworks, selectedDeviceSSID: $selectedDeviceSSID, selectedWifiSSID: $selectedWifiSSID, macAddress: $macAddress, isEspConnected: $isEspConnected, isNanoConnected: $isNanoConnected, isScanning: $isScanning, isConnecting: $isConnecting, isSaving: $isSaving, isResetting: $isResetting, valveStates: $valveStates, isPumpOpen: $isPumpOpen, savingError: $savingError)';
+    return 'DeviceState(availableDevices: $availableDevices, availableNetworks: $availableNetworks, selectedDeviceSSID: $selectedDeviceSSID, selectedWifiSSID: $selectedWifiSSID, macAddress: $macAddress, isEspConnected: $isEspConnected, isNanoConnected: $isNanoConnected, isScanning: $isScanning, isConnecting: $isConnecting, isSettingUpAccount: $isSettingUpAccount, isSaving: $isSaving, isResetting: $isResetting, valveStates: $valveStates, isPumpOpen: $isPumpOpen, savingError: $savingError)';
   }
 
   @override
@@ -377,6 +394,8 @@ class _$DeviceStateImpl implements _DeviceState {
                 other.isScanning == isScanning) &&
             (identical(other.isConnecting, isConnecting) ||
                 other.isConnecting == isConnecting) &&
+            (identical(other.isSettingUpAccount, isSettingUpAccount) ||
+                other.isSettingUpAccount == isSettingUpAccount) &&
             (identical(other.isSaving, isSaving) ||
                 other.isSaving == isSaving) &&
             (identical(other.isResetting, isResetting) ||
@@ -401,6 +420,7 @@ class _$DeviceStateImpl implements _DeviceState {
       isNanoConnected,
       isScanning,
       isConnecting,
+      isSettingUpAccount,
       isSaving,
       isResetting,
       const DeepCollectionEquality().hash(_valveStates),
@@ -427,6 +447,7 @@ abstract class _DeviceState implements DeviceState {
       final bool isNanoConnected,
       final bool isScanning,
       final bool isConnecting,
+      final bool isSettingUpAccount,
       final bool isSaving,
       final bool isResetting,
       final Map<int, bool> valveStates,
@@ -451,6 +472,8 @@ abstract class _DeviceState implements DeviceState {
   bool get isScanning;
   @override
   bool get isConnecting;
+  @override
+  bool get isSettingUpAccount;
   @override
   bool get isSaving;
   @override

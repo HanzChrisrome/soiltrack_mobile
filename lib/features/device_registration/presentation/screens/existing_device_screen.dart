@@ -12,6 +12,7 @@ class ExistingDeviceScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
+    final isSetupComplete = authState.isSetupComplete;
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.onPrimary,
@@ -33,7 +34,7 @@ class ExistingDeviceScreen extends ConsumerWidget {
                 children: [
                   Image.asset(
                     'assets/elements/sad_icon.png',
-                    height: 230,
+                    height: 200,
                   ),
                   const SizedBox(height: 50),
                   const TextGradient(
@@ -59,9 +60,11 @@ class ExistingDeviceScreen extends ConsumerWidget {
                   SizedBox(
                     child: OutlinedButton.icon(
                       onPressed: () {
-                        authState.isAuthenticated
-                            ? context.go('/home')
-                            : context.go('/setup');
+                        if (!isSetupComplete) {
+                          context.go('/setup');
+                        } else {
+                          context.go('/home');
+                        }
                       },
                       label: Text(
                         'Return to setup screen',

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "887618974745",
+    "project_id": "soiltrack-1712b",
+    "storage_bucket": "soiltrack-1712b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:887618974745:android:b3e8ee8efc5c6d69e0a688",
+        "android_client_info": {
+          "package_name": "com.example.soiltrack_mobile"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBiyJ_pq21B4KqUo0NT7ev3VaelZM0eG60"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

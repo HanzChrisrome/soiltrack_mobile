@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/registered_plots.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/device/warning_widget.dart';
-import 'package:soiltrack_mobile/features/home/presentation/widgets/soil_dashboard/unassigned_sensor.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/hardware_provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/widgets/bottom_navigation_bar.dart';

@@ -18,6 +18,7 @@
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"
         android:maxSdkVersion="28" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <!-- Android 13+ Nearby Wi-Fi permission -->
     <uses-permission android:name="android.permission.NEARBY_WIFI_DEVICES"
@@ -59,6 +60,9 @@
             <meta-data
                 android:name="io.flutter.embedding.android.NormalTheme"
                 android:resource="@style/NormalTheme" />
+            <meta-data
+                android:name="com.google.firebase.messaging.default_notification_channel_id"
+                android:value="default_channel"/>
         </activity>
 
         <!-- ✅ Move <provider> HERE, outside <activity> -->
