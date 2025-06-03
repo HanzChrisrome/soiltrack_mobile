@@ -1,26 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
-import 'package:soiltrack_mobile/features/chat_bot/provider/chatbot_provider.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/greeting_widget.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/soil_condition.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/user_plot_warnings.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/weather_suggestions.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/weather_widget.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
-import 'package:soiltrack_mobile/features/user_plots/controller/user_plot_controller.dart';
-import 'package:soiltrack_mobile/features/user_plots/helper/user_plots_helper.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/weather_provider.dart';
 import 'package:soiltrack_mobile/widgets/bottom_navigation_bar.dart';
 import 'package:soiltrack_mobile/widgets/custom_accordion.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
-import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 import 'package:soiltrack_mobile/widgets/filled_button.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
-import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
 class LandingDashboard extends ConsumerStatefulWidget {
   const LandingDashboard({super.key});
@@ -117,6 +111,7 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
                                           ),
                                     ),
                                   ),
+                                  const DividerWidget(verticalHeight: 5),
                                 ],
                               ),
                             if (userPlotState.deviceWarnings.isNotEmpty)
@@ -131,7 +126,10 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    const DividerWidget(verticalHeight: 5),
+                                    if (userPlotState.deviceWarnings
+                                            .indexOf(deviceWarning) !=
+                                        0)
+                                      const DividerWidget(verticalHeight: 5),
                                     Text(
                                       '$plotName Warning',
                                       style: Theme.of(context)
@@ -174,8 +172,9 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
             ),
             // Bottom navigation bar
             Align(
-                alignment: Alignment.bottomCenter,
-                child: CustomNavBar(selectedIndex: 0)),
+              alignment: Alignment.bottomCenter,
+              child: CustomNavBar(selectedIndex: 0),
+            ),
           ],
         ),
       ),

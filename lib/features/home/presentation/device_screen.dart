@@ -12,7 +12,8 @@ import 'package:soiltrack_mobile/features/home/presentation/widgets/device/senso
 import 'package:soiltrack_mobile/features/home/presentation/widgets/device/toggle_widget.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/device/valve_grid_view.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/device/warning_widget.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/pump_valve_provider/pump_state_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/hardware_provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
 import 'package:soiltrack_mobile/widgets/bottom_navigation_bar.dart';
@@ -140,35 +141,46 @@ class DeviceScreen extends ConsumerWidget {
                                     'the water pump and valves will not be able to connect and function automatically or manually.'),
                             Consumer(
                               builder: (context, ref, child) {
-                                return DeviceCard(
-                                  deviceName: 'Water Pump',
-                                  description: 'Electronic Water Pump',
-                                  imagePath:
-                                      'assets/hardware/waterpump_connected.png',
-                                  imagePathDisconnected:
-                                      'assets/hardware/waterpump_connected.png',
-                                  isConnected: isNanoConnected,
-                                  onTap: () {
-                                    if (isNanoConnected)
-                                      showCustomBottomSheet(
-                                        context: context,
-                                        title: deviceState.isPumpOpen
-                                            ? 'Close Pump and All Valves'
-                                            : 'Open Pump and \nAll Valves',
-                                        description:
-                                            'Proceeding with this action will open the pump and all valves associated with this device.',
-                                        icon: Icons.arrow_forward_ios_outlined,
-                                        buttonText: 'Proceed',
-                                        onPressed: () {
-                                          if (deviceState.isPumpOpen) {
-                                            deviceNotifier.closeAll(context);
-                                          } else {
-                                            deviceNotifier.openAll(context);
-                                          }
-                                          Navigator.of(context).pop();
-                                        },
-                                      );
+                                final pumpState = ref.watch(pumpStateProvider);
+
+                                return pumpState.when(
+                                  data: (isPumpOn) {
+                                    return DeviceCard(
+                                      deviceName: 'Water Pump',
+                                      description: 'Electronic Water Pump',
+                                      imagePath:
+                                          'assets/hardware/waterpump_connected.png',
+                                      imagePathDisconnected:
+                                          'assets/hardware/waterpump_connected.png',
+                                      isConnected: isNanoConnected,
+                                      isPumpOn: isPumpOn,
+                                      onTap: () {
+                                        if (!isNanoConnected) return;
+                                        showCustomBottomSheet(
+                                          context: context,
+                                          title: isPumpOn
+                                              ? 'Close Pump and All Valves'
+                                              : 'Open Pump and \nAll Valves',
+                                          description:
+                                              'Proceeding with this action will ${isPumpOn ? 'close' : 'open'} the pump and all valves.',
+                                          icon:
+                                              Icons.arrow_forward_ios_outlined,
+                                          buttonText: 'Proceed',
+                                          onPressed: () {
+                                            if (isPumpOn) {
+                                              deviceNotifier.closeAll(context);
+                                            } else {
+                                              deviceNotifier.openAll(context);
+                                            }
+                                            Navigator.of(context).pop();
+                                          },
+                                        );
+                                      },
+                                    );
                                   },
+                                  loading: () => const Center(
+                                      child: CircularProgressIndicator()),
+                                  error: (err, _) => Text('Error: $err'),
                                 );
                               },
                             ),
@@ -209,8 +221,11 @@ class DeviceScreen extends ConsumerWidget {
           // Bottom navigation bar
           Align(
             alignment: Alignment.bottomCenter,
-            child: CustomNavBar(
-              selectedIndex: 2,
+            child: SafeArea(
+              top: false,
+              left: false,
+              right: false,
+              child: CustomNavBar(selectedIndex: 2),
             ),
           ),
         ],

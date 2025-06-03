@@ -138,7 +138,7 @@ class SoilDashboardHelper {
   String generateOverallCondition(
       List<Map<String, dynamic>> warningsList, int totalPlots) {
     if (warningsList.isEmpty) {
-      return "Optimal Condtion";
+      return "";
     }
 
     int warningsCount = warningsList.fold(0, (sum, plot) {

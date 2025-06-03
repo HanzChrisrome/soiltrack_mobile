@@ -197,7 +197,7 @@ class SettingsScreen extends ConsumerWidget {
             Align(
               alignment: Alignment.bottomCenter,
               child: CustomNavBar(
-                selectedIndex: 3,
+                selectedIndex: 4,
               ),
             ),
           ],

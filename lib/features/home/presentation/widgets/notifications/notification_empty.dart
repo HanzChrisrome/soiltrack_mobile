@@ -1,29 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
-class NotificationScreen extends ConsumerWidget {
-  const NotificationScreen({super.key});
+class NotificationEmpty extends StatelessWidget {
+  const NotificationEmpty({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios,
-              color: Theme.of(context).colorScheme.onPrimary),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-        ),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-      ),
-      backgroundColor: Theme.of(context).colorScheme.primary,
-      body: _noNotification(context),
-    );
-  }
-
-  Widget _noNotification(BuildContext context) {
+  Widget build(BuildContext context) {
     return Center(
       child: Column(
         children: [

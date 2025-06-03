@@ -27,7 +27,7 @@ class CustomNavBar extends StatelessWidget {
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: List.generate(4, (index) {
+        children: List.generate(5, (index) {
           final isSelected = selectedIndex == index;
           return Expanded(
             child: Container(
@@ -44,6 +44,7 @@ class CustomNavBar extends StatelessWidget {
                     Icons.home,
                     Icons.layers_rounded,
                     Icons.developer_board_rounded,
+                    Icons.notification_add,
                     Icons.settings,
                   ][index],
                   size: screenWidth < 360 ? 24 : 30,
@@ -59,6 +60,8 @@ class CustomNavBar extends StatelessWidget {
                   } else if (index == 2) {
                     context.go('/home/device-screen');
                   } else if (index == 3) {
+                    context.go('/home/notifications');
+                  } else if (index == 4) {
                     context.go('/home/settings-screen');
                   }
                 },

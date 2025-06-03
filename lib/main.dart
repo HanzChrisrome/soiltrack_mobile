@@ -7,7 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_links/app_links.dart';
 
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/shared_preferences.dart';
 import 'package:soiltrack_mobile/theme/theme.dart';
 import 'package:soiltrack_mobile/core/router/app_router.dart';
@@ -59,7 +59,7 @@ class _MyAppState extends ConsumerState<MyApp> {
 
   Future<void> _initNotifications() async {
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/ic_launcher');
+        AndroidInitializationSettings('@drawable/ic_notification');
 
     const InitializationSettings initializationSettings =
         InitializationSettings(
@@ -129,7 +129,7 @@ class _MyAppState extends ConsumerState<MyApp> {
                 importance: Importance.max,
                 priority: Priority.high,
                 playSound: true,
-                icon: '@mipmap/ic_launcher',
+                icon: '@drawable/ic_notification',
               ),
             ),
           );

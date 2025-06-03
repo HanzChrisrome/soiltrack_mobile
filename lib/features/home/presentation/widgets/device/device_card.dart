@@ -8,6 +8,7 @@ class DeviceCard extends ConsumerWidget {
   final String imagePath;
   final String imagePathDisconnected;
   final bool isConnected;
+  final bool isPumpOn;
   final VoidCallback? onTap;
 
   const DeviceCard({
@@ -17,6 +18,7 @@ class DeviceCard extends ConsumerWidget {
     required this.imagePath,
     required this.imagePathDisconnected,
     required this.isConnected,
+    this.isPumpOn = false,
     this.onTap,
   });
 
@@ -140,7 +142,9 @@ class DeviceCard extends ConsumerWidget {
                               ),
                               const SizedBox(width: 6),
                               Text(
-                                isConnected ? 'Pump is off' : 'Disconnected',
+                                isConnected
+                                    ? (isPumpOn ? 'Pump is on' : 'Pump is off')
+                                    : 'Disconnected',
                                 style: TextStyle(
                                   color: isConnected
                                       ? Theme.of(context).colorScheme.onPrimary

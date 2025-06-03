@@ -1,6 +1,6 @@
 import 'package:intl/intl.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_state.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_state.dart';
 import 'package:soiltrack_mobile/features/user_plots/helper/user_plots_helper.dart';
 import 'package:soiltrack_mobile/provider/shared_preferences.dart';
 

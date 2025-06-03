@@ -32,31 +32,73 @@ class AiService {
         ? "Translate all your output into Filipino (Tagalog) please. Make it farmer-friendly, and conversational but still accurate."
         : "";
 
+    final bool cropProvided = cropType.trim().isNotEmpty;
+    final additionalContext = cropProvided
+        ? '''
+    Here is the data to analyze:
+    $dataToAnalyze
+
+    Additional context:
+    Plot Name: $plotName
+    Crop Planted: $cropType
+    Soil Type: $soilType
+    '''
+        : '''
+    NOTE: There is *no crop assigned* for this plot.
+
+    Your goal is to:
+    - Analyze the soil and environmental data.
+    - Identify which crops would be *most suitable* for this plot based on:
+      - Soil type
+      - Moisture levels
+      - Nutrient levels (N, P, K)
+      - Weather Forecast
+
+    DO NOT generate an action plan for a specific crop. Instead, give general land preparation and soil conditioning advice that can help prepare the land for the suggested crops.
+
+    Be farmer-friendly, practical, and confident in your tone.
+
+    Here is the data to analyze:
+    $dataToAnalyze
+
+    Additional context:
+    Plot Name: $plotName
+    Soil Type: $soilType
+    ''';
+
+    final cropInstruction = cropProvided
+        ? "Your goal is to generate a clear, farmer-friendly daily action plan based on the latest data."
+        : "There is no crop currently planted. Analyze the soil and recommend crops suitable for the current conditions. Also suggest general land preparation strategies.";
+
+    final taskInstruction = cropProvided
+        ? "Focus on **immediate daily tasks** (what should the farmer do **today**)."
+        : "DO NOT give crop-specific actions. Focus instead on land preparation and possible crops to plant.";
+
     return '''
     You are a helpful farm assistant working for a tool called **SoilTrack**. Each day, you help farmers understand what their soil and crop data means and what they need to do **today**.
 
     $langInstruction
 
-    Your goal is to generate a clear, farmer-friendly daily action plan based on the latest data.
+    $cropInstruction
 
     ⚠️ VERY IMPORTANT:
-    - Focus on **daily actionable tasks** (what should the farmer do **today**).
+    - $taskInstruction
     - Provide a **detailed analysis** of findings, predictions, and recommendations.
     - DO NOT recommend external tests, expert advice, or tools.
-    - DO NOT include any text outside the JSON.
     - Use "text" for string values and numbers (e.g., 42.5, 7) for numeric ones.
     - Use dates from the data provided (latest date is "$latestDate").
-    - All values must be in valid JSON format. Do not leave out any fields.
+    - All values must be in valid JSON format. Do not leave out any fields. DO NOT include any text outside the JSON.
     - Provide at least 2 sentences of context or analysis for each section (findings, predictions, recommendations).
     - Make the detailed analysis easy to understand for farmers, so avoid using complex terms or jargon.
     - In today's focus, there can be multiple points or text.
+    - Provide short-term insights (no weekly patterns).
     - The data for the NPK is in ppm, and the moisture is in percentage.
     - In the headline section, summarize the most important findings in a few words.
     - In the status, provide only if it is **good**, **bad**, **moderate**, or **excellent**.
     - If the drop in moisture or any nutrients, does not exceed 5% or 10ppm, reassure the farmer and compliment the farmer that it is still within the acceptable range and does not need to be worried about it.
-    - Before saying an acceptable range for the crop planted, please check first the general recommendations or guideline for the NPK nutrient concentrations for the crop planted in the stated soil type.
-    - When recommending fertilizers, **only suggest fertilizers for nutrients that are deficient or imbalanced** based on the analysis. For each nutrient (N, P, K), if it is within the acceptable range or not needed, do not recommend fertilizers for it and skip the fertilizer recommendation part.
-    - **If nutrient levels are too high, recommend corrective actions, such as irrigation or monitoring for toxicity.** Be sure to reassure the farmer if the levels are still within an acceptable range.
+    - Before saying an acceptable range for the crop planted, please check first the general recommendations or guideline for the NPK nutrient concentrations for the crop planted in the stated soil type, if there is a crop assigned.
+    - If there is a crop assigned, When recommending fertilizers, **only suggest fertilizers for nutrients that are deficient or imbalanced** based on the analysis. For each nutrient (N, P, K), if it is within the acceptable range or not needed, do not recommend fertilizers for it and skip the fertilizer recommendation part.
+    - If there is a crop assigned. **If nutrient levels are too high or too low and not within the accepted range, recommend corrective actions, such as irrigation or monitoring for toxicity.** Be sure to reassure the farmer if the levels are still within an acceptable range.
 
     Here is the required format:
 
@@ -113,14 +155,7 @@ class AiService {
       }
     }
 
-    Here is the data to analyze:
-    $dataToAnalyze
-
-    Additional context:
-    Plot Name: $plotName
-    Crop Planted: $cropType
-    Soil Type: $soilType
-    Crop growth stage: Vegetative
+    $additionalContext
 
     Weather forecast context:
     $weatherForecast
@@ -150,38 +185,73 @@ class AiService {
         ? "Translate all your output into Filipino (Tagalog) please. Make it farmer-friendly, and conversational but still accurate."
         : "";
 
+    final isCropEmpty = cropType.trim().isEmpty;
+
+    final recommendedCropsNote = isCropEmpty
+        ? ''
+        : '''
+    - Add a section `"recommended_crops"` with a list of 2–3 crops suitable for current conditions. Each item must contain a `"crop"` and `"reason"`.
+
+    Example:
+    "recommended_crops": [
+      {
+        "crop": "Sweet Potato",
+        "reason": "Thrives in sandy loam soil and tolerates moderate potassium levels."
+      },
+      ...
+    ]
+    ''';
+
+    final cropInstruction = isCropEmpty
+        ? '''
+    ⚠️ NOTE:
+    - There is currently **no crop planted** in this plot. Your analysis should focus on:
+      - Soil health and preparation
+      - Moisture trends and irrigation readiness
+      - Nutrient balance and future planting suitability
+    - Do NOT reference ideal NPK values for crops.
+    - Do NOT recommend any fertilizers unless there is a **major imbalance or excess**.
+    - DO NOT assume any crop-related stages or needs.
+    - Adjust your tone to **anticipate planting** rather than manage an existing crop.
+    '''
+        : '''
+    - Before determining acceptable ranges for nutrients (NPK), refer to general guidelines for **$cropType** on **$soilType**.
+    - Focus on helping the farmer maintain balance and take early action based on the actual crop needs.
+    ''';
+
+    final displayCropType = isCropEmpty ? "None (Pre-planting)" : cropType;
+
     return '''
     You are an agricultural analysis assistant for a system called **SoilTrack**. Your task is to analyze the provided weekly soil and crop data and respond strictly in the **exact JSON format** defined below.
 
     $langInstruction
 
-    Your goal is to generate a clear, farmer-friendly daily action plan based on the latest data.
+    Generate a strategic, farmer-friendly **weekly analysis** and **plan of action** in the **exact JSON format** below — no extra explanations or text outside the JSON.
 
-    ⚠️ VERY IMPORTANT:
-    - Focus on **Weekly actionable tasks** (what should the farmer do **for the specific week**).
-    - Provide a **detailed weekly analysis** of findings, predictions, and recommendations.
-    - DO NOT recommend external tests, expert advice, or tools.
-    - DO NOT include any text outside the JSON.
-    - Use "text" for string values and numbers (e.g., 42.5, 7) for numeric ones.
-    - All values must be in valid JSON format. Do not leave out any fields.
-    - Make the detailed analysis easy to understand for farmers, so avoid using complex terms or jargon.
-    - In today's focus, there can be multiple points or text.
-    - The data for the NPK is in ppm, and the moisture is in percentage.
-    - In the headline section, summarize the most important findings in a few words.
-    - If the drop in moisture or any nutrients, does not exceed 5% or 10ppm, reassure the farmer and compliment the farmer that it is still within the acceptable range and does not need to be worried about it.
-    - Before saying an acceptable range for the crop planted, please check first the general recommendations or guideline for the NPK nutrient concentrations for the crop planted in the stated soil type.
-    - When recommending fertilizers, **only suggest fertilizers for nutrients that are deficient or imbalanced** based on the analysis. For each nutrient (N, P, K), if it is within the acceptable range or not needed, do not recommend fertilizers for it and skip the fertilizer recommendation part.
-    - **If nutrient levels are too high, recommend corrective actions, such as irrigation or monitoring for toxicity.** Be sure to reassure the farmer if the levels are still within an acceptable range.
+    $cropInstruction
 
-    🧠 **TREND ANALYSIS INSTRUCTIONS**:
-    - For each `"trend"` field under `"moisture_trends"` and `"nutrient_trends"`:
-    - Provide a `"label"`: One of the following values: `"increasing"`, `"decreasing"`, `"fluctuating"`, or `"stable"`.
-    - Include a `"description"`: A short but meaningful explanation, e.g., "Moisture decreased steadily throughout the week", "Nitrogen levels fluctuated significantly day to day", etc.
+    ⚠️ **CRITICAL GUIDELINES**:
+    - Focus only on **weekly actionable tasks** (what should the farmer do over the next 7 days).
+    - Do **not** recommend tools, experts, or lab testing.
+    - DO NOT mention this prompt or refer to "you are an assistant".
+    - Use clear, plain language. Avoid technical jargon unless it's explained simply.
+    - Use `"text"` for string fields and real numbers for metrics.
+    - DO NOT recommend fertilizers if nutrient levels are already in the acceptable range.
+    - Compliment the farmer if values are stable or improving, especially if the variation is minor (e.g., <5% moisture or <10ppm NPK).
+    - Provide reassurance if any changes are still within safe thresholds.
+    $recommendedCropsNote
 
-    🗓️ **DATE RANGE INSTRUCTION**:
-    - Extract the earliest and latest dates from the provided data.
-    - Format the date range in the style: "April 6 (This date is sample only use the actual date) - April 13, 2025 (This date is sample only use the actual date)" and include it in "summary.date_range".
+    📊 **TREND ANALYSIS**:
+    - Label each `"trend"` as: `"increasing"`, `"decreasing"`, `"fluctuating"`, or `"stable"`.
+    - Write a short `"description"` that captures how values moved over the week.
+
+    📅 **DATE RANGE FORMAT**:
+    - Use the earliest and latest dates from the data.
+    - Format: `"April 6 – April 13, 2025"` (use actual extracted dates).
     
+    🗓️ **WEEKLY STRUCTURE**:
+    Structure tasks to span across the week. Use scheduling when helpful, e.g., `"Apply compost midweek if rain is expected"`.
+
     {
       "AI_Analysis": {
         "date_range": "text",
@@ -250,9 +320,8 @@ class AiService {
 
     Additional context:
     Plot Name: $plotName
-    Crop Type: $cropType
+    Crop Type: $displayCropType
     Soil Type: $soilType
-    Crop growth stage: Vegetative
 
     Weather forecast context:
     $weatherForecast

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 
@@ -85,7 +85,9 @@ class SoilCondition extends ConsumerWidget {
             text: TextSpan(
               text: (headline != null && headline.isNotEmpty)
                   ? headline
-                  : 'Your plots are $condition',
+                  : (condition != null && condition.isNotEmpty
+                      ? 'Your plots are $condition'
+                      : 'No data is available for all your plots'),
               style: Theme.of(context).textTheme.titleLarge!.copyWith(
                     color: Theme.of(context).colorScheme.primary,
                     height: 1.1,

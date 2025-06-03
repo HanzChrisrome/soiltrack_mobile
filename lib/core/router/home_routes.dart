@@ -9,7 +9,7 @@ import 'package:soiltrack_mobile/features/home/presentation/device_screen.dart';
 import 'package:soiltrack_mobile/features/home/presentation/landing_dashboard.dart';
 import 'package:soiltrack_mobile/features/home/presentation/settings_screen.dart';
 import 'package:soiltrack_mobile/features/home/presentation/soil_dashboard.dart';
-import 'package:soiltrack_mobile/features/notification/presentation/notification_screen.dart';
+import 'package:soiltrack_mobile/features/home/presentation/notification_screen.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/plot_analytics_screen.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/user_plots_screen.dart';
 
@@ -69,6 +69,20 @@ final homeRoutes = [
           );
         },
       ),
+      GoRoute(
+        path: '/notifications',
+        name: 'notifications',
+        builder: (context, state) => const NotificationScreen(),
+        pageBuilder: (context, state) {
+          return CustomTransitionPage(
+            child: const NotificationScreen(),
+            transitionsBuilder:
+                (context, animation, secondaryAnimation, child) {
+              return child;
+            },
+          );
+        },
+      ),
     ],
   ),
   GoRoute(
@@ -85,11 +99,6 @@ final homeRoutes = [
     path: '/soil-assigning',
     name: 'soil-assigning',
     builder: (context, state) => const SoilAssigningScreen(),
-  ),
-  GoRoute(
-    path: '/notifications',
-    name: 'notifications',
-    builder: (context, state) => const NotificationScreen(),
   ),
   GoRoute(
     path: '/ai-chatbot',

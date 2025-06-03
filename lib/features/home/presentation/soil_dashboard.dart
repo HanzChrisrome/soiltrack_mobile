@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/registered_plots.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/device/warning_widget.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/hardware_provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/widgets/bottom_navigation_bar.dart';
 import 'package:soiltrack_mobile/widgets/text_header.dart';
@@ -192,8 +192,11 @@ class _SoilDashboardScreenState extends ConsumerState<SoilDashboardScreen> {
                 ),
                 Align(
                   alignment: Alignment.bottomCenter,
-                  child: CustomNavBar(
-                    selectedIndex: 1,
+                  child: SafeArea(
+                    top: false,
+                    left: false,
+                    right: false,
+                    child: CustomNavBar(selectedIndex: 1),
                   ),
                 ),
               ],

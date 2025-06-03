@@ -10,7 +10,7 @@ import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/hardware_provider/soil_sensors_provider.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/soil_dashboard_provider.dart';
+import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 
 class DeviceHelper {
   final Ref ref;
@@ -41,13 +41,16 @@ class DeviceHelper {
           expectedResponse: expectedResponse);
 
       if (response == expectedResponse) {
+        NotifierHelper.logMessage('MQTT Command Success: $response');
         NotifierHelper.showSuccessToast(context, successMessage);
         return true;
       } else {
+        NotifierHelper.logError('MQTT Command Failed: $response');
         NotifierHelper.showErrorToast(context, errorMessage);
         return false;
       }
     } catch (e) {
+      NotifierHelper.logError('MQTT Command Error: $e');
       NotifierHelper.logError(e, context, errorMessage);
       return false;
     }
@@ -235,5 +238,56 @@ class DeviceHelper {
         NotifierHelper.logMessage('Inserted new sensor: $sensorName');
       }
     }
+  }
+
+  Future<bool> sendCommandWithFeedback({
+    required BuildContext context,
+    required String command,
+    required String expectedResponse,
+    required String successMessage,
+    required String errorMessage,
+  }) async {
+    final macAddress = ref.watch(authProvider).macAddress;
+    final topic = "soiltrack/device/$macAddress/pump";
+    final responseTopic = "$topic/status";
+
+    return await sendMqttCommand(
+      context,
+      topic,
+      responseTopic,
+      command,
+      successMessage,
+      errorMessage,
+      expectedResponse: expectedResponse,
+    );
+  }
+
+  Future<bool> setPumpState(
+      {required BuildContext context,
+      required bool open,
+      required String macAddress}) async {
+    final topic = "soiltrack/device/$macAddress/pump";
+    final responseTopic = "$topic/status";
+    final action = open ? 'PUMP ON' : 'PUMP OFF';
+    final expectedResponse = open ? 'P_OPEN' : 'P_CLOSE';
+    final successMessage =
+        open ? 'Pump opened successfully.' : 'Pump closed successfully.';
+    final errorMessage =
+        open ? 'Failed to open pump.' : 'Failed to close pump.';
+
+    await supabase.from('iot_device').update({
+      'isPumpOnManually': open,
+      'isPumpOn': open,
+    }).eq('mac_address', macAddress);
+
+    return await DeviceHelper.sendMqttCommand(
+      context,
+      topic,
+      responseTopic,
+      action,
+      successMessage,
+      errorMessage,
+      expectedResponse: expectedResponse,
+    );
   }
 }
