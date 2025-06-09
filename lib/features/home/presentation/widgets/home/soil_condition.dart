@@ -92,7 +92,7 @@ class SoilCondition extends ConsumerWidget {
                     color: Theme.of(context).colorScheme.primary,
                     height: 1.1,
                     letterSpacing: -1.0,
-                    fontSize: 28,
+                    fontSize: 25,
                   ),
             ),
           ),

@@ -23,7 +23,6 @@ class SensorsNotifier extends Notifier<SensorsState> {
 
     try {
       if (macAddress == null) {
-        NotifierHelper.logMessage('Mac Address is nullings');
         return;
       }
 

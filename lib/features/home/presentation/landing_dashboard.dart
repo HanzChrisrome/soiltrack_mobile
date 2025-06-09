@@ -8,12 +8,12 @@ import 'package:soiltrack_mobile/features/home/presentation/widgets/home/soil_co
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/user_plot_warnings.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/weather_suggestions.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/home/weather_widget.dart';
+import 'package:soiltrack_mobile/features/home/provider/notifications/notifications_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/weather_provider.dart';
 import 'package:soiltrack_mobile/widgets/bottom_navigation_bar.dart';
 import 'package:soiltrack_mobile/widgets/custom_accordion.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
-import 'package:soiltrack_mobile/widgets/filled_button.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
 class LandingDashboard extends ConsumerStatefulWidget {
@@ -29,25 +29,28 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(soilDashboardProvider.notifier).fetchUserPlots();
-      await ref.watch(soilDashboardProvider.notifier).generateWeeklyAnalysis();
-      await ref.watch(soilDashboardProvider.notifier).generateDailyAnalysis();
+      await ref.read(soilDashboardProvider.notifier).fetchUserAnalytics();
+      await ref.read(notificationProvider);
+      await ref.read(soilDashboardProvider.notifier).generateWeeklyAnalysis();
+      await ref.read(soilDashboardProvider.notifier).generateDailyAnalysis();
       await ref.read(deviceProvider.notifier).checkDeviceStatus(context);
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final authState = ref.watch(authProvider);
-    final userPlotState = ref.watch(soilDashboardProvider);
+    final authState = ref.read(authProvider);
+    final userPlotState = ref.read(soilDashboardProvider);
     final deviceState = ref.watch(deviceProvider);
     final weatherState = ref.watch(weatherProvider);
+
+    NotifierHelper.logMessage('Building LandingDashboard');
 
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
         child: Stack(
           children: [
-            // Main content of the screen
             SingleChildScrollView(
               child: Padding(
                 padding:
@@ -57,13 +60,13 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
                   children: [
                     GreetingWidget(userName: authState.userName!),
                     const SizedBox(height: 10),
-                    FilledCustomButton(
-                      buttonText: 'Testing',
-                      onPressed: () async {
-                        NotifierHelper.logMessage(
-                            'Summary: ${userPlotState.aiSummaryHistory}');
-                      },
-                    ),
+                    // FilledCustomButton(
+                    //   buttonText: 'Testing',
+                    //   onPressed: () async {
+                    //     NotifierHelper.logMessage(
+                    //         'Summary: ${userPlotState.aiSummaryHistory}');
+                    //   },
+                    // ),
                     const WeatherWidget(),
                     SoilCondition(),
                     if (weatherState.weatherData != null) WeatherSuggestions(),
@@ -111,7 +114,6 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
                                           ),
                                     ),
                                   ),
-                                  const DividerWidget(verticalHeight: 5),
                                 ],
                               ),
                             if (userPlotState.deviceWarnings.isNotEmpty)
@@ -126,10 +128,7 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
                                 return Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    if (userPlotState.deviceWarnings
-                                            .indexOf(deviceWarning) !=
-                                        0)
-                                      const DividerWidget(verticalHeight: 5),
+                                    const DividerWidget(verticalHeight: 5),
                                     Text(
                                       '$plotName Warning',
                                       style: Theme.of(context)

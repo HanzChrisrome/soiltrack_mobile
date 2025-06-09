@@ -27,7 +27,6 @@ class ChatBotNotifier extends Notifier<ChatBotState> {
   Future<void> sendMessage(String message) async {
     final userId = ref.watch(authProvider).userId;
     int conversationId = state.currentConversationId;
-    NotifierHelper.logMessage('Saving message: $message');
 
     try {
       if (state.currentConversationId == 0) {

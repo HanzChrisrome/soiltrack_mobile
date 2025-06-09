@@ -79,13 +79,27 @@ class WeatherNotifier extends Notifier<WeatherState> {
   String generateWeatherSummary(Map<String, dynamic> forecast) {
     Map<String, Map<String, dynamic>> dailySummary = {};
 
+    final now = DateTime.now();
+    String todayDate = DateFormat('yyyy-MM-dd').format(now);
+    List<String> rainTimesToday = [];
+
+    final dateFormatter = DateFormat('EEE, MMM d');
+    final timeFormatter = DateFormat('HH:mm');
+
     for (var entry in forecast["list"]) {
       try {
-        String date = entry['dt_txt'].split(' ')[0];
+        String dateTimeStr = entry['dt_txt'];
+        DateTime dateTime = DateTime.parse(dateTimeStr);
+        String date = dateTimeStr.split(' ')[0];
+
         double temp = (entry['main']['temp'] as num).toDouble();
         double feelsLike = (entry['main']['feels_like'] as num).toDouble();
         String description = entry['weather'][0]['main'];
         double pop = ((entry['pop'] ?? 0) as num).toDouble() * 100;
+
+        if (date == todayDate && pop > 20) {
+          rainTimesToday.add(timeFormatter.format(dateTime));
+        }
 
         if (!dailySummary.containsKey(date)) {
           dailySummary[date] = {
@@ -110,7 +124,6 @@ class WeatherNotifier extends Notifier<WeatherState> {
     }
 
     List<String> summaries = [];
-    final dateFormatter = DateFormat('EEE, MMM d');
 
     dailySummary.forEach((date, data) {
       DateTime parsedDate = DateTime.parse(date);
@@ -119,8 +132,14 @@ class WeatherNotifier extends Notifier<WeatherState> {
       String rainChance =
           data['pop'] > 20 ? "(${data['pop'].toStringAsFixed(0)}% rain)" : "";
 
-      summaries.add(
-          "$prettyDate: High of ${data['maxTemp'].toStringAsFixed(1)}°C (feels like ${data['maxFeelsLike'].toStringAsFixed(1)}°C), ${data['description'].toLowerCase()} $rainChance");
+      String summary =
+          "$prettyDate: High of ${data['maxTemp'].toStringAsFixed(1)}°C (feels like ${data['maxFeelsLike'].toStringAsFixed(1)}°C), ${data['description'].toLowerCase()} $rainChance";
+
+      if (date == todayDate && rainTimesToday.isNotEmpty) {
+        summary += "\n    Expected rain around: ${rainTimesToday.join(', ')}";
+      }
+
+      summaries.add(summary);
     });
 
     return summaries.join("\n");

@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
-import 'package:soiltrack_mobile/widgets/divider_widget.dart';
-import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 import 'package:intl/intl.dart' as intl;
 
@@ -18,6 +14,22 @@ class AiChart extends ConsumerWidget {
   final Map<String, dynamic> data;
   final String label;
 
+  // Step 1: Define your custom color mapping function
+  Color _getColorByLabel(String label) {
+    switch (label.trim().toLowerCase()) {
+      case 'soil moisture':
+        return Colors.blue;
+      case 'nitrogen':
+        return Colors.amber;
+      case 'phosphorus':
+        return Colors.deepPurple;
+      case 'potassium':
+        return Colors.pink;
+      default:
+        return Colors.grey;
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final Map<String, double> readings = {
@@ -26,12 +38,10 @@ class AiChart extends ConsumerWidget {
     };
 
     String? trendLabel;
-    String? trendDescription;
 
     if (data['trend'] is Map<String, dynamic>) {
       final trendData = data['trend'] as Map<String, dynamic>;
       trendLabel = trendData['label'] as String?;
-      trendDescription = trendData['description'] as String?;
     }
 
     bool useCalculatedTrend = trendLabel == null || trendLabel.trim().isEmpty;
@@ -46,8 +56,12 @@ class AiChart extends ConsumerWidget {
       spots.add(FlSpot(timestamp, readings[dateStr]!));
     }
 
-    String trend = 'stable';
-    Color color = Colors.grey;
+    // Step 2: Set base chart color based on label
+    Color chartColor = _getColorByLabel(label);
+
+    // Step 3: Determine trend (but do NOT override chartColor)
+    String trend = 'Stable';
+    Color trendColor = Colors.grey;
 
     if (useCalculatedTrend && readings.length >= 2) {
       final firstValue = readings[sortedKeys.first]!;
@@ -55,29 +69,29 @@ class AiChart extends ConsumerWidget {
 
       if (lastValue > firstValue) {
         trend = 'Increasing';
-        color = Colors.green;
+        trendColor = Colors.green;
       } else if (lastValue < firstValue) {
         trend = 'Decreasing';
-        color = Colors.red;
+        trendColor = Colors.red;
       }
     } else {
       switch (trendLabel?.toLowerCase()) {
         case 'increasing':
           trend = 'Increasing';
-          color = Colors.green;
+          trendColor = Colors.green;
           break;
         case 'decreasing':
           trend = 'Decreasing';
-          color = Colors.red;
+          trendColor = Colors.red;
           break;
         case 'fluctuating':
           trend = 'Fluctuating';
-          color = Colors.orange;
+          trendColor = Colors.orange;
           break;
         case 'stable':
         default:
           trend = 'Stable';
-          color = Colors.grey;
+          trendColor = Colors.grey;
       }
     }
 
@@ -125,13 +139,13 @@ class AiChart extends ConsumerWidget {
                     spots: spots,
                     isCurved: false,
                     preventCurveOverShooting: true,
-                    color: color,
+                    color: chartColor,
                     isStrokeCapRound: true,
                     barWidth: 2,
                     dotData: FlDotData(show: true),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: color.withOpacity(0.1),
+                      color: chartColor.withOpacity(0.1),
                     ),
                   ),
                 ],
@@ -181,8 +195,8 @@ class AiChart extends ConsumerWidget {
               ),
               TextRoundedEnclose(
                 text: trend,
-                color: color.withOpacity(0.2),
-                textColor: color,
+                color: trendColor.withOpacity(0.2),
+                textColor: trendColor,
               ),
             ],
           ),

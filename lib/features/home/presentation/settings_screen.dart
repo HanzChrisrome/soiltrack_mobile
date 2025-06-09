@@ -8,13 +8,10 @@ import 'package:soiltrack_mobile/features/settings/presentation/widgets/language
 import 'package:soiltrack_mobile/provider/shared_preferences.dart';
 import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
 import 'package:soiltrack_mobile/widgets/bottom_navigation_bar.dart';
-import 'package:soiltrack_mobile/widgets/customizable_bottom_sheet.dart';
-import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_bottom_sheet.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 import 'package:soiltrack_mobile/widgets/outline_button.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
-import 'package:soiltrack_mobile/widgets/text_header.dart';
 
 enum LanguageOption { english, tagalog }
 
@@ -83,6 +80,20 @@ class SettingsScreen extends ConsumerWidget {
                             onTap: () {
                               context.pushNamed('reset-password',
                                   extra: authState.userEmail);
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    SettingsCard(
+                      child: Column(
+                        children: [
+                          SettingsItem(
+                            settingsText: 'Change Irrigation Type',
+                            settingsIcon: Icons.water_drop_outlined,
+                            onTap: () {
+                              context.pushNamed('irrigation-schedule');
                             },
                           ),
                         ],

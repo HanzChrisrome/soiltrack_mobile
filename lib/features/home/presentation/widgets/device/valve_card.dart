@@ -91,37 +91,37 @@ class ValveCard extends ConsumerWidget {
                       color: Colors.red.withOpacity(0.1),
                       textColor: Colors.red,
                     ),
-                  DynamicContainer(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                    margin: const EdgeInsets.all(0),
-                    backgroundColor: Theme.of(context).colorScheme.primary,
-                    borderColor: Theme.of(context).colorScheme.surface,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        TextRoundedEnclose(
-                          text: 'Valve is closed',
-                          color: Colors.red.withOpacity(0.1),
-                          textColor: Colors.red,
-                        ),
-                        const SizedBox(width: 5),
-                        Container(
-                          padding: const EdgeInsets.all(5),
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: Colors.green.withOpacity(0.1),
-                          ),
-                          child: Icon(
-                            Icons.lock_open,
-                            color: Colors.green,
-                            size: 16,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  // DynamicContainer(
+                  //   padding:
+                  //       const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                  //   margin: const EdgeInsets.all(0),
+                  //   backgroundColor: Theme.of(context).colorScheme.primary,
+                  //   borderColor: Theme.of(context).colorScheme.surface,
+                  //   child: Row(
+                  //     mainAxisSize: MainAxisSize.min,
+                  //     crossAxisAlignment: CrossAxisAlignment.center,
+                  //     children: [
+                  //       TextRoundedEnclose(
+                  //         text: 'Valve is closed',
+                  //         color: Colors.red.withOpacity(0.1),
+                  //         textColor: Colors.red,
+                  //       ),
+                  //       const SizedBox(width: 5),
+                  //       Container(
+                  //         padding: const EdgeInsets.all(5),
+                  //         decoration: BoxDecoration(
+                  //           shape: BoxShape.circle,
+                  //           color: Colors.green.withOpacity(0.1),
+                  //         ),
+                  //         child: Icon(
+                  //           Icons.lock_open,
+                  //           color: Colors.green,
+                  //           size: 16,
+                  //         ),
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
                 ],
               ),
             ),

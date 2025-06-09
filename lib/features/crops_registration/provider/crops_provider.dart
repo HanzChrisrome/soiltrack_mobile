@@ -23,16 +23,6 @@ class CropNotifer extends Notifier<CropState> {
     }
   }
 
-  void selectCategory(String category) {
-    if (state.selectedCategory == category) return;
-    state = state.copyWith(selectedCategory: category);
-
-    final filteredCrops =
-        state.allCrops.where((crop) => crop['category'] == category).toList();
-
-    state = state.copyWith(cropsList: filteredCrops);
-  }
-
   Future<void> getSelectedCropDetails() async {
     if (state.selectedCrop == null) return;
 

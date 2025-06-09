@@ -41,7 +41,6 @@ class DeviceHelper {
           expectedResponse: expectedResponse);
 
       if (response == expectedResponse) {
-        NotifierHelper.logMessage('MQTT Command Success: $response');
         NotifierHelper.showSuccessToast(context, successMessage);
         return true;
       } else {
@@ -84,8 +83,6 @@ class DeviceHelper {
       return;
     }
 
-    NotifierHelper.logMessage('Checking sensors status for $macAddress');
-
     //FOR VALVES
     final publishTopic = "soiltrack/device/$macAddress/get-valves";
     final responseTopic = "soiltrack/device/$macAddress/get-valves/response";
@@ -94,10 +91,6 @@ class DeviceHelper {
         publishTopic, responseTopic, "GET VALVES");
     final decoded = jsonDecode(response);
     List<dynamic> valvePins = decoded['valve_pins'];
-
-    for (var pin in valvePins) {
-      NotifierHelper.logMessage('Valve Pin: $pin');
-    }
 
     try {
       final existingPlots = await supabase
@@ -121,8 +114,6 @@ class DeviceHelper {
             'valve_tagging': letters[i],
             'valve_pin': valvePins[i],
           });
-
-          NotifierHelper.logMessage('Inserted new plot: $plotName');
         }
       }
     } catch (e) {
@@ -138,8 +129,6 @@ class DeviceHelper {
 
     if (macAddress == null)
       return NotifierHelper.logError('No device connected.');
-
-    NotifierHelper.logMessage('Checking sensors status for $macAddress');
 
     final response = await mqttService.publishAndWaitForResponse(
         "soiltrack/device/$macAddress/get-moisture-sensors",
@@ -168,8 +157,6 @@ class DeviceHelper {
               .update({'sensor_name': sensorName})
               .eq('mac_address', macAddress)
               .eq('sensor_id', existingSensors['sensor_id']);
-          NotifierHelper.logMessage(
-              'Updated sensor name: $sensorName for pin: $pin');
         }
       } else {
         await supabase.from('soil_sensors').insert({
@@ -181,7 +168,6 @@ class DeviceHelper {
           'is_assigned': false,
           'sensor_pin': pin,
         });
-        NotifierHelper.logMessage('Inserted new sensor: $sensorName');
       }
     }
   }
@@ -194,8 +180,6 @@ class DeviceHelper {
     if (macAddress == null)
       return NotifierHelper.logError('No device connected.');
 
-    NotifierHelper.logMessage('Checking sensors status for $macAddress');
-
     final response = await mqttService.publishAndWaitForResponse(
         "soiltrack/device/$macAddress/get-npk-sensors",
         "soiltrack/device/$macAddress/get-npk-sensors/response",
@@ -203,7 +187,6 @@ class DeviceHelper {
 
     final decoded = jsonDecode(response);
 
-    NotifierHelper.logMessage('NPK Sensor Response: $decoded');
     final npkCount = decoded['npk_count'] as int;
 
     for (int i = 0; i < npkCount; i++) {
@@ -223,8 +206,6 @@ class DeviceHelper {
               .update({'sensor_name': sensorName})
               .eq('mac_address', macAddress)
               .eq('sensor_id', existingSensors['sensor_id']);
-          NotifierHelper.logMessage(
-              'Updated sensor name: $sensorName for type: $sensorType');
         }
       } else {
         await supabase.from('soil_sensors').insert({
@@ -235,7 +216,6 @@ class DeviceHelper {
           'sensor_category': 'NPK Sensor',
           'is_assigned': false,
         });
-        NotifierHelper.logMessage('Inserted new sensor: $sensorName');
       }
     }
   }

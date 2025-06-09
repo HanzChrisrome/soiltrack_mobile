@@ -52,5 +52,6 @@ class SoilDashboardState with _$SoilDashboardState {
     @Default(false) bool isSavingNewSoilMoistureSensor,
     @Default(false) bool isSavingNewSoilNutrientSensor,
     @Default(false) bool isGeneratingAi,
+    @Default(false) bool isSavingPlotSchedule,
   }) = _SoilDashboardState;
 }

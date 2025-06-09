@@ -41,8 +41,6 @@ class ToolsSectionWidget extends ConsumerWidget {
     final valveStates = ref.watch(valveStatesProvider);
     final isValveOpen = valveStates[plotId] ?? false;
 
-    print('Selected plotId: $plotId');
-
     return DynamicContainer(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -89,44 +87,50 @@ class ToolsSectionWidget extends ConsumerWidget {
             icon: Icons.eco,
             action: () {
               userPlotNotifier.setEditingUserPlot(true);
-              context.pushNamed('select-category');
+              context.pushNamed('add-crops');
             },
           ),
           const SizedBox(width: 5),
-          ToolsButton(
-            buttonName: 'Rename Plot',
-            icon: Icons.published_with_changes_rounded,
-            action: () {
-              showCustomizableBottomSheet(
-                height: 300,
-                context: context,
-                centerContent: Column(
-                  children: [
-                    const TextGradient(text: 'Edit Plot', fontSize: 40),
-                    const SizedBox(height: 20),
-                    TextFieldWidget(
-                      label: plotName,
-                      controller: plotNameController,
-                    ),
-                  ],
-                ),
-                buttonText: 'Proceed',
-                onPressed: (bottomSheetContext) {
-                  Navigator.of(context).pop();
-                  userPlotNotifier.editPlotName(
-                    context,
-                    plotNameController.text,
-                  );
-                  plotNameController.clear();
-                },
-                onCancelPressed: (bottomSheetContext) {
-                  Navigator.of(context).pop();
-                  plotNameController.clear();
-                },
-              );
-            },
-          ),
-          const SizedBox(width: 5),
+          // ToolsButton(
+          //   buttonName: 'Rename Plot',
+          //   icon: Icons.published_with_changes_rounded,
+          //   action: () {
+          //     showCustomizableBottomSheet(
+          //       height: 300,
+          //       context: context,
+          //       centerContent: Column(
+          //         children: [
+          //           const TextGradient(text: 'Edit Plot', fontSize: 40),
+          //           const SizedBox(height: 20),
+          //           TextFieldWidget(
+          //             label: plotName,
+          //             controller: plotNameController,
+          //           ),
+          //         ],
+          //       ),
+          //       buttonText: 'Proceed',
+          //       onPressed: (bottomSheetContext) {
+          //         Navigator.of(context).pop();
+          //         userPlotNotifier.editPlotName(
+          //           context,
+          //           plotNameController.text,
+          //         );
+          //         plotNameController.clear();
+          //       },
+          //       onCancelPressed: (bottomSheetContext) {
+          //         Navigator.of(context).pop();
+          //         plotNameController.clear();
+          //       },
+          //     );
+          //   },
+          // ),
+          // ToolsButton(
+          //   buttonName: 'Irrigation Type',
+          //   icon: Icons.water_drop_rounded,
+          //   action: () {
+          //     context.pushNamed('irrigation-schedule');
+          //   },
+          // ),
           ToolsButton(
             buttonName: 'Add Polygon',
             icon: Icons.add_location_alt_rounded,

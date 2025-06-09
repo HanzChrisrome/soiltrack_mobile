@@ -101,11 +101,9 @@ class DeviceNotifier extends Notifier<DeviceState> {
         String message = responseData["message"];
 
         if (status == "SUCCESS") {
-          NotifierHelper.logMessage('Connected to ESP32 successfully.');
           String macAddress = responseData["mac"];
           WiFiForIoTPlugin.forceWifiUsage(false);
 
-          NotifierHelper.logMessage('Connected to Wi-Fi: $macAddress');
           state = state.copyWith(macAddress: macAddress);
           return true;
         } else {
@@ -138,19 +136,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
     try {
       final initializer = DeviceHelper(ref);
 
-      final checkUserMacDevice = await supabase
-          .from('iot_device')
-          .select('mac_address')
-          .eq('user_id', userId!)
-          .maybeSingle();
-
-      final userMacAddress = checkUserMacDevice?['mac_address'];
-
-      if (userMacAddress != null) {
-        NotifierHelper.logMessage(
-            'User already has a device registered in the database.');
-      }
-
       final checkIfMacIsExisting = await supabase
           .from('iot_device')
           .select()
@@ -159,7 +144,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
 
       if (checkIfMacIsExisting != null) {
         if (checkIfMacIsExisting['user_id'] == userId) {
-          NotifierHelper.logMessage('Device already saved to database.');
           final prefs = await SharedPreferences.getInstance();
           await prefs.setBool('device_setup_completed', true);
           await prefs.setString('mac_address', macAddress);
@@ -167,17 +151,12 @@ class DeviceNotifier extends Notifier<DeviceState> {
           await initializer.initializeAll(context, macAddress);
           await checkDeviceStatus(context);
 
-          NotifierHelper.logMessage('Device already saved to database.');
           state = state.copyWith(isSaving: false);
           context.go('/home/device-screen');
         } else {
-          NotifierHelper.logMessage(
-              'Device already exists in the database with a different user.');
           context.pushNamed('device-exists');
         }
       } else {
-        NotifierHelper.logMessage('Saving new device to database...');
-
         final responseSaving = await supabase.from('iot_device').insert({
           'mac_address': macAddress,
           "user_id": userId,
@@ -191,7 +170,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
         await initializer.initializeAll(context, macAddress);
         await checkDeviceStatus(context);
         state = state.copyWith(isSaving: false);
-        NotifierHelper.logMessage('Device saved to database successfully.');
         context.go('/home');
       }
     } catch (e) {
@@ -283,7 +261,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
       expectedResponse: 'CLOSE',
     );
 
-    NotifierHelper.logMessage('Mqtt command success: $success');
     if (!success) return;
 
     final response = await supabase
@@ -291,6 +268,10 @@ class DeviceNotifier extends Notifier<DeviceState> {
         .select('plot_id')
         .eq('user_id', userId)
         .eq('isValveOn', true);
+
+    await supabase
+        .from('iot_device')
+        .update({"isPumpOnManually": false}).eq('mac_address', macAddress);
 
     final openPlots = response as List;
 
@@ -361,6 +342,11 @@ class DeviceNotifier extends Notifier<DeviceState> {
     await supabase
         .from('user_plots')
         .update({'isValveOn': true}).inFilter('plot_id', plotIds);
+
+    print('Mac Address: $macAddress');
+    await supabase
+        .from('iot_device')
+        .update({"isPumpOnManually": true}).eq('mac_address', macAddress);
 
     mqttService.subscribe(responseTopic);
     mqttService.publish(pumpControlTopic, "OPEN ALL");
@@ -496,8 +482,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
           .eq('mac_address', macAddress!)
           .eq('plot_id', plotId);
     }
-
-    NotifierHelper.logMessage('Valve states (from DB): $updatedValveStates');
   }
 
   Future<void> changeWifi(BuildContext context) async {

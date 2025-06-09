@@ -73,13 +73,13 @@ class _PolygonMapScreenState extends ConsumerState<PolygonMapScreen> {
               .toList();
 
           if (selectedPolygon!.length < 3) {
-            NotifierHelper.logMessage(
+            NotifierHelper.logError(
               'Selected polygon has fewer than 3 points: $selectedPolygon',
             );
             selectedPolygon = null;
           }
         } catch (e) {
-          NotifierHelper.logMessage(
+          NotifierHelper.logError(
             'Error parsing selected plot polygon: $e - Raw: $raw',
           );
         }
@@ -311,12 +311,12 @@ class _PolygonMapScreenState extends ConsumerState<PolygonMapScreen> {
           final plotName = plot['plot_name']?.toString() ?? 'Unnamed Plot';
           result.add(MapEntry(plotName, polygon));
         } else {
-          NotifierHelper.logMessage(
+          NotifierHelper.logError(
             'Polygon has fewer than 3 points: $polygon from raw: $raw',
           );
         }
       } catch (e) {
-        NotifierHelper.logMessage('Error parsing polygon: $e - Raw: $raw');
+        NotifierHelper.logError('Error parsing polygon: $e - Raw: $raw');
       }
     }
 

@@ -5,8 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/chat_bot/provider/chatbot_provider.dart';
 import 'package:soiltrack_mobile/features/crops_registration/provider/crops_provider.dart';
-import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/hardware_provider/soil_sensors_provider.dart';
 import 'package:soiltrack_mobile/provider/weather_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -154,7 +152,6 @@ class AuthNotifier extends Notifier<UserAuthState> {
           .maybeSingle();
 
       if (existingUser != null) {
-        NotifierHelper.logMessage('Saving user preferences');
         state = state.copyWith(userEmail: email, userPassword: password);
         return;
       }
@@ -240,8 +237,6 @@ class AuthNotifier extends Notifier<UserAuthState> {
       if (e is AuthException && e.message.contains('expired')) {
         NotifierHelper.showErrorToast(context, 'Your reset link has expired.');
       } else {
-        NotifierHelper.logMessage('Email: $email');
-        NotifierHelper.logMessage('Error: ${e.toString()}');
         NotifierHelper.showErrorToast(context, 'Error: ${e.toString()}');
       }
     }
@@ -257,8 +252,6 @@ class AuthNotifier extends Notifier<UserAuthState> {
     await weatherNotifier.fetchWeather();
     await chatbotNotifier.fetchConversations();
     await cropsNotifier.fetchAllCrops();
-
-    // if (isInitialLoad) await deviceNotifier.checkDeviceStatus();
   }
 
   Future<void> signOut(BuildContext context) async {
@@ -273,7 +266,6 @@ class AuthNotifier extends Notifier<UserAuthState> {
 
   Future<void> tryToSignIn(
       BuildContext context, String email, String password) async {
-    NotifierHelper.logMessage('Trying to sign in...');
     try {
       await supabase.auth.signInWithPassword(
         email: email,
@@ -308,7 +300,7 @@ class AuthNotifier extends Notifier<UserAuthState> {
       await supabase.auth.signUp(password: password, email: email);
       NotifierHelper.showSuccessToast(context, 'Verification email resent!');
     } catch (e) {
-      NotifierHelper.logMessage('Error: $e');
+      NotifierHelper.logError(e);
     }
   }
 

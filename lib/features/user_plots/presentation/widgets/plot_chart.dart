@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
@@ -105,11 +106,9 @@ class PlotChart extends ConsumerWidget {
                 text:
                     '${percentageChange > 0 ? '+' : ''}${percentageChange.toStringAsFixed(1)}% ${_getRangeLabel(selectedRange)}',
                 color: percentageChange > 0
-                    ? _getChartColor(readingType).withOpacity(0.2)
+                    ? Colors.green.withOpacity(0.2)
                     : Colors.red.withOpacity(0.2),
-                textColor: percentageChange > 0
-                    ? _getChartColor(readingType)
-                    : Colors.red,
+                textColor: percentageChange > 0 ? Colors.green : Colors.red,
               ),
           ],
         ),
@@ -159,7 +158,9 @@ class PlotChart extends ConsumerWidget {
                           getTitlesWidget: (value, meta) {
                             DateTime actualTime =
                                 DateTime.fromMillisecondsSinceEpoch(
-                                    value.toInt());
+                                        value.toInt(),
+                                        isUtc: true)
+                                    .toLocal();
 
                             String formattedDate;
                             if (selectedRange == '1D') {
@@ -184,7 +185,6 @@ class PlotChart extends ConsumerWidget {
 
                             Set<String> displayedLabels = {};
                             if (selectedRange == '1D') {
-                              // Show times at 2-hour intervals
                               return Padding(
                                 padding: const EdgeInsets.only(top: 12.0),
                                 child: Text(
@@ -272,11 +272,11 @@ class PlotChart extends ConsumerWidget {
   Color _getChartColor(String type) {
     switch (type) {
       case 'readed_nitrogen':
-        return Colors.green;
+        return Colors.yellow;
       case 'readed_phosphorus':
-        return Colors.orange;
+        return Colors.pink;
       case 'readed_potassium':
-        return const Color.fromARGB(255, 175, 23, 202);
+        return Colors.purple;
       case 'soil_moisture':
         return Colors.blue;
       default:

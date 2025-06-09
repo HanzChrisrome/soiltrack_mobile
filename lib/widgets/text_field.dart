@@ -11,6 +11,7 @@ class TextFieldWidget extends StatefulWidget {
   final FocusNode? focusNode;
   final bool isNumberOnly;
   final double fontSize;
+  final EdgeInsetsGeometry? padding;
 
   const TextFieldWidget({
     super.key,
@@ -23,6 +24,7 @@ class TextFieldWidget extends StatefulWidget {
     this.focusNode,
     this.isNumberOnly = false,
     this.fontSize = 16.0,
+    this.padding,
   });
 
   @override
@@ -34,56 +36,59 @@ class _TextFieldWidgetState extends State<TextFieldWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8.0),
-      child: TextFormField(
-        cursorColor: Theme.of(context).colorScheme.onPrimary,
-        controller: widget.controller,
-        focusNode: widget.focusNode,
-        obscureText: widget.isPasswordField ? _isObscured : false,
-        keyboardType:
-            widget.isNumberOnly ? TextInputType.number : TextInputType.text,
-        inputFormatters:
-            widget.isNumberOnly ? [FilteringTextInputFormatter.digitsOnly] : [],
-        decoration: InputDecoration(
-          hintText: widget.label,
-          hintStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
-                color: Colors.grey,
-                fontSize: widget.fontSize,
-              ),
-          contentPadding:
-              const EdgeInsets.symmetric(vertical: 13.0, horizontal: 12.0),
-          enabledBorder: const OutlineInputBorder(
-            borderSide: BorderSide(color: Color.fromARGB(255, 209, 209, 209)),
-            borderRadius: BorderRadius.all(Radius.circular(12.0)),
-          ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(15.0),
-            borderSide: const BorderSide(
-              color: Colors.green,
-              width: 2.0,
+    Widget textField = TextFormField(
+      cursorColor: Theme.of(context).colorScheme.onPrimary,
+      controller: widget.controller,
+      focusNode: widget.focusNode,
+      obscureText: widget.isPasswordField ? _isObscured : false,
+      keyboardType:
+          widget.isNumberOnly ? TextInputType.number : TextInputType.text,
+      inputFormatters:
+          widget.isNumberOnly ? [FilteringTextInputFormatter.digitsOnly] : [],
+      enabled: widget.isEnabled,
+      decoration: InputDecoration(
+        hintText: widget.label,
+        hintStyle: Theme.of(context).textTheme.bodyMedium!.copyWith(
+              color: Colors.grey,
+              fontSize: widget.fontSize,
             ),
-          ),
-          prefixIcon: widget.prefixIcon != null
-              ? Icon(widget.prefixIcon, color: Colors.grey)
-              : null,
-          suffixIcon: widget.isPasswordField
-              ? IconButton(
-                  icon: Icon(
-                    _isObscured ? Icons.visibility_off : Icons.visibility,
-                    color: Colors.grey,
-                  ),
-                  onPressed: () {
-                    setState(() {
-                      _isObscured = !_isObscured;
-                    });
-                  },
-                )
-              : null,
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 13.0, horizontal: 12.0),
+        enabledBorder: const OutlineInputBorder(
+          borderSide: BorderSide(color: Color.fromARGB(255, 209, 209, 209)),
+          borderRadius: BorderRadius.all(Radius.circular(12.0)),
         ),
-        style: TextStyle(fontSize: widget.fontSize),
-        validator: widget.validator,
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15.0),
+          borderSide: const BorderSide(
+            color: Colors.green,
+            width: 2.0,
+          ),
+        ),
+        prefixIcon: widget.prefixIcon != null
+            ? Icon(widget.prefixIcon, color: Colors.grey)
+            : null,
+        suffixIcon: widget.isPasswordField
+            ? IconButton(
+                icon: Icon(
+                  _isObscured ? Icons.visibility_off : Icons.visibility,
+                  color: Colors.grey,
+                ),
+                onPressed: () {
+                  setState(() {
+                    _isObscured = !_isObscured;
+                  });
+                },
+              )
+            : null,
       ),
+      style: TextStyle(fontSize: widget.fontSize),
+      validator: widget.validator,
+    );
+
+    return Padding(
+      padding: widget.padding ?? const EdgeInsets.symmetric(vertical: 8.0),
+      child: textField,
     );
   }
 }

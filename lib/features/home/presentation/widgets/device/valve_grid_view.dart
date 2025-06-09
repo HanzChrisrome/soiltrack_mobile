@@ -22,11 +22,11 @@ class ValveGridView extends StatelessWidget {
       shrinkWrap: true,
       padding: const EdgeInsets.all(0),
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 2,
         crossAxisSpacing: 5,
         mainAxisSpacing: 5,
-        childAspectRatio: 0.73,
+        childAspectRatio: MediaQuery.of(context).size.width > 600 ? 1.1 : 0.75,
       ),
       itemCount: userPlots.length,
       itemBuilder: (context, index) {

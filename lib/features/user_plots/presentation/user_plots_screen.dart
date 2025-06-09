@@ -2,26 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
-import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
+import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/specific_details.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/controller/user_plot_controller.dart';
-import 'package:soiltrack_mobile/features/user_plots/helper/plant_analyzer.dart';
 import 'package:soiltrack_mobile/features/user_plots/helper/user_plots_helper.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/polygon_map.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_widgets/ai_display_section.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_widgets/ai_toggle.dart';
-import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_widgets/ai_unready_card.dart';
-import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_widgets/custom_toggle_button.dart';
-import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/crop_threshold.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/irrigation_scheduling/irrigation_content.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/line_chart.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_condition.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_details.dart';
-import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_suggestions.dart';
-import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/plot_warnings.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/tools_section.dart';
 import 'package:soiltrack_mobile/provider/shared_preferences.dart';
+import 'package:soiltrack_mobile/widgets/dynamic_bottom_sheet.dart';
+import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 import 'package:soiltrack_mobile/widgets/outline_button.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
+import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
 class UserPlotScreen extends ConsumerStatefulWidget {
   const UserPlotScreen({super.key});
@@ -39,7 +37,7 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final soilDashboard = ref.read(soilDashboardProvider.notifier);
-      final soilDashboardState = ref.watch(soilDashboardProvider);
+      final soilDashboardState = ref.read(soilDashboardProvider);
       if (soilDashboardState.irrigationLogs.isEmpty) {
         soilDashboard.fetchIrrigationLogs();
       }
@@ -70,6 +68,9 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
     final assignedMoistureSensor = controller.assignedMoistureSensor;
     final assignedNutrientSensor = controller.assignedNutrientSensor;
     final selectedLanguage = LanguagePreferences.getLanguage();
+    final minMoisture = controller.minMoisture;
+    final maxMoisture = controller.maxMoisture;
+    final irrigationType = controller.irrigationType;
 
     final aiAnalysisToday = controller.todayAiAnalysis;
     final hasSufficientDailyData = controller.hasSufficientDailyData;
@@ -100,14 +101,6 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                   sliver: SliverList(
                     delegate: SliverChildListDelegate([
-                      // CustomToggleButton(
-                      //   options: ['en', 'tl'],
-                      //   selectedOption: selectedLanguage,
-                      //   onChanged: (lang) {
-                      //     userPlotNotifier.setSelectedLanguage(lang);
-                      //   },
-                      // ),
-                      // SizedBox(height: 12),
                       PlotCondition(
                         plotName: plotName,
                       ),
@@ -141,15 +134,6 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                             ),
                           ],
                         ),
-
-                      // if (aiHistory.isNotEmpty)
-                      //   OutlineCustomButton(
-                      //     buttonText: 'View AI Analysis History',
-                      //     iconData: Icons.history,
-                      //     onPressed: () {
-                      //       context.pushNamed('ai-history');
-                      //     },
-                      //   ),
                       NutrientProgressChart(),
                       // PlotWarnings(plotWarningsData: plotWarningsData),
                       // PlotSuggestions(plotSuggestions: plotSuggestions),
@@ -157,7 +141,77 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                           assignedSensor: assignedMoistureSensor,
                           assignedNutrientSensor: assignedNutrientSensor,
                           soilType: soilType),
-                      CropThresholdWidget(plotDetails: selectedPlot),
+                      DynamicContainer(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              crossAxisAlignment: CrossAxisAlignment.center,
+                              children: [
+                                TextRoundedEnclose(
+                                  text: 'Irrigation Details:',
+                                  color: Colors.white,
+                                  textColor: Colors.grey[500]!,
+                                ),
+                                GestureDetector(
+                                  onTap: () {
+                                    showCustomModalBottomSheet(
+                                      context: context,
+                                      isScrollControlled: true,
+                                      builder: (context, setState) {
+                                        return IrrigationSettingsContent(
+                                            plotId: plotId,
+                                            initialIrrigationType:
+                                                irrigationType,
+                                            selectedPlot: selectedPlot);
+                                      },
+                                    );
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8,
+                                        vertical: 4), // Less padding
+                                    decoration: BoxDecoration(
+                                      color: Colors.green[50],
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                          color: Colors.green, width: 1),
+                                    ),
+                                    child: Icon(
+                                      Icons.edit,
+                                      color: Colors.green,
+                                      size: 15,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 20),
+                            SpecificDetails(
+                              icon: Icons.sensors,
+                              title: 'Irrigation Type:',
+                              details: '$irrigationType',
+                            ),
+                            SpecificDetails(
+                                icon: Icons.water_sharp,
+                                title: 'Min Moisture Percentage',
+                                details: '$minMoisture%'),
+                            SpecificDetails(
+                                icon: Icons.water_sharp,
+                                title: 'Max Moisture Percentage',
+                                details: '$maxMoisture%'),
+                          ],
+                        ),
+                      ),
+                      OutlineCustomButton(
+                        buttonText: 'View Irrigation Logs',
+                        iconData: Icons.history,
+                        onPressed: () {
+                          context.pushNamed('irrigation-logs');
+                        },
+                      ),
+                      const SizedBox(height: 30),
                     ]),
                   ),
                 ),

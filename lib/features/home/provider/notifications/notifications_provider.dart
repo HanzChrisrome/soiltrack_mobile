@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
 import 'package:soiltrack_mobile/core/model/notification_model.dart';
-import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -74,9 +73,6 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
           final newRecord = payload.newRecord;
           if (newRecord.isNotEmpty) {
             final notification = NotificationModel.fromMap(newRecord);
-            NotifierHelper.logMessage(
-              'New notification received: ${notification.message}',
-            );
             state = state.copyWith(
               notifications: [notification, ...state.notifications],
             );

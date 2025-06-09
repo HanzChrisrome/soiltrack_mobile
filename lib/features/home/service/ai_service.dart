@@ -182,15 +182,16 @@ class AiService {
     final formattedDateList = recentDates.map((d) => '"$d": ...').join(", ");
 
     final langInstruction = language == 'tl'
-        ? "Translate all your output into Filipino (Tagalog) please. Make it farmer-friendly, and conversational but still accurate."
+        ? "Translate all your output into Filipino (Tagalog) please. Make it farmer-friendly, and conversational but still accurate. Don't change any of the content, just translate it. Especially if there is no crop assigned, please translate it to Filipino but keep the content the same."
         : "";
 
-    final isCropEmpty = cropType.trim().isEmpty;
+    print('cropType: $cropType');
+    final isCropEmpty = cropType.trim().isEmpty ||
+        cropType.trim().toLowerCase() == 'no crop assigned';
 
     final recommendedCropsNote = isCropEmpty
-        ? ''
-        : '''
-    - Add a section `"recommended_crops"` with a list of 2–3 crops suitable for current conditions. Each item must contain a `"crop"` and `"reason"`.
+        ? '''
+    - Add a section `"recommended_crops"` with a list of 3-5 crops suitable for current conditions. Each item must contain a `"crop"` and `"reason"`. Please do not recommend any crops that are not being planted commonly in the Philippines. Recommend crops that are suitable and profitable in the Philippines.
 
     Example:
     "recommended_crops": [
@@ -200,7 +201,8 @@ class AiService {
       },
       ...
     ]
-    ''';
+    '''
+        : '';
 
     final cropInstruction = isCropEmpty
         ? '''
@@ -247,7 +249,7 @@ class AiService {
 
     📅 **DATE RANGE FORMAT**:
     - Use the earliest and latest dates from the data.
-    - Format: `"April 6 – April 13, 2025"` (use actual extracted dates).
+    - Format: "April 6 - April 13, 2025"` (use actual extracted dates).
     
     🗓️ **WEEKLY STRUCTURE**:
     Structure tasks to span across the week. Use scheduling when helpful, e.g., `"Apply compost midweek if rain is expected"`.
@@ -337,7 +339,7 @@ class AiService {
   - Only output **pure JSON**, no extra text.
   - Strictly follow the keys and structure.
   - Use **simple, clear sentences** that old farmers can understand.
-  - List **as many warnings, recommendations, and suggestions as needed** (1–5+).
+  - List **as many warnings, recommendations, and suggestions as needed** (1-5+).
   - **Do not invent** warnings or suggestions if not shown by the input data.
   - **If no concerning weather is detected, leave weather_suggestions as an empty list** (`[]`).
   - Always **numerically compare** old and new values for moisture and nutrients:
@@ -350,7 +352,7 @@ class AiService {
   - **Only analyze and report on the latest data**:
     - Ignore all data from previous dates when generating warnings, recommendations, headlines, and summaries.
     - Use previous data **only as historical reference** to understand trends for the latest data.
-    - Do not mention past dates (e.g., April 26–27) in any warning, summary, or recommendation.
+    - Do not mention past dates (e.g., April 26-27) in any warning, summary, or recommendation.
     - Focus purely on today's/latest data conditions and today's measurements.
   - Use the **plot name** when mentioning problems or praises — **never** use the crop name in the headline or summary.
   - Make the **headline meaningful**: Focus on the **most urgent or important trend detected** (e.g., severe moisture loss, nutrient imbalance, or weather risk). **Avoid just listing plot names**.
@@ -407,16 +409,31 @@ class AiService {
   ''';
   }
 
+  String translateJsonToTagalog(Map<String, dynamic> englishJson) {
+    final prompt = '''
+    You will be provided with a JSON document that contains agricultural analysis in English.
+
+    Your task is to translate only the **string values** into Filipino (Tagalog), while keeping the **exact same structure**, key names, and formatting.
+
+    ⚠️ Rules:
+    - DO NOT change any keys, structure, or data types.
+    - ONLY translate the content inside the quotation marks.
+    - Keep numbers, booleans, and dates the same.
+    - Return only valid JSON — no explanations, no markdown formatting.
+
+    Here is the JSON to translate:
+    ${jsonEncode(englishJson)}
+    ''';
+
+    return prompt;
+  }
+
   Future<Map<String, dynamic>> getAiAnalysis(
     String prompt, {
     double temperature = 0.7,
     int maxTokens = 1500,
     String language = 'en',
   }) async {
-    if (language == 'tl') {
-      return await getGeminiAnalysis(prompt);
-    }
-
     final String? apiKey = dotenv.env['OPEN_AI_API_KEY'];
     if (apiKey == null) {
       throw Exception('API key not found in environment variables.');

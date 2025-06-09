@@ -25,6 +25,7 @@ class SoilDashboardService {
         date_added,
         valve_tagging,
         polygons,
+        irrigation_type,
         user_crops (
             crop_name,
             category,
@@ -36,6 +37,15 @@ class SoilDashboardService {
             phosphorus_max,
             potassium_min,
             potassium_max
+        ),
+        irrigation_schedule (
+            schedule_id,
+            start_time,
+            duration_minutes,
+            days_of_week,
+            is_enabled,
+            schedule_label,
+            created_at
         ),
         user_plot_sensors (
             sensor_id,
@@ -86,11 +96,11 @@ class SoilDashboardService {
   Future<List<Map<String, dynamic>>> userPlotMoistureData(
       List<String> plotIds, DateTime startDate, DateTime endDate) async {
     try {
-      final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
-      final String formattedStartDate = formatter.format(startDate.toUtc());
-      final DateTime adjustedEndDate =
-          endDate.add(Duration(days: 1)).subtract(Duration(seconds: 1));
-      final String formattedEndDate = formatter.format(adjustedEndDate.toUtc());
+      final DateTime formattedStartDate =
+          DateTime.utc(startDate.year, startDate.month, startDate.day);
+
+      final DateTime formattedEndDate =
+          DateTime.utc(endDate.year, endDate.month, endDate.day, 23, 59, 59);
 
       final userPlotsData = await supabase
           .from('moisture_readings')
@@ -101,8 +111,8 @@ class SoilDashboardService {
           read_time
         ''')
           .inFilter('plot_id', plotIds)
-          .gte('read_time', formattedStartDate)
-          .lte('read_time', formattedEndDate)
+          .gte('read_time', formattedStartDate.toIso8601String())
+          .lte('read_time', formattedEndDate.toIso8601String())
           .order('read_time', ascending: false);
 
       return userPlotsData;
@@ -115,11 +125,11 @@ class SoilDashboardService {
   Future<List<Map<String, dynamic>>> userPlotNutrientData(
       List<String> plotIds, DateTime startDate, DateTime endDate) async {
     try {
-      final DateFormat formatter = DateFormat('yyyy-MM-dd HH:mm:ss');
-      final String formattedStartDate = formatter.format(startDate.toUtc());
-      final DateTime adjustedEndDate =
-          endDate.add(Duration(days: 1)).subtract(Duration(seconds: 1));
-      final String formattedEndDate = formatter.format(adjustedEndDate.toUtc());
+      final DateTime formattedStartDate =
+          DateTime.utc(startDate.year, startDate.month, startDate.day);
+
+      final DateTime formattedEndDate =
+          DateTime.utc(endDate.year, endDate.month, endDate.day, 23, 59, 59);
 
       final userPlotsData = await supabase
           .from('nutrient_readings')
@@ -132,8 +142,8 @@ class SoilDashboardService {
           readed_potassium
         ''')
           .inFilter('plot_id', plotIds)
-          .gte('read_time', formattedStartDate)
-          .lte('read_time', formattedEndDate)
+          .gte('read_time', formattedStartDate.toIso8601String())
+          .lte('read_time', formattedEndDate.toIso8601String())
           .order('read_time', ascending: false);
 
       return userPlotsData;
@@ -487,13 +497,13 @@ class SoilDashboardService {
     final url =
         'https://nominatim.openstreetmap.org/reverse?format=json&lat=$lat&lon=$lon';
 
-    NotifierHelper.logMessage('Lat: $lat, Lon: $lon');
-
-    final response = await http.get(Uri.parse(url));
+    final response = await http.get(
+      Uri.parse(url),
+      headers: {'User-Agent': 'my-flutter-app/1.0 (extraryse1212@gmail.com)'},
+    );
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      NotifierHelper.logMessage('Reverse geocode response: $data');
 
       final address = data['address'] ?? {};
 

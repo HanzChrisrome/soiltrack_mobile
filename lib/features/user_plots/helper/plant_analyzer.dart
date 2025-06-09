@@ -51,8 +51,6 @@ Future<void> analyzeSoil(BuildContext context) async {
     final response = await model.generateContent(content);
     final result = response.text ?? 'No response from Gemini.';
 
-    NotifierHelper.logMessage('Response: $result');
-
     showDialog(
       context: context,
       builder: (context) => AlertDialog(

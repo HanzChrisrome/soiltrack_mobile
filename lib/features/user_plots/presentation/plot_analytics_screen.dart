@@ -14,17 +14,17 @@ class PlotAnalyticsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final userPlot = ref.watch(soilDashboardProvider);
 
-    if (userPlot.isFetchingUserPlotData) {
-      return Scaffold(
-        backgroundColor: Colors.white,
-        body: Center(
-          child: LoadingAnimationWidget.progressiveDots(
-            color: Theme.of(context).colorScheme.onPrimary,
-            size: 50,
-          ),
-        ),
-      );
-    }
+    // if (userPlot.isFetchingUserPlotData) {
+    //   return Scaffold(
+    //     backgroundColor: Colors.white,
+    //     body: Center(
+    //       child: LoadingAnimationWidget.progressiveDots(
+    //         color: Theme.of(context).colorScheme.onPrimary,
+    //         size: 50,
+    //       ),
+    //     ),
+    //   );
+    // }
 
     final selectedPlot = userPlot.userPlots.firstWhere(
       (plot) => plot['plot_id'] == userPlot.selectedPlotId,

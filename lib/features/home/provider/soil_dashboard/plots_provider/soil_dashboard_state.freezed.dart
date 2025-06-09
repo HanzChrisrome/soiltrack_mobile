@@ -79,6 +79,7 @@ mixin _$SoilDashboardState {
   bool get isSavingNewSoilMoistureSensor => throw _privateConstructorUsedError;
   bool get isSavingNewSoilNutrientSensor => throw _privateConstructorUsedError;
   bool get isGeneratingAi => throw _privateConstructorUsedError;
+  bool get isSavingPlotSchedule => throw _privateConstructorUsedError;
 
   /// Create a copy of SoilDashboardState
   /// with the given fields replaced by the non-null parameter values.
@@ -140,7 +141,8 @@ abstract class $SoilDashboardStateCopyWith<$Res> {
       bool isSavingNewSoilType,
       bool isSavingNewSoilMoistureSensor,
       bool isSavingNewSoilNutrientSensor,
-      bool isGeneratingAi});
+      bool isGeneratingAi,
+      bool isSavingPlotSchedule});
 }
 
 /// @nodoc
@@ -205,6 +207,7 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
     Object? isSavingNewSoilMoistureSensor = null,
     Object? isSavingNewSoilNutrientSensor = null,
     Object? isGeneratingAi = null,
+    Object? isSavingPlotSchedule = null,
   }) {
     return _then(_value.copyWith(
       userPlots: null == userPlots
@@ -395,6 +398,10 @@ class _$SoilDashboardStateCopyWithImpl<$Res, $Val extends SoilDashboardState>
           ? _value.isGeneratingAi
           : isGeneratingAi // ignore: cast_nullable_to_non_nullable
               as bool,
+      isSavingPlotSchedule: null == isSavingPlotSchedule
+          ? _value.isSavingPlotSchedule
+          : isSavingPlotSchedule // ignore: cast_nullable_to_non_nullable
+              as bool,
     ) as $Val);
   }
 }
@@ -454,7 +461,8 @@ abstract class _$$SoilDashboardStateImplCopyWith<$Res>
       bool isSavingNewSoilType,
       bool isSavingNewSoilMoistureSensor,
       bool isSavingNewSoilNutrientSensor,
-      bool isGeneratingAi});
+      bool isGeneratingAi,
+      bool isSavingPlotSchedule});
 }
 
 /// @nodoc
@@ -517,6 +525,7 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
     Object? isSavingNewSoilMoistureSensor = null,
     Object? isSavingNewSoilNutrientSensor = null,
     Object? isGeneratingAi = null,
+    Object? isSavingPlotSchedule = null,
   }) {
     return _then(_$SoilDashboardStateImpl(
       userPlots: null == userPlots
@@ -707,6 +716,10 @@ class __$$SoilDashboardStateImplCopyWithImpl<$Res>
           ? _value.isGeneratingAi
           : isGeneratingAi // ignore: cast_nullable_to_non_nullable
               as bool,
+      isSavingPlotSchedule: null == isSavingPlotSchedule
+          ? _value.isSavingPlotSchedule
+          : isSavingPlotSchedule // ignore: cast_nullable_to_non_nullable
+              as bool,
     ));
   }
 }
@@ -761,7 +774,8 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
       this.isSavingNewSoilType = false,
       this.isSavingNewSoilMoistureSensor = false,
       this.isSavingNewSoilNutrientSensor = false,
-      this.isGeneratingAi = false})
+      this.isGeneratingAi = false,
+      this.isSavingPlotSchedule = false})
       : _userPlots = userPlots,
         _rawPlotMoistureData = rawPlotMoistureData,
         _rawPlotNutrientData = rawPlotNutrientData,
@@ -1024,10 +1038,13 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
   @override
   @JsonKey()
   final bool isGeneratingAi;
+  @override
+  @JsonKey()
+  final bool isSavingPlotSchedule;
 
   @override
   String toString() {
-    return 'SoilDashboardState(userPlots: $userPlots, rawPlotMoistureData: $rawPlotMoistureData, rawPlotNutrientData: $rawPlotNutrientData, latestPlotMoistureData: $latestPlotMoistureData, latestPlotNutrientData: $latestPlotNutrientData, userPlotMoistureData: $userPlotMoistureData, userPlotNutrientData: $userPlotNutrientData, nutrientWarnings: $nutrientWarnings, plotsSuggestion: $plotsSuggestion, deviceWarnings: $deviceWarnings, aiAnalysis: $aiAnalysis, aiSummaryHistory: $aiSummaryHistory, filteredAnalysis: $filteredAnalysis, generatedAnalysis: $generatedAnalysis, irrigationLogs: $irrigationLogs, isFetchingUserPlots: $isFetchingUserPlots, isFetchingUserPlotData: $isFetchingUserPlotData, isFetchingHistoryData: $isFetchingHistoryData, selectedPlotId: $selectedPlotId, selectedPlotHistoryId: $selectedPlotHistoryId, selectedAnalysisId: $selectedAnalysisId, loadedPlotId: $loadedPlotId, plotConditions: $plotConditions, plotToggles: $plotToggles, aiAnalysisStatus: $aiAnalysisStatus, currentCardToggled: $currentCardToggled, currentDeviceToggled: $currentDeviceToggled, mainDeviceToggled: $mainDeviceToggled, selectedTimeRangeFilter: $selectedTimeRangeFilter, selectedTimeRangeFilterGeneral: $selectedTimeRangeFilterGeneral, selectedHistoryFilter: $selectedHistoryFilter, selectedLanguage: $selectedLanguage, error: $error, userPlotDataError: $userPlotDataError, overallCondition: $overallCondition, selectedTimeRange: $selectedTimeRange, customStartDate: $customStartDate, customEndDate: $customEndDate, lastReadingTime: $lastReadingTime, historyDateStartFilter: $historyDateStartFilter, historyDateEndFilter: $historyDateEndFilter, isEditingUserPlot: $isEditingUserPlot, isSavingNewCrop: $isSavingNewCrop, isSavingNewSoilType: $isSavingNewSoilType, isSavingNewSoilMoistureSensor: $isSavingNewSoilMoistureSensor, isSavingNewSoilNutrientSensor: $isSavingNewSoilNutrientSensor, isGeneratingAi: $isGeneratingAi)';
+    return 'SoilDashboardState(userPlots: $userPlots, rawPlotMoistureData: $rawPlotMoistureData, rawPlotNutrientData: $rawPlotNutrientData, latestPlotMoistureData: $latestPlotMoistureData, latestPlotNutrientData: $latestPlotNutrientData, userPlotMoistureData: $userPlotMoistureData, userPlotNutrientData: $userPlotNutrientData, nutrientWarnings: $nutrientWarnings, plotsSuggestion: $plotsSuggestion, deviceWarnings: $deviceWarnings, aiAnalysis: $aiAnalysis, aiSummaryHistory: $aiSummaryHistory, filteredAnalysis: $filteredAnalysis, generatedAnalysis: $generatedAnalysis, irrigationLogs: $irrigationLogs, isFetchingUserPlots: $isFetchingUserPlots, isFetchingUserPlotData: $isFetchingUserPlotData, isFetchingHistoryData: $isFetchingHistoryData, selectedPlotId: $selectedPlotId, selectedPlotHistoryId: $selectedPlotHistoryId, selectedAnalysisId: $selectedAnalysisId, loadedPlotId: $loadedPlotId, plotConditions: $plotConditions, plotToggles: $plotToggles, aiAnalysisStatus: $aiAnalysisStatus, currentCardToggled: $currentCardToggled, currentDeviceToggled: $currentDeviceToggled, mainDeviceToggled: $mainDeviceToggled, selectedTimeRangeFilter: $selectedTimeRangeFilter, selectedTimeRangeFilterGeneral: $selectedTimeRangeFilterGeneral, selectedHistoryFilter: $selectedHistoryFilter, selectedLanguage: $selectedLanguage, error: $error, userPlotDataError: $userPlotDataError, overallCondition: $overallCondition, selectedTimeRange: $selectedTimeRange, customStartDate: $customStartDate, customEndDate: $customEndDate, lastReadingTime: $lastReadingTime, historyDateStartFilter: $historyDateStartFilter, historyDateEndFilter: $historyDateEndFilter, isEditingUserPlot: $isEditingUserPlot, isSavingNewCrop: $isSavingNewCrop, isSavingNewSoilType: $isSavingNewSoilType, isSavingNewSoilMoistureSensor: $isSavingNewSoilMoistureSensor, isSavingNewSoilNutrientSensor: $isSavingNewSoilNutrientSensor, isGeneratingAi: $isGeneratingAi, isSavingPlotSchedule: $isSavingPlotSchedule)';
   }
 
   @override
@@ -1123,7 +1140,8 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
             (identical(other.isSavingNewSoilType, isSavingNewSoilType) || other.isSavingNewSoilType == isSavingNewSoilType) &&
             (identical(other.isSavingNewSoilMoistureSensor, isSavingNewSoilMoistureSensor) || other.isSavingNewSoilMoistureSensor == isSavingNewSoilMoistureSensor) &&
             (identical(other.isSavingNewSoilNutrientSensor, isSavingNewSoilNutrientSensor) || other.isSavingNewSoilNutrientSensor == isSavingNewSoilNutrientSensor) &&
-            (identical(other.isGeneratingAi, isGeneratingAi) || other.isGeneratingAi == isGeneratingAi));
+            (identical(other.isGeneratingAi, isGeneratingAi) || other.isGeneratingAi == isGeneratingAi) &&
+            (identical(other.isSavingPlotSchedule, isSavingPlotSchedule) || other.isSavingPlotSchedule == isSavingPlotSchedule));
   }
 
   @override
@@ -1175,7 +1193,8 @@ class _$SoilDashboardStateImpl implements _SoilDashboardState {
         isSavingNewSoilType,
         isSavingNewSoilMoistureSensor,
         isSavingNewSoilNutrientSensor,
-        isGeneratingAi
+        isGeneratingAi,
+        isSavingPlotSchedule
       ]);
 
   /// Create a copy of SoilDashboardState
@@ -1236,7 +1255,8 @@ abstract class _SoilDashboardState implements SoilDashboardState {
       final bool isSavingNewSoilType,
       final bool isSavingNewSoilMoistureSensor,
       final bool isSavingNewSoilNutrientSensor,
-      final bool isGeneratingAi}) = _$SoilDashboardStateImpl;
+      final bool isGeneratingAi,
+      final bool isSavingPlotSchedule}) = _$SoilDashboardStateImpl;
 
   @override
   List<Map<String, dynamic>> get userPlots;
@@ -1332,6 +1352,8 @@ abstract class _SoilDashboardState implements SoilDashboardState {
   bool get isSavingNewSoilNutrientSensor;
   @override
   bool get isGeneratingAi;
+  @override
+  bool get isSavingPlotSchedule;
 
   /// Create a copy of SoilDashboardState
   /// with the given fields replaced by the non-null parameter values.

@@ -86,23 +86,26 @@ class SoilDashboardHelper {
 
   DateTime getStartDateFromTimeRange(String timeRange) {
     final DateTime now = DateTime.now();
+    final todayLocalStart = DateTime(now.year, now.month, now.day).toUtc();
     DateTime startDate;
 
     switch (timeRange) {
       case '1D':
-        startDate = DateTime(now.year, now.month, now.day);
+        startDate = todayLocalStart.toUtc();
         break;
       case '1W':
-        startDate = now.subtract(const Duration(days: 7));
+        startDate = todayLocalStart.subtract(const Duration(days: 7)).toUtc();
         break;
       case '1M':
-        startDate = DateTime(now.year, now.month - 1, now.day);
+        startDate = DateTime.utc(todayLocalStart.year,
+            todayLocalStart.month - 1, todayLocalStart.day);
         break;
       case '3M':
-        startDate = DateTime(now.year, now.month - 3, now.day);
+        startDate = DateTime.utc(todayLocalStart.year,
+            todayLocalStart.month - 3, todayLocalStart.day);
         break;
       default:
-        startDate = now.subtract(const Duration(days: 1));
+        startDate = todayLocalStart.subtract(const Duration(days: 1)).toUtc();
     }
 
     return startDate;
@@ -145,8 +148,6 @@ class SoilDashboardHelper {
       List messages = plot['warnings'] ?? [];
       return sum + messages.length;
     });
-
-    NotifierHelper.logMessage('Warnings count: $warningsCount');
 
     double averageWarnings = warningsCount / totalPlots;
 

@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class FormatterHelper {
   //FOR DAILY FORMATTER
   String formatMoistureDataForPrompt(List<Map<String, dynamic>> moistureData) {
@@ -253,5 +255,11 @@ class FormatterHelper {
     });
 
     return buffer.toString();
+  }
+
+  String formatTimeOfDay(TimeOfDay time) {
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
   }
 }

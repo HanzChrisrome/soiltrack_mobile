@@ -104,8 +104,7 @@ class _IrrigationLogScreenState extends ConsumerState<IrrigationLogScreen> {
                               return Padding(
                                 padding: const EdgeInsets.only(bottom: 10),
                                 child: CustomAccordion(
-                                  titleText:
-                                      'Irrigation Log for $formattedDate',
+                                  titleText: '$formattedDate',
                                   initiallyExpanded: false,
                                   content: Column(
                                     crossAxisAlignment:

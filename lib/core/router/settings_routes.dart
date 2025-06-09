@@ -3,6 +3,7 @@ import 'package:soiltrack_mobile/core/utils/page_transition.dart';
 import 'package:soiltrack_mobile/features/settings/presentation/ask_questions.dart';
 import 'package:soiltrack_mobile/features/settings/presentation/help_topics.dart';
 import 'package:soiltrack_mobile/features/settings/presentation/user_information.dart';
+import 'package:soiltrack_mobile/features/user_plots/presentation/irrigation_schedule.dart';
 
 final settingsRoutes = [
   GoRoute(

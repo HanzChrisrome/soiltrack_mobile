@@ -85,9 +85,10 @@ class AddingCropsScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 10),
                       TextGradient(
-                        text: cropState.selectedCategory ?? '',
+                        text: 'Assign a crop for your plot',
                         textAlign: TextAlign.center,
-                        fontSize: 35,
+                        fontSize: 45,
+                        heightSpacing: 1,
                       ),
                     ],
                   ),
@@ -103,7 +104,7 @@ class AddingCropsScreen extends ConsumerWidget {
                       buildShimmerSkeleton()
                     else
                       Column(
-                        children: cropState.cropsList.map((crop) {
+                        children: cropState.allCrops.map((crop) {
                           return GestureDetector(
                             onTap: () {
                               if (userPlot.isEditingUserPlot) {

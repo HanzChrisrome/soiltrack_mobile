@@ -28,6 +28,15 @@ class UserPlotController {
   String get cropType =>
       selectedPlot['user_crops']?['crop_name'] ?? 'No crop assigned';
 
+  String get minMoisture =>
+      (selectedPlot['user_crops']?['moisture_min'] ?? 0).toStringAsFixed(2);
+
+  String get maxMoisture =>
+      (selectedPlot['user_crops']?['moisture_max'] ?? 0).toStringAsFixed(2);
+
+  String get irrigationType =>
+      selectedPlot['irrigation_type'] ?? 'No irrigation type';
+
   List<LatLng> get selectedPolygon {
     final List<dynamic> polygonData = selectedPlot['polygons'] ?? [];
 
@@ -159,6 +168,7 @@ class UserPlotController {
       final entryDate = DateTime.parse(entry['analysis_date']);
       return entry['plot_id'] == plotId &&
           entry['analysis_type'] == 'Weekly' &&
+          entry['language_type'] == selectedLanguage &&
           entryDate.isAfter(sevenDaysAgo);
     }).toList();
 

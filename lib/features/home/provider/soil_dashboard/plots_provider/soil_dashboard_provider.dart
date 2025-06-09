@@ -37,24 +37,17 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
   Future<void> initRealtimeListeners() async {
     await Future.delayed(Duration(seconds: 5));
 
-    NotifierHelper.logMessage('Initializing realtime listeners');
-
     moistureChannel = supabase.channel('public:moisture_readings')
       ..onPostgresChanges(
         event: PostgresChangeEvent.insert,
         schema: 'public',
         table: 'moisture_readings',
         callback: (payload) async {
-          NotifierHelper.logMessage('Moisture data updated');
-
           final ids = state.userPlots
               .map((plot) => plot['plot_id'].toString())
               .toList();
 
-          NotifierHelper.logMessage(
-              'Real-time fetch triggered for plot IDs: $ids');
-
-          await fetchLatestData(ids);
+          await fetchUserPlotData();
         },
       )
       ..subscribe();
@@ -122,7 +115,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
 
       await fetchLatestData(plotIds);
       await filterPlotData(rawMoistureData, rawNutrientData);
-      await fetchUserAnalytics();
     } catch (e) {
       NotifierHelper.logError(e);
     } finally {
@@ -131,8 +123,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
   }
 
   Future<void> fetchLatestData(List<String> plotIds) async {
-    NotifierHelper.logMessage('Fetching latest data for plots: $plotIds');
-
     try {
       final data = await Future.wait([
         soilDashboardService.fetchLatestMoistureReadings(plotIds),
@@ -440,7 +430,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     final weatherReport =
         ref.read(weatherProvider).weatherReport ?? 'No report';
     final userId = ref.read(authProvider).userId;
-    final languages = ['en', 'tl'];
 
     final DateTime todayDate = DateTime.now().toLocal();
     final String todayString = DateFormat('yyyy-MM-dd').format(todayDate);
@@ -458,12 +447,9 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
             state.userPlots.any((plot) => plot['plot_id'] == entry['plot_id']));
 
         if (plotHasTodayAnalysis) {
-          NotifierHelper.logMessage(
-              'Daily AI analysis already exists for plot $plotId.');
           continue;
         }
 
-        // Get the filtered data for this plot
         final filtered = plotHelper.getFilteredAiReadyData(
           selectedPlotId: plotId,
           rawMoistureData: rawMoistureData,
@@ -471,40 +457,56 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         );
 
         if (filtered != null) {
-          NotifierHelper.logMessage('Daily Analysis for plot $plotId is ready');
-
           final aiFormattedPrompt =
               plotHelper.getFormattedAiPrompt(data: filtered);
 
-          for (final lang in languages) {
-            final forPrompting = aiService.generateAIAnalysisPrompt(
-              aiFormattedPrompt,
-              cropType,
-              soilType,
-              plotName,
-              weatherReport,
-              language: lang,
-            );
+          final forPrompting = aiService.generateAIAnalysisPrompt(
+            aiFormattedPrompt,
+            cropType,
+            soilType,
+            plotName,
+            weatherReport,
+            language: 'en',
+          );
 
-            final aiResponse =
-                await aiService.getAiAnalysis(forPrompting, language: lang);
+          final aiResponse =
+              await aiService.getAiAnalysis(forPrompting, language: 'en');
 
-            final aiRaw = aiResponse['choices'][0]['message']['content'];
-            final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
+          final aiRaw = aiResponse['choices'][0]['message']['content'];
+          final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
 
-            final newAnalysis = {
-              "plot_id": plotId,
-              "analysis_date": todayString,
-              "analysis": parsedJson,
-              "analysis_type": 'Daily',
-              "language_type": lang,
-            };
+          final newAnalysis = {
+            "plot_id": plotId,
+            "analysis_date": todayString,
+            "analysis": parsedJson,
+            "analysis_type": 'Daily',
+            "language_type": 'en',
+          };
 
-            await supabase.from('ai_analysis').insert(newAnalysis);
-          }
+          await supabase.from('ai_analysis').insert(newAnalysis);
+
+          final tagalogPrompt = aiService.translateJsonToTagalog(parsedJson);
+          final tagalogResponse =
+              await aiService.getGeminiAnalysis(tagalogPrompt);
+          final tagalogRaw =
+              tagalogResponse['choices'][0]['message']['content'];
+          final tagalogParsedJson =
+              soilDashboardHelper.extractCleanAIJson(tagalogRaw);
+
+          final tagalogAnalysis = {
+            "plot_id": plotId,
+            "analysis_date": todayString,
+            "analysis": tagalogParsedJson,
+            "analysis_type": 'Daily',
+            "language_type": 'tl',
+          };
+
+          await supabase.from('ai_analysis').insert(tagalogAnalysis);
+          NotifierHelper.logMessage(
+              'AI Analysis data is ready for plot $plotId for daily analysis');
         } else {
           NotifierHelper.logMessage(
-              'No valid moisture or nutrient data for plot $plotId');
+              'No data available for plot $plotId for daily analysis');
         }
       }
 
@@ -516,8 +518,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       }).toList();
 
       if (todaySummaries.isNotEmpty) {
-        NotifierHelper.logMessage(
-            'AI Summary for today already exists in memory. Skipping generation.');
         return;
       }
 
@@ -600,7 +600,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     final rawNutrientData = state.rawPlotNutrientData;
     final weatherReport =
         ref.read(weatherProvider).weatherReport ?? 'No report';
-    final languages = ['en', 'tl'];
 
     try {
       final now = DateTime.now();
@@ -622,8 +621,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         });
 
         if (plotHasWeeklyAnalysis) {
-          NotifierHelper.logMessage(
-              'Weekly AI analysis already exists for plot $plotId.');
           continue;
         }
 
@@ -633,37 +630,48 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
             rawNutrientData: rawNutrientData);
 
         if (filtered != null) {
-          NotifierHelper.logMessage(
-              'Weekly Analysis for plot $plotId is ready');
-
           final aiFormattedPrompt =
               plotHelper.getFormattedAiWeeklyPrompt(data: filtered);
 
-          for (final lang in languages) {
-            final forPrompting = aiService.generateWeeklyAIAnalysisPrompt(
-                aiFormattedPrompt, cropType, soilType, plotName, weatherReport,
-                language: lang);
+          final forPrompting = aiService.generateWeeklyAIAnalysisPrompt(
+              aiFormattedPrompt, cropType, soilType, plotName, weatherReport,
+              language: 'en');
 
-            // Continue with AI analysis
-            // final aiResponse = await aiService.getAiAnalysis(forPrompting);
+          // Continue with AI analysis
+          final aiResponse = await aiService.getAiAnalysis(forPrompting);
 
-            // final aiRaw = aiResponse['choices'][0]['message']['content'];
-            // final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
-            // final today = DateTime.now().toIso8601String().split('T').first;
+          final aiRaw = aiResponse['choices'][0]['message']['content'];
+          final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
+          final today = DateTime.now().toIso8601String().split('T').first;
 
-            // final newAnalysis = {
-            //   "plot_id": plotId,
-            //   "analysis_date": today,
-            //   "analysis": parsedJson,
-            //   "analysis_type": 'Weekly',
-            //   "language_type": lang,
-            // };
+          final newAnalysis = {
+            "plot_id": plotId,
+            "analysis_date": today,
+            "analysis": parsedJson,
+            "analysis_type": 'Weekly',
+            "language_type": 'en',
+          };
 
-            // await supabase.from('ai_analysis').insert(newAnalysis);
-          }
-        } else {
-          NotifierHelper.logMessage(
-              'No valid moisture or nutrient weekly data for plot $plotId');
+          await supabase.from('ai_analysis').insert(newAnalysis);
+
+          final tagalogPrompt = aiService.translateJsonToTagalog(parsedJson);
+
+          final tagalogResponse =
+              await aiService.getGeminiAnalysis(tagalogPrompt);
+          final tagalogRaw =
+              tagalogResponse['choices'][0]['message']['content'];
+          final tagalogParsedJson =
+              soilDashboardHelper.extractCleanAIJson(tagalogRaw);
+
+          final tagalogAnalysis = {
+            "plot_id": plotId,
+            "analysis_date": today,
+            "analysis": tagalogParsedJson,
+            "analysis_type": 'Weekly',
+            "language_type": 'tl',
+          };
+
+          await supabase.from('ai_analysis').insert(tagalogAnalysis);
         }
       }
 
@@ -682,7 +690,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       final XFile? image = await picker.pickImage(source: ImageSource.camera);
 
       if (image == null) {
-        NotifierHelper.logMessage('No image selected');
         return;
       }
 
@@ -768,12 +775,12 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
       final address = await soilDashboardService.reverseGeocode(
           center.latitude, center.longitude);
 
-      NotifierHelper.logMessage('Polygon address: $address');
-
       await supabase.from('user_plots').update({
         'polygons': coordinates,
         'plot_address': address,
       }).eq('plot_id', state.selectedPlotId);
+
+      await fetchUserPlots();
     } catch (e) {
       NotifierHelper.logError(e);
     } finally {
@@ -792,17 +799,86 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
     }, onConflict: 'user_id');
   }
 
-  // Future<void> fetchPumpStatus() async {
-  //   try {
-  //     final response = await supabase
-  //         .from('iot_device')
-  //         .select('isPumpOn')
-  //         .eq('')
+  Future<void> saveIrrigationSchedule({
+    required BuildContext context,
+    required String formattedTime,
+    required int plotId,
+    required Duration timeDuration,
+    required String irrigationType,
+    required List<String> selectedDays,
+    required String scheduleLabel,
+    required int scheduleId,
+    required String savingType,
+  }) async {
+    NotifierHelper.showLoadingToast(context, 'Uploading irrigation schedule.');
 
-  //   } catch (e) {
-  //     NotifierHelper.logError(e);
-  //   }
-  // }
+    try {
+      await supabase.from('user_plots').update({
+        'irrigation_type': irrigationType,
+      }).eq('plot_id', plotId);
+
+      if (savingType == 'create') {
+        await supabase.from('irrigation_schedule').insert({
+          'plot_id': plotId,
+          'schedule_label': scheduleLabel,
+          'start_time': formattedTime,
+          'duration_minutes': timeDuration.inMinutes,
+          'days_of_week': selectedDays,
+          'is_enabled': true,
+          'created_at': DateTime.now().toIso8601String(),
+        });
+      }
+
+      if (savingType == 'update') {
+        await supabase.from('irrigation_schedule').update({
+          'plot_id': plotId,
+          'schedule_label': scheduleLabel,
+          'start_time': formattedTime,
+          'duration_minutes': timeDuration.inMinutes,
+          'days_of_week': selectedDays,
+          'is_enabled': true,
+          'created_at': DateTime.now().toIso8601String(),
+        }).eq('schedule_id', scheduleId);
+      }
+
+      NotifierHelper.logMessage('Irrigation Type: $irrigationType');
+
+      NotifierHelper.showSuccessToast(context, 'Irrigation schedule uploaded');
+      await fetchUserPlots();
+    } catch (e) {
+      NotifierHelper.logError(
+          e, context, 'Error uploading irrigation schedule');
+    } finally {
+      NotifierHelper.closeToast(context);
+    }
+  }
+
+  Future<void> changeIrrigationStatus(
+      BuildContext context, int plotId, String selectedType) async {
+    try {
+      await supabase.from('user_plots').update({
+        'irrigation_type': selectedType,
+      }).eq('plot_id', plotId);
+
+      NotifierHelper.showSuccessToast(context, 'Irrigation status updated');
+      await fetchUserPlots();
+    } catch (e) {
+      NotifierHelper.logError(e, context, 'Error changing irrigation status');
+    } finally {
+      NotifierHelper.closeToast(context);
+    }
+  }
+
+  Future<void> deleteSchedule(BuildContext context, int schedule_id) async {
+    NotifierHelper.showLoadingToast(context, 'Deleting irrigation schedule');
+    await supabase.from('irrigation_schedule').delete().eq(
+          'schedule_id',
+          schedule_id,
+        );
+
+    await fetchUserPlots();
+    NotifierHelper.showSuccessToast(context, 'Irrigation schedule deleted');
+  }
 
   void setSelectedPlotId(BuildContext context, plotId) async {
     state = state.copyWith(selectedPlotId: plotId);
@@ -818,13 +894,10 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
   }
 
   void setPlotId(plotId) {
-    NotifierHelper.logMessage('Selected plot id: $plotId');
     state = state.copyWith(selectedPlotId: plotId);
   }
 
-  void setNutrientSensorId(npkSensorId) {
-    NotifierHelper.logMessage('Selected NPK sensor id: $npkSensorId');
-  }
+  void setNutrientSensorId(npkSensorId) {}
 
   void setEditingUserPlot(bool isEditing) {
     state = state.copyWith(isEditingUserPlot: isEditing);

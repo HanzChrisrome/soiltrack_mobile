@@ -27,11 +27,11 @@ class SensorGridView extends StatelessWidget {
       shrinkWrap: true,
       padding: const EdgeInsets.all(0),
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
         crossAxisSpacing: 5,
         mainAxisSpacing: 5,
-        childAspectRatio: 0.75,
+        childAspectRatio: MediaQuery.of(context).size.width > 600 ? 1.1 : 0.75,
       ),
       itemCount: sensors.length,
       itemBuilder: (context, index) {

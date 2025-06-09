@@ -104,6 +104,7 @@ class _MyAppState extends ConsumerState<MyApp> {
             : '❌ Failed to get FCM token (null)');
 
         if (token != null) {
+          print('💾 Saving FCM token to Supabase');
           await ref.read(soilDashboardProvider.notifier).saveDeviceToken(token);
         }
       } else {

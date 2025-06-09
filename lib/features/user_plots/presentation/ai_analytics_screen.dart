@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_widgets/ai_chart.dart';
-import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/grouped_nutrient_bar.dart';
 import 'package:soiltrack_mobile/widgets/custom_accordion.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/nutrient_selection.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
@@ -128,6 +127,9 @@ class AiAnalysisOverview extends ConsumerWidget {
       'K': 'Potassium',
     };
 
+    final recommendedCrops =
+        (analysis['recommended_crops'] as List<dynamic>?) ?? [];
+
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: Container(
@@ -220,64 +222,64 @@ class AiAnalysisOverview extends ConsumerWidget {
                                         .onSurface
                                         .withOpacity(0.1),
                                   ),
-                                  if (analysisType == 'Weekly')
-                                    Column(
-                                      children: [
-                                        Text(
-                                          shortSummary,
-                                          style: Theme.of(context)
-                                              .textTheme
-                                              .titleMedium!
-                                              .copyWith(
-                                                fontSize: 22,
-                                                color: Theme.of(context)
-                                                    .colorScheme
-                                                    .secondary,
-                                                fontWeight: FontWeight.w300,
-                                                height: 1.2,
-                                                letterSpacing: -0.9,
-                                              ),
-                                        ),
-                                        const SizedBox(height: 10),
-                                        DynamicContainer(
-                                          child: Column(
-                                            children: [
-                                              Row(
-                                                mainAxisAlignment:
-                                                    MainAxisAlignment
-                                                        .spaceBetween,
-                                                children: [
-                                                  Text(
-                                                    'Nitrogen',
-                                                    style: Theme.of(context)
-                                                        .textTheme
-                                                        .titleSmall!
-                                                        .copyWith(
-                                                          color:
-                                                              Theme.of(context)
-                                                                  .colorScheme
-                                                                  .onSurface,
-                                                          fontWeight:
-                                                              FontWeight.w500,
-                                                        ),
-                                                  ),
-                                                  TextRoundedEnclose(
-                                                    text: nitrogenCondition,
-                                                    color: Colors.blue,
-                                                    textColor: Theme.of(context)
-                                                        .colorScheme
-                                                        .surface,
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(height: 10),
-                                              GroupedNutrientBarChart(
-                                                  groupedData: groupedData),
-                                            ],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
+                                  // if (analysisType == 'Weekly')
+                                  //   Column(
+                                  //     children: [
+                                  //       Text(
+                                  //         shortSummary,
+                                  //         style: Theme.of(context)
+                                  //             .textTheme
+                                  //             .titleMedium!
+                                  //             .copyWith(
+                                  //               fontSize: 22,
+                                  //               color: Theme.of(context)
+                                  //                   .colorScheme
+                                  //                   .secondary,
+                                  //               fontWeight: FontWeight.w300,
+                                  //               height: 1.2,
+                                  //               letterSpacing: -0.9,
+                                  //             ),
+                                  //       ),
+                                  //       const SizedBox(height: 10),
+                                  //       DynamicContainer(
+                                  //         child: Column(
+                                  //           children: [
+                                  //             Row(
+                                  //               mainAxisAlignment:
+                                  //                   MainAxisAlignment
+                                  //                       .spaceBetween,
+                                  //               children: [
+                                  //                 Text(
+                                  //                   'Nitrogen',
+                                  //                   style: Theme.of(context)
+                                  //                       .textTheme
+                                  //                       .titleSmall!
+                                  //                       .copyWith(
+                                  //                         color:
+                                  //                             Theme.of(context)
+                                  //                                 .colorScheme
+                                  //                                 .onSurface,
+                                  //                         fontWeight:
+                                  //                             FontWeight.w500,
+                                  //                       ),
+                                  //                 ),
+                                  //                 TextRoundedEnclose(
+                                  //                   text: nitrogenCondition,
+                                  //                   color: Colors.blue,
+                                  //                   textColor: Theme.of(context)
+                                  //                       .colorScheme
+                                  //                       .surface,
+                                  //                 ),
+                                  //               ],
+                                  //             ),
+                                  //             const SizedBox(height: 10),
+                                  //             GroupedNutrientBarChart(
+                                  //                 groupedData: groupedData),
+                                  //           ],
+                                  //         ),
+                                  //       ),
+                                  //     ],
+                                  //   ),
                                   Text(
                                     findings,
                                     style: Theme.of(context)
@@ -361,6 +363,64 @@ class AiAnalysisOverview extends ConsumerWidget {
                                 ],
                               ),
                             ),
+                            if (recommendedCrops.isNotEmpty)
+                              CustomAccordion(
+                                borderColor: Colors.transparent,
+                                titleWidget: TextGradient(
+                                  text: 'Recommended Crops:',
+                                  fontSize: 16,
+                                  letterSpacing: -0.5,
+                                ),
+                                icon: Icons.recommend,
+                                initiallyExpanded: true,
+                                content: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: List.generate(
+                                      recommendedCrops.length * 2 - 1, (index) {
+                                    if (index.isEven) {
+                                      // Crop content
+                                      final cropInfo =
+                                          recommendedCrops[index ~/ 2];
+                                      final crop =
+                                          cropInfo['crop'] ?? 'Unknown';
+                                      final reason = cropInfo['reason'] ?? '';
+
+                                      return RichText(
+                                        text: TextSpan(
+                                          style: Theme.of(context)
+                                              .textTheme
+                                              .bodyMedium!
+                                              .copyWith(
+                                                fontSize: 15,
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onSurface,
+                                                fontWeight: FontWeight.w400,
+                                              ),
+                                          children: [
+                                            TextSpan(
+                                              text: '$crop: ',
+                                              style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold)
+                                                  .copyWith(
+                                                color: Theme.of(context)
+                                                    .colorScheme
+                                                    .onPrimary,
+                                              ),
+                                            ),
+                                            TextSpan(text: reason),
+                                          ],
+                                        ),
+                                      );
+                                    } else {
+                                      return DividerWidget(
+                                        verticalHeight: 1,
+                                      );
+                                    }
+                                  }),
+                                ),
+                              ),
                             CustomAccordion(
                               borderColor: Colors.transparent,
                               titleWidget: TextGradient(
@@ -369,7 +429,7 @@ class AiAnalysisOverview extends ConsumerWidget {
                                 letterSpacing: -0.5,
                               ),
                               icon: Icons.warning_rounded,
-                              initiallyExpanded: false,
+                              initiallyExpanded: true,
                               content: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -430,6 +490,7 @@ class AiAnalysisOverview extends ConsumerWidget {
                             if (recommendedFertilizers.isNotEmpty)
                               CustomAccordion(
                                 borderColor: Colors.transparent,
+                                initiallyExpanded: true,
                                 titleWidget: TextGradient(
                                   text: 'Recommended Fertilizers:',
                                   fontSize: 16,

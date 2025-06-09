@@ -27,7 +27,6 @@ class CropsType extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
       onTap: () {
-        ref.read(cropProvider.notifier).selectCategory(textCategory);
         context.pushNamed('add-crops');
       },
       child: Container(
