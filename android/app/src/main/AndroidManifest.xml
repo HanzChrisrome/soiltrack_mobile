@@ -33,6 +33,11 @@
         android:icon="@mipmap/soiltrack_icon"
         android:enableOnBackInvokedCallback="true">
 
+        <!-- ✅ ADDED for Firebase notification icon -->
+        <meta-data
+            android:name="com.google.firebase.messaging.default_notification_icon"
+            android:resource="@drawable/ic_notification" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -65,7 +70,6 @@
                 android:value="default_channel"/>
         </activity>
 
-        <!-- ✅ Move <provider> HERE, outside <activity> -->
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"

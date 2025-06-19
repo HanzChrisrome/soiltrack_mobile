@@ -1,78 +1,75 @@
-import 'dart:async';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
-import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-final pumpInitialState = FutureProvider<bool>((ref) async {
-  final deviceState = ref.watch(deviceProvider);
-  final authState = ref.watch(authProvider);
-
-  final macAddress = deviceState.macAddress ?? authState.macAddress;
-  if (macAddress == null) {
-    throw Exception('MAC address is null');
+class PumpStateNotifier extends StateNotifier<bool?> {
+  PumpStateNotifier(this._macAddress) : super(null) {
+    _init();
   }
 
-  final response = await supabase
-      .from('iot_device')
-      .select('isPumpOn')
-      .eq('mac_address', macAddress)
-      .single();
+  final String _macAddress;
+  RealtimeChannel? _channel;
 
-  return response['isPumpOn'] as bool;
-});
-
-final pumpStatusRealtimeProvider = StreamProvider.autoDispose<bool>((ref) {
-  final deviceState = ref.watch(deviceProvider);
-  final authState = ref.watch(authProvider);
-
-  final macAddress = deviceState.macAddress ?? authState.macAddress;
-  if (macAddress == null) {
-    throw Exception('MAC address is null');
+  Future<void> _init() async {
+    await _fetchInitialState();
+    _subscribeToPumpChanges();
   }
 
-  final controller = StreamController<bool>();
+  Future<void> _fetchInitialState() async {
+    try {
+      final response = await supabase
+          .from('iot_device')
+          .select('isPumpOn')
+          .eq('mac_address', _macAddress)
+          .maybeSingle();
 
-  final channel = supabase.channel('public:iot_device')
-    ..onPostgresChanges(
-      event: PostgresChangeEvent.update,
-      schema: 'public',
-      table: 'iot_device',
-      filter: PostgresChangeFilter(
-        type: PostgresChangeFilterType.eq,
-        column: 'mac_address',
-        value: macAddress,
-      ),
-      callback: (payload) {
-        final newRecord = payload.newRecord;
-        if (newRecord.isNotEmpty && newRecord.containsKey('isPumpOn')) {
-          controller.add(newRecord['isPumpOn'] as bool);
-        }
-      },
-    ).subscribe();
+      if (response != null && response['isPumpOn'] != null) {
+        state = response['isPumpOn'] as bool;
+      }
+    } catch (e) {
+      print('[PumpStateNotifier] Initial fetch error: $e');
+    }
+  }
 
-  ref.onDispose(() async {
-    await channel.unsubscribe();
-    await controller.close();
-  });
+  void _subscribeToPumpChanges() {
+    _channel = supabase.channel('public:iot_device')
+      ..onPostgresChanges(
+        event: PostgresChangeEvent.update,
+        schema: 'public',
+        table: 'iot_device',
+        filter: PostgresChangeFilter(
+          type: PostgresChangeFilterType.eq,
+          column: 'mac_address',
+          value: _macAddress,
+        ),
+        callback: (payload) {
+          final newRecord = payload.newRecord;
+          if (newRecord.isNotEmpty && newRecord.containsKey('isPumpOn')) {
+            final isPumpOn = newRecord['isPumpOn'] as bool;
+            print('[PumpStateNotifier] Pump state updated to $isPumpOn');
+            state = isPumpOn;
+          }
+        },
+      ).subscribe();
+  }
 
-  return controller.stream;
-});
+  @override
+  void dispose() {
+    if (_channel != null) {
+      supabase.removeChannel(_channel!);
+    }
+    super.dispose();
+  }
+}
 
-final pumpStateProvider = Provider<AsyncValue<bool>>((ref) {
-  final initial = ref.watch(pumpInitialState);
-  final realtime = ref.watch(pumpStatusRealtimeProvider);
+final pumpStateProvider =
+    StateNotifierProvider<PumpStateNotifier, bool?>((ref) {
+  final deviceState = ref.read(deviceProvider);
+  final authState = ref.read(authProvider);
 
-  return initial.when(
-    data: (initialData) => realtime.when(
-      data: (realTimeData) => AsyncValue.data(realTimeData),
-      loading: () => AsyncValue.data(initialData),
-      error: (error, stack) => AsyncValue.error(error, stack),
-    ),
-    loading: () => AsyncValue.loading(),
-    error: (error, stack) => AsyncValue.error(error, stack),
-  );
+  final macAddress = deviceState.macAddress ?? authState.macAddress ?? '';
+
+  return PumpStateNotifier(macAddress);
 });

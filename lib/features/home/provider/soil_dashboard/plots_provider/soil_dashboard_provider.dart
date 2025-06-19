@@ -51,6 +51,25 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         },
       )
       ..subscribe();
+
+    supabase.channel('public:irrigation_log')
+      ..onPostgresChanges(
+        event: PostgresChangeEvent.insert,
+        schema: 'public',
+        table: 'irrigation_log',
+        callback: (payload) async {
+          print('New irrigation log received: ${payload.newRecord}');
+          final newLog = payload.newRecord;
+
+          final plotIds =
+              state.userPlots.map((plot) => plot['plot_id']).toList();
+
+          if (plotIds.contains(newLog['plot_id'])) {
+            await fetchIrrigationLogs();
+          }
+        },
+      )
+      ..subscribe();
   }
 
   Future<void> fetchUserPlots() async {
@@ -421,7 +440,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
   }
 
   Future<void> generateDailyAnalysis() async {
-    if (state.isGeneratingAi) return;
     state = state.copyWith(isGeneratingAi: true);
 
     final plotHelper = UserPlotsHelper();
@@ -582,17 +600,16 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
           "summary_type": 'Daily',
         });
       }
-
-      fetchUserAnalytics();
     } catch (e) {
       NotifierHelper.logError(e);
     } finally {
+      fetchUserPlots();
+      fetchUserAnalytics();
       state = state.copyWith(isGeneratingAi: false);
     }
   }
 
   Future<void> generateWeeklyAnalysis() async {
-    if (state.isGeneratingAi) return;
     state = state.copyWith(isGeneratingAi: true);
 
     final plotHelper = UserPlotsHelper();
@@ -603,7 +620,7 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
 
     try {
       final now = DateTime.now();
-      final weekEnd = DateTime(now.year, now.month, now.day); // Today
+      final weekEnd = DateTime(now.year, now.month, now.day);
       final weekStart = weekEnd.subtract(const Duration(days: 6));
 
       for (final plot in state.userPlots) {
@@ -612,15 +629,20 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         final soilType = plot['soil_type'] ?? 'No soil type';
         final plotName = plot['plot_name'] ?? 'No plot name';
 
-        final plotHasWeeklyAnalysis = state.aiAnalysis.any((entry) {
+        final weeklyAnalyses = state.aiAnalysis.where((entry) {
           final entryDate = DateTime.parse(entry['analysis_date']);
           return entry['analysis_type'] == 'Weekly' &&
               entry['plot_id'] == plotId &&
               !entryDate.isBefore(weekStart) &&
               !entryDate.isAfter(weekEnd);
-        });
+        }).toList();
 
-        if (plotHasWeeklyAnalysis) {
+        final hasEnglish =
+            weeklyAnalyses.any((entry) => entry['language_type'] == 'en');
+        final hasTagalog =
+            weeklyAnalyses.any((entry) => entry['language_type'] == 'tl');
+
+        if (hasEnglish && hasTagalog) {
           continue;
         }
 
@@ -628,6 +650,9 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
             selectedPlotId: plotId,
             rawMoistureData: rawMoistureData,
             rawNutrientData: rawNutrientData);
+
+        NotifierHelper.logMessage(
+            'Generating weekly analysis for plot $plotId');
 
         if (filtered != null) {
           final aiFormattedPrompt =
@@ -637,7 +662,6 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
               aiFormattedPrompt, cropType, soilType, plotName, weatherReport,
               language: 'en');
 
-          // Continue with AI analysis
           final aiResponse = await aiService.getAiAnalysis(forPrompting);
 
           final aiRaw = aiResponse['choices'][0]['message']['content'];
@@ -652,6 +676,8 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
             "language_type": 'en',
           };
 
+          NotifierHelper.logMessage(
+              'Generating tagalog analysis for plot $plotId');
           await supabase.from('ai_analysis').insert(newAnalysis);
 
           final tagalogPrompt = aiService.translateJsonToTagalog(parsedJson);
@@ -674,11 +700,11 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
           await supabase.from('ai_analysis').insert(tagalogAnalysis);
         }
       }
-
-      fetchUserAnalytics();
     } catch (e) {
       NotifierHelper.logError(e);
     } finally {
+      fetchUserPlots();
+      fetchUserAnalytics();
       state = state.copyWith(isGeneratingAi: false);
     }
   }

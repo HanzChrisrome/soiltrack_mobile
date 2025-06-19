@@ -379,6 +379,8 @@ class AiService {
         "header": "Heavy Rain Alert",
         "suggestion": "Heavy rain forecasted. Strengthen soil bunds and delay fertilizer application."
       }
+  - If significant weather risk is detected today (e.g., heavy rain, heat), prioritize it in the headline or suggestions.
+  - Example: "Rain expected at 3 PM. Avoid spraying chemicals in the afternoon."
 
   📤 OUTPUT FORMAT:
   {
@@ -415,11 +417,13 @@ class AiService {
 
     Your task is to translate only the **string values** into Filipino (Tagalog), while keeping the **exact same structure**, key names, and formatting.
 
-    ⚠️ Rules:
-    - DO NOT change any keys, structure, or data types.
-    - ONLY translate the content inside the quotation marks.
-    - Keep numbers, booleans, and dates the same.
-    - Return only valid JSON — no explanations, no markdown formatting.
+    ⚠️ IMPORTANT:
+    - Do NOT translate any key names (e.g., "summary", "headline", etc.).
+    - ONLY translate the actual values (right-hand side) if they are strings.
+    - If the value is a number or list of numbers, do not change it.
+    - Preserve all punctuation, brackets, and JSON structure exactly as is.
+    - Use conversational but respectful Filipino, and avoid overly technical language.
+    - Never add or remove any keys or entries.
 
     Here is the JSON to translate:
     ${jsonEncode(englishJson)}
@@ -543,6 +547,7 @@ class AiService {
   }
 
   Future<Map<String, dynamic>> getGeminiAnalysis(String prompt) async {
+    print('Fetching Gemini AI analysis for prompt');
     final String? geminiApiKey = dotenv.env['GEMINI_API_KEY'];
     if (geminiApiKey == null) {
       throw Exception('Gemini API key not found in environment variables.');

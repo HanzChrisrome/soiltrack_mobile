@@ -28,12 +28,12 @@ class _LandingDashboardState extends ConsumerState<LandingDashboard> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await ref.read(soilDashboardProvider.notifier).fetchUserPlots();
-      await ref.read(soilDashboardProvider.notifier).fetchUserAnalytics();
-      await ref.read(notificationProvider);
-      await ref.read(soilDashboardProvider.notifier).generateWeeklyAnalysis();
-      await ref.read(soilDashboardProvider.notifier).generateDailyAnalysis();
-      await ref.read(deviceProvider.notifier).checkDeviceStatus(context);
+      await ref.watch(soilDashboardProvider.notifier).fetchUserPlots();
+      await ref.watch(soilDashboardProvider.notifier).fetchUserAnalytics();
+      await ref.watch(notificationProvider);
+      await ref.watch(soilDashboardProvider.notifier).generateWeeklyAnalysis();
+      await ref.watch(soilDashboardProvider.notifier).generateDailyAnalysis();
+      await ref.watch(deviceProvider.notifier).checkDeviceStatus(context);
     });
   }
 

@@ -91,7 +91,7 @@ class SoilDashboardHelper {
 
     switch (timeRange) {
       case '1D':
-        startDate = todayLocalStart.toUtc();
+        startDate = todayLocalStart;
         break;
       case '1W':
         startDate = todayLocalStart.subtract(const Duration(days: 7)).toUtc();

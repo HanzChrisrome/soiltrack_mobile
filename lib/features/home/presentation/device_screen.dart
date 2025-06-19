@@ -7,6 +7,7 @@ import 'package:soiltrack_mobile/features/home/presentation/widgets/device/devic
 import 'package:soiltrack_mobile/features/home/presentation/widgets/device/esp32_card.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/device/main_toggle.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/device/nano_card.dart';
+import 'package:soiltrack_mobile/features/home/presentation/widgets/device/pump_card.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/device/sensor_device_card.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/device/sensor_grid_view.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/device/toggle_widget.dart';
@@ -49,8 +50,10 @@ class DeviceScreen extends ConsumerWidget {
     final deviceState = ref.watch(deviceProvider);
     final deviceNotifier = ref.read(deviceProvider.notifier);
 
-    final isNanoConnected = deviceState.isNanoConnected;
-    final valveState = deviceState.valveStates;
+    final isNanoConnected =
+        ref.watch(deviceProvider.select((state) => state.isNanoConnected));
+    final isEsp32Connected =
+        ref.watch(deviceProvider.select((state) => state.isEspConnected));
 
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
@@ -79,11 +82,12 @@ class DeviceScreen extends ConsumerWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            WarningWidget(
-                              headerText: 'ESP32 AND ARDUINO NANO',
-                              bodyText:
-                                  'If your ESP32 or Arduino Nano is not connected, the functionality of the whole hardware and system will be affected.',
-                            ),
+                            if (!isNanoConnected && !isEsp32Connected)
+                              WarningWidget(
+                                headerText: 'ESP32 AND ARDUINO NANO',
+                                bodyText:
+                                    'If your ESP32 or Arduino Nano is not connected, the functionality of the whole hardware and system will be affected.',
+                              ),
                             Consumer(
                               builder: (context, ref, child) {
                                 final isConnected =
@@ -134,67 +138,26 @@ class DeviceScreen extends ConsumerWidget {
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            WarningWidget(
-                                headerText: 'WATER PUMP AND VALVES',
-                                bodyText:
-                                    'If your ESP32 or Arduino Nano is not connected, '
-                                    'the water pump and valves will not be able to connect and function automatically or manually.'),
-                            Consumer(
-                              builder: (context, ref, child) {
-                                final pumpState = ref.watch(pumpStateProvider);
-
-                                return pumpState.when(
-                                  data: (isPumpOn) {
-                                    return DeviceCard(
-                                      deviceName: 'Water Pump',
-                                      description: 'Electronic Water Pump',
-                                      imagePath:
-                                          'assets/hardware/waterpump_connected.png',
-                                      imagePathDisconnected:
-                                          'assets/hardware/waterpump_connected.png',
-                                      isConnected: isNanoConnected,
-                                      isPumpOn: isPumpOn,
-                                      onTap: () {
-                                        if (!isNanoConnected) return;
-                                        showCustomBottomSheet(
-                                          context: context,
-                                          title: isPumpOn
-                                              ? 'Close Pump and All Valves'
-                                              : 'Open Pump and \nAll Valves',
-                                          description:
-                                              'Proceeding with this action will ${isPumpOn ? 'close' : 'open'} the pump and all valves.',
-                                          icon:
-                                              Icons.arrow_forward_ios_outlined,
-                                          buttonText: 'Proceed',
-                                          onPressed: () {
-                                            if (isPumpOn) {
-                                              deviceNotifier.closeAll(context);
-                                            } else {
-                                              deviceNotifier.openAll(context);
-                                            }
-                                            Navigator.of(context).pop();
-                                          },
-                                        );
-                                      },
-                                    );
-                                  },
-                                  loading: () => const Center(
-                                      child: CircularProgressIndicator()),
-                                  error: (err, _) => Text('Error: $err'),
-                                );
-                              },
-                            ),
+                            if (!isNanoConnected && !isEsp32Connected)
+                              WarningWidget(
+                                  headerText: 'WATER PUMP AND VALVES',
+                                  bodyText:
+                                      'If your ESP32 or Arduino Nano is not connected, '
+                                      'the water pump and valves will not be able to connect and function automatically or manually.'),
+                            PumpCard(isNanoConnected: true),
                             ValveGridView(
-                                userPlots: userPlotDetails, isConnected: true),
+                                userPlots: userPlotDetails,
+                                isConnected: isNanoConnected),
                             const SizedBox(height: 10),
                           ],
                         ),
-                      WarningWidget(
-                        headerText: 'MOISTURE AND NUTRIENT SENSOR',
-                        bodyText:
-                            'If your ESP32 or Arduino Nano is not connected, '
-                            'the moisture and nutrient sensors will not be able to connect and send data.',
-                      ),
+                      if (!isNanoConnected && !isEsp32Connected)
+                        WarningWidget(
+                          headerText: 'MOISTURE AND NUTRIENT SENSOR',
+                          bodyText:
+                              'If your ESP32 or Arduino Nano is not connected, '
+                              'the moisture and nutrient sensors will not be able to connect and send data.',
+                        ),
                       DeviceToggle(),
                       SensorGridView(
                         sensors:

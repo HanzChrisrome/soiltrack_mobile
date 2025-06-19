@@ -21,12 +21,28 @@ class PlotChart extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final selectedTimeRangeGeneral =
+        ref.watch(soilDashboardProvider).selectedTimeRangeFilterGeneral;
     final selectedRange =
         ref.watch(soilDashboardProvider).selectedTimeRangeFilter;
 
-    final filteredReadings = readings
-        .where((reading) => reading['plot_id'] == selectedPlotId)
-        .toList();
+    final filteredReadings = readings.where((reading) {
+      final plotMatches = reading['plot_id'] == selectedPlotId;
+
+      if (selectedRange == '1D' && selectedTimeRangeGeneral == '1D') {
+        final now = DateTime.now();
+        final startOfDay = DateTime(now.year, now.month, now.day);
+        final endOfDay =
+            DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+        final readTime = DateTime.parse(reading['read_time']);
+
+        return plotMatches &&
+            !readTime.isBefore(startOfDay) &&
+            !readTime.isAfter(endOfDay);
+      }
+
+      return plotMatches;
+    }).toList();
 
     if (filteredReadings.isEmpty) {
       return _buildNoDataContainer(context);
@@ -67,6 +83,7 @@ class PlotChart extends ConsumerWidget {
       minY,
       maxY,
       selectedRange,
+      selectedTimeRangeGeneral,
     );
   }
 
@@ -78,6 +95,7 @@ class PlotChart extends ConsumerWidget {
     double minY,
     double maxY,
     String selectedRange,
+    String selectedTimeRangeGeneral,
   ) {
     minY = 0;
     maxY = 200;
@@ -104,7 +122,7 @@ class PlotChart extends ConsumerWidget {
             if (percentageChange != null)
               TextRoundedEnclose(
                 text:
-                    '${percentageChange > 0 ? '+' : ''}${percentageChange.toStringAsFixed(1)}% ${_getRangeLabel(selectedRange)}',
+                    '${percentageChange > 0 ? '+' : ''}${percentageChange.toStringAsFixed(1)}% ${_getRangeLabel(selectedTimeRangeGeneral)}',
                 color: percentageChange > 0
                     ? Colors.green.withOpacity(0.2)
                     : Colors.red.withOpacity(0.2),

@@ -85,20 +85,6 @@ class SettingsScreen extends ConsumerWidget {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 10),
-                    SettingsCard(
-                      child: Column(
-                        children: [
-                          SettingsItem(
-                            settingsText: 'Change Irrigation Type',
-                            settingsIcon: Icons.water_drop_outlined,
-                            onTap: () {
-                              context.pushNamed('irrigation-schedule');
-                            },
-                          ),
-                        ],
-                      ),
-                    ),
                     const SizedBox(height: 20),
                     Text(
                       'Language',

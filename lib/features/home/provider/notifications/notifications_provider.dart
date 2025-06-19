@@ -7,24 +7,29 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 class NotificationState {
   final List<NotificationModel> notifications;
   final bool isLoading;
+  final bool hasMore;
 
   NotificationState({
     required this.notifications,
     required this.isLoading,
+    required this.hasMore,
   });
 
   factory NotificationState.initial() => NotificationState(
         notifications: [],
         isLoading: true,
+        hasMore: true,
       );
 
   NotificationState copyWith({
     List<NotificationModel>? notifications,
     bool? isLoading,
+    bool? hasMore,
   }) {
     return NotificationState(
       notifications: notifications ?? this.notifications,
       isLoading: isLoading ?? this.isLoading,
+      hasMore: hasMore ?? this.hasMore,
     );
   }
 }
@@ -36,6 +41,9 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
 
   final String _userId;
   RealtimeChannel? _channel;
+  final int _pageSize = 5;
+  int _offset = 0;
+  bool _isFetchingMore = false;
 
   Future<void> _init() async {
     await _fetchInitialNotifications();
@@ -47,7 +55,8 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
         .from('notifications')
         .select('*')
         .eq('user_id', _userId)
-        .order('notification_time', ascending: false);
+        .order('notification_time', ascending: false)
+        .limit(_pageSize);
 
     final List data = response as List;
 
@@ -55,7 +64,44 @@ class NotificationNotifier extends StateNotifier<NotificationState> {
         .map((item) => NotificationModel.fromMap(item as Map<String, dynamic>))
         .toList();
 
-    state = state.copyWith(notifications: notifications, isLoading: false);
+    _offset = notifications.length;
+
+    state = state.copyWith(
+        notifications: notifications,
+        isLoading: false,
+        hasMore: notifications.length == _pageSize);
+  }
+
+  Future<void> loadMore() async {
+    if (_isFetchingMore || !state.hasMore) return;
+
+    _isFetchingMore = true;
+
+    final response = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', _userId)
+        .order('notification_time', ascending: false)
+        .range(_offset, _offset + _pageSize - 1);
+
+    if (response.isEmpty) {
+      print("Error fetching more notifications: ${response}");
+    }
+
+    final List data = response as List;
+
+    final newNotifications = data
+        .map((item) => NotificationModel.fromMap(item as Map<String, dynamic>))
+        .toList();
+
+    _offset += newNotifications.length;
+
+    state = state.copyWith(
+      notifications: [...state.notifications, ...newNotifications],
+      hasMore: newNotifications.length == _pageSize,
+    );
+
+    _isFetchingMore = false;
   }
 
   void _subscribeToNotificationInserts() {

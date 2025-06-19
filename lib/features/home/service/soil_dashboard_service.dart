@@ -416,22 +416,19 @@ class SoilDashboardService {
   }
 
   Future<List<Map<String, dynamic>>> fetchSummaryAnalysis(String userId) async {
-    final now = DateTime.now();
-    final todayStart =
-        DateTime(now.year, now.month, now.day).toUtc().toIso8601String();
-    final todayEnd = DateTime(now.year, now.month, now.day, 23, 59, 59)
-        .toUtc()
-        .toIso8601String();
+    final now = DateTime.now(); // local time
+    final todayStart = DateTime(now.year, now.month, now.day);
+    final tomorrowStart = todayStart.add(Duration(days: 1));
 
     return supabase
         .from('ai_summary')
         .select('''
-      analysis_date,
-      summary_analysis
+        analysis_date,
+        summary_analysis
       ''')
         .eq('user_id', userId)
-        .gte('analysis_date', todayStart)
-        .lte('analysis_date', todayEnd);
+        .gte('analysis_date', todayStart.toIso8601String())
+        .lt('analysis_date', tomorrowStart.toIso8601String());
   }
 
   Future<List<Map<String, dynamic>>> fetchIrrigationLogs(
@@ -445,6 +442,8 @@ class SoilDashboardService {
         .select()
         .inFilter('plot_id', plotIds)
         .order('time_started', ascending: false);
+
+    NotifierHelper.logMessage('Fetched irrigation logs: $response');
 
     return response;
   }

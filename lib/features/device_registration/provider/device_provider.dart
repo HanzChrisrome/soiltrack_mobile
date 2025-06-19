@@ -12,9 +12,6 @@ import 'package:soiltrack_mobile/core/utils/toast_service.dart';
 import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/features/device_registration/helper/device_helper.dart';
 import 'package:soiltrack_mobile/features/device_registration/provider/device_provider_state.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
-import 'package:soiltrack_mobile/features/home/provider/hardware_provider/soil_sensors_provider.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/pump_valve_provider/valve_state_provider.dart';
 import 'package:wifi_iot/wifi_iot.dart';
 import 'package:wifi_scan/wifi_scan.dart';
 import 'package:http/http.dart' as http;
@@ -269,10 +266,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
         .eq('user_id', userId)
         .eq('isValveOn', true);
 
-    await supabase
-        .from('iot_device')
-        .update({"isPumpOnManually": false}).eq('mac_address', macAddress);
-
     final openPlots = response as List;
 
     if (openPlots.isNotEmpty) {
@@ -298,15 +291,7 @@ class DeviceNotifier extends Notifier<DeviceState> {
         .eq('user_id', userId)
         .eq('isValveOn', true);
 
-    if ((remainingValves as List).isEmpty) {
-      final deviceHelper = DeviceHelper(ref);
-      await deviceHelper.setPumpState(
-          context: context, open: false, macAddress: macAddress);
-    }
-
     state = state.copyWith(valveStates: {}, isPumpOpen: false);
-
-    NotifierHelper.showSuccessToast(context, 'All valves and pump closed.');
   }
 
   Future<void> openAll(BuildContext context) async {
@@ -343,14 +328,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
         .from('user_plots')
         .update({'isValveOn': true}).inFilter('plot_id', plotIds);
 
-    print('Mac Address: $macAddress');
-    await supabase
-        .from('iot_device')
-        .update({"isPumpOnManually": true}).eq('mac_address', macAddress);
-
-    mqttService.subscribe(responseTopic);
-    mqttService.publish(pumpControlTopic, "OPEN ALL");
-
     final success = await DeviceHelper.sendMqttCommand(
       context,
       pumpControlTopic,
@@ -363,18 +340,6 @@ class DeviceNotifier extends Notifier<DeviceState> {
 
     if (!success) return;
 
-    final deviceHelper = DeviceHelper(ref);
-    final pumpOpened = await deviceHelper.setPumpState(
-      context: context,
-      open: true,
-      macAddress: macAddress,
-    );
-
-    if (!pumpOpened) {
-      NotifierHelper.showErrorToast(context, 'Failed to open pump.');
-      return;
-    }
-
     final now = DateTime.now().toIso8601String();
     final logEntries = plotIds.map((plotId) {
       return {
@@ -385,18 +350,15 @@ class DeviceNotifier extends Notifier<DeviceState> {
     }).toList();
 
     await supabase.from('irrigation_log').insert(logEntries);
-
-    NotifierHelper.showSuccessToast(context, 'All valves opened.');
   }
 
-  Future<void> openPump(BuildContext context, String action,
+  Future<void> openOrCloseValve(BuildContext context, String action,
       String valveTagging, int plotId) async {
     if (!state.isEspConnected) {
       NotifierHelper.showErrorToast(
           context, 'Your SoilTracker is not connected.');
       return;
     }
-    final deviceHelper = DeviceHelper(ref);
     final isValveOpening = action == 'VLVE ON';
     final newValveState = isValveOpening;
     final fullAction = "$action $valveTagging";
@@ -433,54 +395,41 @@ class DeviceNotifier extends Notifier<DeviceState> {
         .from('user_plots')
         .update({'isValveOn': newValveState}).eq('plot_id', plotId);
 
-    final response = await supabase
-        .from('user_plots')
-        .select('plot_id')
-        .eq('user_id', userId!)
-        .eq('isValveOn', true);
-
-    final openValveCount = (response as List).length;
-
-    if (isValveOpening && openValveCount == 1) {
-      NotifierHelper.showLoadingToast(context, 'Opening pump...');
-      final pumpOpened = await deviceHelper.setPumpState(
-        context: context,
-        open: true,
-        macAddress: macAddress!,
-      );
-
-      if (!pumpOpened) {
-        NotifierHelper.showErrorToast(context, 'Failed to open pump.');
-        return;
-      }
-    }
-
-    if (!isValveOpening && openValveCount == 0) {
-      await deviceHelper.setPumpState(
-        context: context,
-        open: false,
-        macAddress: macAddress!,
-      );
-    }
+    // final response = await supabase
+    //     .from('user_plots')
+    //     .select('plot_id')
+    //     .eq('user_id', userId!)
+    //     .eq('isValveOn', true);
 
     final updatedValveStates = Map<int, bool>.from(state.valveStates);
     updatedValveStates[plotId] = newValveState;
     state = state.copyWith(valveStates: updatedValveStates);
 
-    if (isValveOpening) {
-      await supabase.from('irrigation_log').insert({
-        'mac_address': macAddress,
-        'plot_id': plotId,
-        'time_started': DateTime.now().toIso8601String(),
-      });
-    } else {
-      await supabase
-          .from('irrigation_log')
-          .update({
-            'time_stopped': DateTime.now().toIso8601String(),
-          })
-          .eq('mac_address', macAddress!)
-          .eq('plot_id', plotId);
+    // if (isValveOpening) {
+    //   await supabase.from('irrigation_log').insert({
+    //     'mac_address': macAddress,
+    //     'plot_id': plotId,
+    //     'time_started': DateTime.now().toIso8601String(),
+    //   });
+    // } else {
+    //   await supabase
+    //       .from('irrigation_log')
+    //       .update({
+    //         'time_stopped': DateTime.now().toIso8601String(),
+    //       })
+    //       .eq('mac_address', macAddress!)
+    //       .eq('plot_id', plotId);
+    // }
+  }
+
+  Future<void> controlPump(BuildContext context, bool action) async {
+    final macAddress = ref.watch(authProvider).macAddress ?? state.macAddress;
+    final deviceHelper = DeviceHelper(ref);
+    final pumpOpened = await deviceHelper.setPumpState(
+        context: context, open: action, macAddress: macAddress!);
+
+    if (!pumpOpened) {
+      NotifierHelper.logError('Failed Opening or closing the Pump');
     }
   }
 

@@ -9,6 +9,7 @@ class ValveCard extends ConsumerWidget {
   final String imagePath;
   final String imagePathDisconnected;
   final bool isConnected;
+  final bool isOpen;
   final String? assignedTo;
   final VoidCallback? onTap;
 
@@ -19,6 +20,7 @@ class ValveCard extends ConsumerWidget {
     required this.imagePath,
     required this.imagePathDisconnected,
     required this.isConnected,
+    required this.isOpen,
     this.assignedTo,
     this.onTap,
   });
@@ -85,43 +87,47 @@ class ValveCard extends ConsumerWidget {
                         : Colors.red,
                   ),
                   const SizedBox(height: 5),
-                  if (isConnected == false)
-                    TextRoundedEnclose(
-                      text: 'Disconnected',
-                      color: Colors.red.withOpacity(0.1),
-                      textColor: Colors.red,
-                    ),
-                  // DynamicContainer(
-                  //   padding:
-                  //       const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
-                  //   margin: const EdgeInsets.all(0),
-                  //   backgroundColor: Theme.of(context).colorScheme.primary,
-                  //   borderColor: Theme.of(context).colorScheme.surface,
-                  //   child: Row(
-                  //     mainAxisSize: MainAxisSize.min,
-                  //     crossAxisAlignment: CrossAxisAlignment.center,
-                  //     children: [
-                  //       TextRoundedEnclose(
-                  //         text: 'Valve is closed',
-                  //         color: Colors.red.withOpacity(0.1),
-                  //         textColor: Colors.red,
-                  //       ),
-                  //       const SizedBox(width: 5),
-                  //       Container(
-                  //         padding: const EdgeInsets.all(5),
-                  //         decoration: BoxDecoration(
-                  //           shape: BoxShape.circle,
-                  //           color: Colors.green.withOpacity(0.1),
-                  //         ),
-                  //         child: Icon(
-                  //           Icons.lock_open,
-                  //           color: Colors.green,
-                  //           size: 16,
-                  //         ),
-                  //       ),
-                  //     ],
+                  // if (isConnected == false)
+                  //   TextRoundedEnclose(
+                  //     text: 'Disconnected',
+                  //     color: Colors.red.withOpacity(0.1),
+                  //     textColor: Colors.red,
                   //   ),
-                  // ),
+                  DynamicContainer(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 5, vertical: 5),
+                    margin: const EdgeInsets.all(0),
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    borderColor: Theme.of(context).colorScheme.surface,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        TextRoundedEnclose(
+                          text: isOpen ? 'Valve is open' : 'Valve is closed',
+                          color: isOpen
+                              ? Colors.green.withOpacity(0.1)
+                              : Colors.red.withOpacity(0.1),
+                          textColor: isOpen ? Colors.green : Colors.red,
+                        ),
+                        const SizedBox(width: 5),
+                        Container(
+                          padding: const EdgeInsets.all(5),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isOpen
+                                ? Colors.green.withOpacity(0.1)
+                                : Colors.red.withOpacity(0.1),
+                          ),
+                          child: Icon(
+                            isOpen ? Icons.lock_open : Icons.lock,
+                            color: isOpen ? Colors.green : Colors.red,
+                            size: 16,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),

@@ -90,27 +90,20 @@ class NutrientProgressChart extends ConsumerWidget {
                           label: 'Nitrogen',
                           value: nitrogenValue,
                           maxValue: nutrientMaxValue,
-                          color: Colors.green),
+                          color: Colors.yellow),
                       NutrientProgressBar(
                           label: 'Phosphorus',
                           value: phosphorusValue,
                           maxValue: nutrientMaxValue,
-                          color: Colors.orange),
+                          color: Colors.pink),
                       NutrientProgressBar(
                           label: 'Potassium',
                           value: potassiumValue,
                           maxValue: nutrientMaxValue,
-                          color: Colors.red),
+                          color: Colors.purple),
                     ],
                   ),
-                const SizedBox(height: 10),
-                FilledCustomButton(
-                  buttonText: 'View Statistics',
-                  icon: Icons.remove_red_eye_outlined,
-                  onPressed: () {
-                    context.pushNamed('plot-analytics');
-                  },
-                ),
+                const SizedBox(height: 15),
               ],
             ),
           );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:soiltrack_mobile/features/home/helper/soilDashboardHelper.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
@@ -18,12 +19,30 @@ class PlotCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final selectedTimeRangeGeneral =
+        ref.watch(soilDashboardProvider).selectedTimeRangeFilterGeneral;
     final selectedRange =
         ref.watch(soilDashboardProvider).selectedTimeRangeFilter;
 
-    final filteredReadings = moistureReadings
-        .where((reading) => reading['plot_id'] == selectedPlotId)
-        .toList();
+    final filteredReadings = moistureReadings.where((reading) {
+      final plotMatches = reading['plot_id'] == selectedPlotId;
+
+      if (selectedRange == '1D' && selectedTimeRangeGeneral == '1D') {
+        final now = DateTime.now();
+        final startOfDay = DateTime(now.year, now.month, now.day);
+        final endOfDay =
+            DateTime(now.year, now.month, now.day, 23, 59, 59, 999);
+        final readTime = DateTime.parse(reading['read_time']);
+
+        return plotMatches &&
+            !readTime.isBefore(startOfDay) &&
+            !readTime.isAfter(endOfDay);
+      }
+
+      return plotMatches;
+    }).toList();
+
+    print('Filtered Readings: ${filteredReadings.length}');
 
     if (filteredReadings.isEmpty) {
       return _buildNoDataContainer(context);
@@ -67,6 +86,7 @@ class PlotCard extends ConsumerWidget {
       minY,
       maxY,
       selectedRange,
+      selectedTimeRangeGeneral,
     );
   }
 
@@ -77,6 +97,7 @@ class PlotCard extends ConsumerWidget {
     double minY,
     double maxY,
     String selectedRange,
+    String selectedTimeRangeGeneral,
   ) {
     minY = 0;
     maxY = 200;
@@ -103,7 +124,7 @@ class PlotCard extends ConsumerWidget {
             if (percentageChange != null)
               TextRoundedEnclose(
                 text:
-                    '${percentageChange > 0 ? '+' : ''}${percentageChange.toStringAsFixed(1)}% ${_getRangeLabel(selectedRange)}',
+                    '${percentageChange > 0 ? '+' : ''}${percentageChange.toStringAsFixed(1)}% ${_getRangeLabel(selectedTimeRangeGeneral)}',
                 color: percentageChange > 0
                     ? Colors.blue.withOpacity(0.2)
                     : Colors.red.withOpacity(0.2),

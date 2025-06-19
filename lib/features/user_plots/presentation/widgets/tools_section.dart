@@ -63,10 +63,10 @@ class ToolsSectionWidget extends ConsumerWidget {
                 onPressed: () {
                   Navigator.of(context).pop();
                   if (isValveOpen) {
-                    deviceNotifier.openPump(
+                    deviceNotifier.openOrCloseValve(
                         context, "VLVE OFF", valveTagging, plotId);
                   } else {
-                    deviceNotifier.openPump(
+                    deviceNotifier.openOrCloseValve(
                         context, "VLVE ON", valveTagging, plotId);
                   }
                 },

@@ -7,6 +7,7 @@ class CollapsibleSliverScaffold extends StatefulWidget {
   final List<Widget> bodySlivers;
   final double expandedHeight;
   final Color backgroundColor;
+  final ScrollController? controller;
 
   const CollapsibleSliverScaffold({
     Key? key,
@@ -14,6 +15,7 @@ class CollapsibleSliverScaffold extends StatefulWidget {
     required this.bodySlivers,
     this.expandedHeight = 200.0,
     this.backgroundColor = Colors.white,
+    this.controller,
   }) : super(key: key);
 
   @override
@@ -43,6 +45,7 @@ class _CollapsibleSliverScaffoldState extends State<CollapsibleSliverScaffold> {
         return true;
       },
       child: CustomScrollView(
+        controller: widget.controller,
         slivers: [
           widget.headerBuilder(context, isCollapsed),
           ...widget.bodySlivers,

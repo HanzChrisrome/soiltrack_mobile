@@ -17,6 +17,7 @@ import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/tools_
 import 'package:soiltrack_mobile/provider/shared_preferences.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_bottom_sheet.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
+import 'package:soiltrack_mobile/widgets/filled_button.dart';
 import 'package:soiltrack_mobile/widgets/outline_button.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
@@ -88,6 +89,7 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
         backgroundColor: Theme.of(context).colorScheme.primary,
         onRefresh: () async {
           await userPlotNotifier.fetchUserPlotData();
+          await userPlotNotifier.fetchUserAnalytics();
           await userPlotNotifier.fetchIrrigationLogs();
         },
         child: Stack(
@@ -135,6 +137,13 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
                           ],
                         ),
                       NutrientProgressChart(),
+                      FilledCustomButton(
+                        buttonText: 'View Statistics',
+                        icon: Icons.remove_red_eye_outlined,
+                        onPressed: () {
+                          context.pushNamed('plot-analytics');
+                        },
+                      ),
                       // PlotWarnings(plotWarningsData: plotWarningsData),
                       // PlotSuggestions(plotSuggestions: plotSuggestions),
                       PlotDetailsWidget(

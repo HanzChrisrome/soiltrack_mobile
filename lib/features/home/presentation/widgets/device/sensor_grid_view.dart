@@ -23,68 +23,78 @@ class SensorGridView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      shrinkWrap: true,
-      padding: const EdgeInsets.all(0),
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
-        crossAxisSpacing: 5,
-        mainAxisSpacing: 5,
-        childAspectRatio: MediaQuery.of(context).size.width > 600 ? 1.1 : 0.75,
-      ),
-      itemCount: sensors.length,
-      itemBuilder: (context, index) {
-        final sensor = sensors[index];
-        return SensorDeviceCard(
-          deviceName: sensor['sensor_name'],
-          description: sensor['sensor_category'],
-          imagePath: sensorType == SensorType.moisture
-              ? 'assets/hardware/moisture_colored.png'
-              : 'assets/hardware/npk_colored.png',
-          imagePathDisconnected: '',
-          isConnected: sensor['is_assigned'] == true,
-          assignedTo: (sensor['user_plot_sensors'] as List).isNotEmpty
-              ? sensor['user_plot_sensors'][0]['user_plots']['plot_name']
-              : 'Unknown Plot',
-          sensorType: sensorType,
-          onTap: () {
-            if (sensor['is_assigned'] == true) {
-              showCustomBottomSheet(
-                context: context,
-                title: 'Unassign Sensor?',
-                description:
-                    'Unassigning this sensor will stop it from sending data.',
-                icon: Icons.warning_amber_outlined,
-                buttonText: 'Proceed',
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  unassignSensor(context, sensor['sensor_id']);
-                },
-              );
-            } else {
-              showCustomModalBottomSheet(
-                context: context,
-                builder: (modalContext, setState) {
-                  int? selectedPlotId;
-                  return SensorAssignmentSheet(
-                    userPlots: userPlots,
-                    sensorType: sensorType,
-                    onSelectPlot: (plotId) => selectedPlotId = plotId,
-                    onAssign: () async {
-                      if (selectedPlotId != null) {
-                        Navigator.of(modalContext).pop();
-                        assignSensor(
-                            context, sensor['sensor_id'], selectedPlotId!);
-                      }
-                    },
-                  );
-                },
-              );
-            }
-          },
-        );
-      },
-    );
+    return LayoutBuilder(builder: (context, constraints) {
+      final screenWidth = constraints.maxWidth;
+      final crossAxisCount = 2;
+      final spacing = 5 * (crossAxisCount - 1);
+      final itemWidth = (screenWidth - spacing) / crossAxisCount;
+
+      final itemHeight = itemWidth * 1.4;
+      final aspectRatio = itemWidth / itemHeight;
+
+      return GridView.builder(
+        shrinkWrap: true,
+        padding: const EdgeInsets.all(0),
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: crossAxisCount,
+          crossAxisSpacing: 5,
+          mainAxisSpacing: 5,
+          childAspectRatio: aspectRatio,
+        ),
+        itemCount: sensors.length,
+        itemBuilder: (context, index) {
+          final sensor = sensors[index];
+          return SensorDeviceCard(
+            deviceName: sensor['sensor_name'],
+            description: sensor['sensor_category'],
+            imagePath: sensorType == SensorType.moisture
+                ? 'assets/hardware/moisture_colored.png'
+                : 'assets/hardware/npk_colored.png',
+            imagePathDisconnected: '',
+            isConnected: sensor['is_assigned'] == true,
+            assignedTo: (sensor['user_plot_sensors'] as List).isNotEmpty
+                ? sensor['user_plot_sensors'][0]['user_plots']['plot_name']
+                : 'Unknown Plot',
+            sensorType: sensorType,
+            onTap: () {
+              if (sensor['is_assigned'] == true) {
+                showCustomBottomSheet(
+                  context: context,
+                  title: 'Unassign Sensor?',
+                  description:
+                      'Unassigning this sensor will stop it from sending data.',
+                  icon: Icons.warning_amber_outlined,
+                  buttonText: 'Proceed',
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                    unassignSensor(context, sensor['sensor_id']);
+                  },
+                );
+              } else {
+                showCustomModalBottomSheet(
+                  context: context,
+                  builder: (modalContext, setState) {
+                    int? selectedPlotId;
+                    return SensorAssignmentSheet(
+                      userPlots: userPlots,
+                      sensorType: sensorType,
+                      onSelectPlot: (plotId) => selectedPlotId = plotId,
+                      onAssign: () async {
+                        if (selectedPlotId != null) {
+                          Navigator.of(modalContext).pop();
+                          assignSensor(
+                              context, sensor['sensor_id'], selectedPlotId!);
+                        }
+                      },
+                    );
+                  },
+                );
+              }
+            },
+          );
+        },
+      );
+    });
   }
 }

@@ -47,9 +47,20 @@ class _IrrigationLogScreenState extends ConsumerState<IrrigationLogScreen> {
 
     final filteredLogs = irrigationLogs.where((log) {
       final plotMatch = log['plot_id'] == selectedPlotId;
-      final timeStarted = DateTime.parse(log['time_started']).toLocal();
 
-      // Check if the log is within the adjusted range
+      final timeStartedRaw = log['time_started'];
+      final timeStoppedRaw = log['time_stopped'];
+
+      // Ensure both fields exist and are not empty
+      if (timeStartedRaw == null ||
+          timeStoppedRaw == null ||
+          timeStartedRaw.isEmpty ||
+          timeStoppedRaw.isEmpty) {
+        return false;
+      }
+
+      final timeStarted = DateTime.parse(timeStartedRaw).toLocal();
+
       final inRange = (timeStarted.isAfter(adjustedStartDate) ||
               timeStarted.isAtSameMomentAs(adjustedStartDate)) &&
           (timeStarted.isBefore(adjustedEndDate) ||
@@ -158,6 +169,7 @@ class _IrrigationLogScreenState extends ConsumerState<IrrigationLogScreen> {
                             height: MediaQuery.of(context).size.height - 300,
                             child: Center(
                               child: DynamicContainer(
+                                width: double.infinity,
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
