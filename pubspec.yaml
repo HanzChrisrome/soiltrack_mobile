@@ -52,6 +52,7 @@ dependencies:
   turf: ^0.0.10
   day_night_time_picker: ^1.3.1
   duration_picker: ^1.2.0
+  lottie: ^3.1.0
 
 dev_dependencies:
   flutter_test:
@@ -94,7 +95,6 @@ flutter:
     - assets/elements/ai_chatbot.png
     - assets/elements/ai_not_found.png
     - assets/elements/ai_weekly_analysis.png
-    - assets/elements/soiltrack_loading.gif
     - assets/elements/soiltrack_loading2.gif
 
     #SOIL PICTURES
@@ -169,3 +169,7 @@ flutter:
     - assets/ai_mascot/SECOND.png
     - assets/ai_mascot/THIRD.png
     - assets/ai_mascot/not_found.png
+
+    #MOVING ELEMENTS
+    - assets/elements/No-Data.json
+    - assets/elements/no-result.json

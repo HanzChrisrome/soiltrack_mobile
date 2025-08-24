@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
-import 'package:soiltrack_mobile/widgets/text_gradient.dart';
-import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
 class AiUnreadyCard extends StatelessWidget {
   const AiUnreadyCard({

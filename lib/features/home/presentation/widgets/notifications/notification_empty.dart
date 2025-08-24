@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
 class NotificationEmpty extends StatelessWidget {
@@ -14,11 +15,13 @@ class NotificationEmpty extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
               children: [
-                Image.asset(
-                  'assets/elements/no_notification.png',
-                  height: 280,
+                Lottie.asset(
+                  'assets/elements/no-result.json',
+                  width: 250,
+                  height: 250,
+                  repeat: true, // keep looping
                 ),
-                const SizedBox(height: 50),
+                const SizedBox(height: 10),
                 const TextGradient(
                   text: 'No notifications yet',
                   fontSize: 35,

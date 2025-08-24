@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 
 class ChatbotCard extends StatelessWidget {
   const ChatbotCard({

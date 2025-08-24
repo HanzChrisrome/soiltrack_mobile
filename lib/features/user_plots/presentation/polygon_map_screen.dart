@@ -36,53 +36,51 @@ class _PolygonMapScreenState extends ConsumerState<PolygonMapScreen> {
 
     final polygons = _extractOtherPolygons(plots);
 
-    if (selectedId != null) {
-      final selectedPlot = plots.firstWhere(
-        (plot) => plot['plot_id'] == selectedId,
-        orElse: () => {},
-      );
+    final selectedPlot = plots.firstWhere(
+      (plot) => plot['plot_id'] == selectedId,
+      orElse: () => {},
+    );
 
-      final raw = selectedPlot['polygons'];
-      if (raw != null) {
-        try {
-          final parsed = raw is String ? jsonDecode(raw) : raw;
+    final raw = selectedPlot['polygons'];
+    if (raw != null) {
+      try {
+        final parsed = raw is String ? jsonDecode(raw) : raw;
 
-          selectedPolygon = (parsed as List)
-              .map<LatLng?>((coord) {
-                if (coord is List &&
-                    coord.length == 2 &&
-                    coord[0] is num &&
-                    coord[1] is num) {
-                  return LatLng(
-                    (coord[0] as num).toDouble(),
-                    (coord[1] as num).toDouble(),
-                  );
-                } else if (coord is Map &&
-                    coord.containsKey('lat') &&
-                    coord.containsKey('lng') &&
-                    coord['lat'] is num &&
-                    coord['lng'] is num) {
-                  return LatLng(
-                    (coord['lat'] as num).toDouble(),
-                    (coord['lng'] as num).toDouble(),
-                  );
-                }
-                return null;
-              })
-              .whereType<LatLng>()
-              .toList();
+        selectedPolygon = (parsed as List)
+            .map<LatLng?>((coord) {
+              if (coord is List &&
+                  coord.length == 2 &&
+                  coord[0] is num &&
+                  coord[1] is num) {
+                return LatLng(
+                  (coord[0] as num).toDouble(),
+                  (coord[1] as num).toDouble(),
+                );
+              } else if (coord is Map &&
+                  coord.containsKey('lat') &&
+                  coord.containsKey('lng') &&
+                  coord['lat'] is num &&
+                  coord['lng'] is num) {
+                return LatLng(
+                  (coord['lat'] as num).toDouble(),
+                  (coord['lng'] as num).toDouble(),
+                );
+              }
+              return null;
+            })
+            .whereType<LatLng>()
+            .toList();
 
-          if (selectedPolygon!.length < 3) {
-            NotifierHelper.logError(
-              'Selected polygon has fewer than 3 points: $selectedPolygon',
-            );
-            selectedPolygon = null;
-          }
-        } catch (e) {
+        if (selectedPolygon!.length < 3) {
           NotifierHelper.logError(
-            'Error parsing selected plot polygon: $e - Raw: $raw',
+            'Selected polygon has fewer than 3 points: $selectedPolygon',
           );
+          selectedPolygon = null;
         }
+      } catch (e) {
+        NotifierHelper.logError(
+          'Error parsing selected plot polygon: $e - Raw: $raw',
+        );
       }
     }
 

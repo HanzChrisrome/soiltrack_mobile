@@ -1,5 +1,4 @@
 import 'package:intl/intl.dart';
-import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 import 'package:soiltrack_mobile/features/user_plots/helper/formatter_helper.dart';
 
 class UserPlotsHelper {

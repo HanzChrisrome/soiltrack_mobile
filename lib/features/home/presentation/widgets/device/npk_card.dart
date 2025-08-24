@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
-import 'package:soiltrack_mobile/features/home/presentation/widgets/device/connection_indicator.dart';
 import 'package:soiltrack_mobile/widgets/text_rounded_enclose.dart';
 
 class NPKSensorCard extends ConsumerWidget {

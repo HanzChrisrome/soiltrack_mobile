@@ -7,10 +7,7 @@ import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/pump_valv
 
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/tools_button.dart';
 import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
-import 'package:soiltrack_mobile/widgets/customizable_bottom_sheet.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
-import 'package:soiltrack_mobile/widgets/text_field.dart';
-import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
 class ToolsSectionWidget extends ConsumerWidget {
   const ToolsSectionWidget(

@@ -7,23 +7,23 @@ class NotificationItem extends StatelessWidget {
   final String notificationType;
   final DateTime time;
 
-  NotificationItem({
+  const NotificationItem({
     super.key,
     required this.title,
     required this.notificationType,
     required this.time,
   });
 
-  IconData _getIconForType(String type) {
+  (IconData, Color) _getIconAndColor(BuildContext context, String type) {
     switch (type.toUpperCase()) {
       case 'INFO':
-        return Icons.info;
+        return (Icons.info, Colors.blueAccent);
       case 'WARNING':
-        return Icons.warning;
+        return (Icons.warning, Colors.orangeAccent);
       case 'ERROR':
-        return Icons.error;
+        return (Icons.error, Theme.of(context).colorScheme.error);
       default:
-        return Icons.notifications;
+        return (Icons.notifications, Theme.of(context).colorScheme.secondary);
     }
   }
 
@@ -33,10 +33,12 @@ class NotificationItem extends StatelessWidget {
 
     if (difference.inDays == 0) {
       if (difference.inMinutes < 1) return 'Just now';
-      if (difference.inHours < 1)
+      if (difference.inHours < 1) {
         return '${difference.inMinutes} min${difference.inMinutes > 1 ? 's' : ''} ago';
-      if (difference.inHours < 24)
+      }
+      if (difference.inHours < 24) {
         return '${difference.inHours} hr${difference.inHours > 1 ? 's' : ''} ago';
+      }
     }
 
     return DateFormat.yMMMMd().add_jm().format(time);
@@ -44,18 +46,18 @@ class NotificationItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final icon = _getIconForType(notificationType);
+    final (icon, color) = _getIconAndColor(context, notificationType);
     final formattedTime = _formatTime(context, time);
 
     return DynamicContainer(
+      backgroundColor: Theme.of(context).colorScheme.surface,
       margin: const EdgeInsets.only(bottom: 10),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
-            backgroundColor:
-                Theme.of(context).colorScheme.onSecondary.withOpacity(0.1),
-            child: Icon(icon, color: Theme.of(context).colorScheme.onPrimary),
+            backgroundColor: color.withOpacity(0.15), // soft background tint
+            child: Icon(icon, color: color),
             radius: 22,
           ),
           const SizedBox(width: 12),

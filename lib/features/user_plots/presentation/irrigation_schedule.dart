@@ -6,9 +6,7 @@ import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_pro
 import 'package:soiltrack_mobile/features/user_plots/controller/user_plot_controller.dart';
 import 'package:soiltrack_mobile/features/user_plots/helper/user_plots_helper.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/polygon_map.dart';
-import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/ai_widgets/custom_toggle_button.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/crop_threshold.dart';
-import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/irrigation_scheduling/irrigation_type_toggle.dart';
 import 'package:soiltrack_mobile/widgets/text_gradient.dart';
 
 class IrrigationScheduleScreen extends ConsumerStatefulWidget {

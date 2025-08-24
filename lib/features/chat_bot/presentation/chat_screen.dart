@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:soiltrack_mobile/core/router/app_router.dart';
 import 'package:soiltrack_mobile/features/chat_bot/presentation/widgets/quick_actions.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
-import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
 import 'package:soiltrack_mobile/widgets/text_field.dart';
 
 class ChatScreen extends StatefulWidget {

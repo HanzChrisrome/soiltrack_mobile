@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:latlong2/latlong.dart';
-import 'package:soiltrack_mobile/core/utils/notifier_helpers.dart';
 
 class SoilDashboardHelper {
   List<Map<String, dynamic>> aggregatedDataByInterval(

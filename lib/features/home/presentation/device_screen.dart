@@ -13,10 +13,8 @@ import 'package:soiltrack_mobile/features/home/presentation/widgets/device/senso
 import 'package:soiltrack_mobile/features/home/presentation/widgets/device/toggle_widget.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/device/valve_grid_view.dart';
 import 'package:soiltrack_mobile/features/home/presentation/widgets/device/warning_widget.dart';
-import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/pump_valve_provider/pump_state_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/hardware_provider/soil_sensors_provider.dart';
-import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
 import 'package:soiltrack_mobile/widgets/bottom_navigation_bar.dart';
 import 'package:soiltrack_mobile/widgets/collapsible_appbar.dart';
 import 'package:soiltrack_mobile/widgets/collapsible_scaffold.dart';

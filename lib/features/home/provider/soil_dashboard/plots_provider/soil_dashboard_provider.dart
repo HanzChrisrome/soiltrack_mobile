@@ -43,10 +43,7 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         schema: 'public',
         table: 'moisture_readings',
         callback: (payload) async {
-          final ids = state.userPlots
-              .map((plot) => plot['plot_id'].toString())
-              .toList();
-
+          state.userPlots.map((plot) => plot['plot_id'].toString()).toList();
           await fetchUserPlotData();
         },
       )
@@ -474,58 +471,58 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
           rawNutrientData: rawNutrientData,
         );
 
-        if (filtered != null) {
-          final aiFormattedPrompt =
-              plotHelper.getFormattedAiPrompt(data: filtered);
+        // if (filtered != null) {
+        //   final aiFormattedPrompt =
+        //       plotHelper.getFormattedAiPrompt(data: filtered);
 
-          final forPrompting = aiService.generateAIAnalysisPrompt(
-            aiFormattedPrompt,
-            cropType,
-            soilType,
-            plotName,
-            weatherReport,
-            language: 'en',
-          );
+        //   final forPrompting = aiService.generateAIAnalysisPrompt(
+        //     aiFormattedPrompt,
+        //     cropType,
+        //     soilType,
+        //     plotName,
+        //     weatherReport,
+        //     language: 'en',
+        //   );
 
-          final aiResponse =
-              await aiService.getAiAnalysis(forPrompting, language: 'en');
+        //   final aiResponse =
+        //       await aiService.getAiAnalysis(forPrompting, language: 'en');
 
-          final aiRaw = aiResponse['choices'][0]['message']['content'];
-          final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
+        //   final aiRaw = aiResponse['choices'][0]['message']['content'];
+        //   final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
 
-          final newAnalysis = {
-            "plot_id": plotId,
-            "analysis_date": todayString,
-            "analysis": parsedJson,
-            "analysis_type": 'Daily',
-            "language_type": 'en',
-          };
+        //   final newAnalysis = {
+        //     "plot_id": plotId,
+        //     "analysis_date": todayString,
+        //     "analysis": parsedJson,
+        //     "analysis_type": 'Daily',
+        //     "language_type": 'en',
+        //   };
 
-          await supabase.from('ai_analysis').insert(newAnalysis);
+        //   await supabase.from('ai_analysis').insert(newAnalysis);
 
-          final tagalogPrompt = aiService.translateJsonToTagalog(parsedJson);
-          final tagalogResponse =
-              await aiService.getGeminiAnalysis(tagalogPrompt);
-          final tagalogRaw =
-              tagalogResponse['choices'][0]['message']['content'];
-          final tagalogParsedJson =
-              soilDashboardHelper.extractCleanAIJson(tagalogRaw);
+        //   final tagalogPrompt = aiService.translateJsonToTagalog(parsedJson);
+        //   final tagalogResponse =
+        //       await aiService.getGeminiAnalysis(tagalogPrompt);
+        //   final tagalogRaw =
+        //       tagalogResponse['choices'][0]['message']['content'];
+        //   final tagalogParsedJson =
+        //       soilDashboardHelper.extractCleanAIJson(tagalogRaw);
 
-          final tagalogAnalysis = {
-            "plot_id": plotId,
-            "analysis_date": todayString,
-            "analysis": tagalogParsedJson,
-            "analysis_type": 'Daily',
-            "language_type": 'tl',
-          };
+        //   final tagalogAnalysis = {
+        //     "plot_id": plotId,
+        //     "analysis_date": todayString,
+        //     "analysis": tagalogParsedJson,
+        //     "analysis_type": 'Daily',
+        //     "language_type": 'tl',
+        //   };
 
-          await supabase.from('ai_analysis').insert(tagalogAnalysis);
-          NotifierHelper.logMessage(
-              'AI Analysis data is ready for plot $plotId for daily analysis');
-        } else {
-          NotifierHelper.logMessage(
-              'No data available for plot $plotId for daily analysis');
-        }
+        //   await supabase.from('ai_analysis').insert(tagalogAnalysis);
+        //   NotifierHelper.logMessage(
+        //       'AI Analysis data is ready for plot $plotId for daily analysis');
+        // } else {
+        //   NotifierHelper.logMessage(
+        //       'No data available for plot $plotId for daily analysis');
+        // }
       }
 
       final todaySummaries = state.aiSummaryHistory.where((entry) {
@@ -577,29 +574,29 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         rawNutrientData: rawNutrientData,
       );
 
-      if (forSummary != null) {
-        NotifierHelper.logMessage('AI Summary data is ready');
+      // if (forSummary != null) {
+      //   NotifierHelper.logMessage('AI Summary data is ready');
 
-        final aiSummaryPrompt = plotHelper.getFormattedSummaryPrompt(
-          data: forSummary,
-          plotMetadata: plotMetadata,
-        );
+      //   final aiSummaryPrompt = plotHelper.getFormattedSummaryPrompt(
+      //     data: forSummary,
+      //     plotMetadata: plotMetadata,
+      //   );
 
-        final aiSummaryPromptFinal =
-            aiService.generateAISummaryPrompt(aiSummaryPrompt, weatherReport);
+      //   final aiSummaryPromptFinal =
+      //       aiService.generateAISummaryPrompt(aiSummaryPrompt, weatherReport);
 
-        final aiAnalysis = await aiService.getAiAnalysis(aiSummaryPromptFinal);
-        final aiSummaryRaw = aiAnalysis['choices'][0]['message']['content'];
-        final parsedSummary =
-            soilDashboardHelper.extractCleanAIJson(aiSummaryRaw);
+      //   final aiAnalysis = await aiService.getAiAnalysis(aiSummaryPromptFinal);
+      //   final aiSummaryRaw = aiAnalysis['choices'][0]['message']['content'];
+      //   final parsedSummary =
+      //       soilDashboardHelper.extractCleanAIJson(aiSummaryRaw);
 
-        await supabase.from('ai_summary').insert({
-          "user_id": userId,
-          "analysis_date": todayString,
-          "summary_analysis": parsedSummary,
-          "summary_type": 'Daily',
-        });
-      }
+      //   await supabase.from('ai_summary').insert({
+      //     "user_id": userId,
+      //     "analysis_date": todayString,
+      //     "summary_analysis": parsedSummary,
+      //     "summary_type": 'Daily',
+      //   });
+      // }
     } catch (e) {
       NotifierHelper.logError(e);
     } finally {
@@ -642,9 +639,7 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         final hasTagalog =
             weeklyAnalyses.any((entry) => entry['language_type'] == 'tl');
 
-        if (hasEnglish && hasTagalog) {
-          continue;
-        }
+        if (hasEnglish && hasTagalog) continue;
 
         final filtered = plotHelper.getFilteredAiReadyWeeklyData(
             selectedPlotId: plotId,
@@ -654,51 +649,51 @@ class SoilDashboardNotifier extends Notifier<SoilDashboardState> {
         NotifierHelper.logMessage(
             'Generating weekly analysis for plot $plotId');
 
-        if (filtered != null) {
-          final aiFormattedPrompt =
-              plotHelper.getFormattedAiWeeklyPrompt(data: filtered);
+        // if (filtered != null) {
+        //   final aiFormattedPrompt =
+        //       plotHelper.getFormattedAiWeeklyPrompt(data: filtered);
 
-          final forPrompting = aiService.generateWeeklyAIAnalysisPrompt(
-              aiFormattedPrompt, cropType, soilType, plotName, weatherReport,
-              language: 'en');
+        //   final forPrompting = aiService.generateWeeklyAIAnalysisPrompt(
+        //       aiFormattedPrompt, cropType, soilType, plotName, weatherReport,
+        //       language: 'en');
 
-          final aiResponse = await aiService.getAiAnalysis(forPrompting);
+        //   final aiResponse = await aiService.getAiAnalysis(forPrompting);
 
-          final aiRaw = aiResponse['choices'][0]['message']['content'];
-          final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
-          final today = DateTime.now().toIso8601String().split('T').first;
+        //   final aiRaw = aiResponse['choices'][0]['message']['content'];
+        //   final parsedJson = soilDashboardHelper.extractCleanAIJson(aiRaw);
+        //   final today = DateTime.now().toIso8601String().split('T').first;
 
-          final newAnalysis = {
-            "plot_id": plotId,
-            "analysis_date": today,
-            "analysis": parsedJson,
-            "analysis_type": 'Weekly',
-            "language_type": 'en',
-          };
+        //   final newAnalysis = {
+        //     "plot_id": plotId,
+        //     "analysis_date": today,
+        //     "analysis": parsedJson,
+        //     "analysis_type": 'Weekly',
+        //     "language_type": 'en',
+        //   };
 
-          NotifierHelper.logMessage(
-              'Generating tagalog analysis for plot $plotId');
-          await supabase.from('ai_analysis').insert(newAnalysis);
+        //   NotifierHelper.logMessage(
+        //       'Generating tagalog analysis for plot $plotId');
+        //   await supabase.from('ai_analysis').insert(newAnalysis);
 
-          final tagalogPrompt = aiService.translateJsonToTagalog(parsedJson);
+        //   final tagalogPrompt = aiService.translateJsonToTagalog(parsedJson);
 
-          final tagalogResponse =
-              await aiService.getGeminiAnalysis(tagalogPrompt);
-          final tagalogRaw =
-              tagalogResponse['choices'][0]['message']['content'];
-          final tagalogParsedJson =
-              soilDashboardHelper.extractCleanAIJson(tagalogRaw);
+        //   final tagalogResponse =
+        //       await aiService.getGeminiAnalysis(tagalogPrompt);
+        //   final tagalogRaw =
+        //       tagalogResponse['choices'][0]['message']['content'];
+        //   final tagalogParsedJson =
+        //       soilDashboardHelper.extractCleanAIJson(tagalogRaw);
 
-          final tagalogAnalysis = {
-            "plot_id": plotId,
-            "analysis_date": today,
-            "analysis": tagalogParsedJson,
-            "analysis_type": 'Weekly',
-            "language_type": 'tl',
-          };
+        //   final tagalogAnalysis = {
+        //     "plot_id": plotId,
+        //     "analysis_date": today,
+        //     "analysis": tagalogParsedJson,
+        //     "analysis_type": 'Weekly',
+        //     "language_type": 'tl',
+        //   };
 
-          await supabase.from('ai_analysis').insert(tagalogAnalysis);
-        }
+        //   await supabase.from('ai_analysis').insert(tagalogAnalysis);
+        // }
       }
     } catch (e) {
       NotifierHelper.logError(e);
