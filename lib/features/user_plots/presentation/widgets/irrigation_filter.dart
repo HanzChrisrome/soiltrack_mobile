@@ -27,11 +27,11 @@ class HistoryFilterWidget extends ConsumerWidget {
               return Row(
                 children: [
                   GestureDetector(
-                    onTap: () {
-                      ref
-                          .read(soilDashboardProvider.notifier)
-                          .updateHistoryFilterSelection(option);
-                    },
+                    // onTap: () {
+                    //   ref
+                    //       .read(soilDashboardProvider.notifier)
+                    //       .updateHistoryFilterSelection(option);
+                    // },
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
                       decoration: BoxDecoration(
@@ -153,14 +153,14 @@ class HistoryFilterWidget extends ConsumerWidget {
                     buttonText: 'Filter Date',
                     onPressed: selectedDate != null
                         ? () {
-                            ref
-                                .read(soilDashboardProvider.notifier)
-                                .updateHistoryFilterSelection(
-                                  'Custom',
-                                  customStartDate: selectedDate,
-                                  customEndDate: selectedDate,
-                                );
-                            Navigator.pop(context);
+                            // ref
+                            //     .read(soilDashboardProvider.notifier)
+                            //     .updateHistoryFilterSelection(
+                            //       'Custom',
+                            //       customStartDate: selectedDate,
+                            //       customEndDate: selectedDate,
+                            //     );
+                            // Navigator.pop(context);
                           }
                         : null,
                   ),

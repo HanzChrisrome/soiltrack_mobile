@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:lottie/lottie.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/widgets/divider_widget.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
@@ -51,64 +52,84 @@ class SoilCondition extends ConsumerWidget {
       );
 
     return DynamicContainer(
+      height: 350,
       backgroundImage: DecorationImage(
           image: AssetImage('assets/background/container_background_3.png'),
           fit: BoxFit.cover),
       padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 25),
       backgroundColor: Theme.of(context).colorScheme.onPrimary,
-      child: Column(
+      child: Stack(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Update:',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-              Text(
-                summaryAnalysisDate,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSecondary,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ],
+          Positioned(
+            top: -50,
+            left: 0,
+            right: 0,
+            child: Lottie.asset(
+              'assets/elements/search imm.json',
+              repeat: true,
+              width: 550,
+              height: 250,
+            ),
           ),
-          const SizedBox(height: 15),
-          RichText(
-            text: TextSpan(
-              text: (headline != null && headline.isNotEmpty)
-                  ? headline
-                  : (condition != null && condition.isNotEmpty
-                      ? 'Your plots are $condition'
-                      : 'No data is available for all your plots'),
-              style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                    height: 1.1,
-                    letterSpacing: -1.0,
-                    fontSize: 25,
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (headline != null && headline.isNotEmpty)
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          'Update:',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                        Text(
+                          summaryAnalysisDate,
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                          ),
+                        ),
+                      ],
+                    ),
+                  RichText(
+                    text: TextSpan(
+                      text: (headline != null && headline.isNotEmpty)
+                          ? headline
+                          : (condition != null && condition.isNotEmpty
+                              ? 'Your plots are $condition'
+                              : 'No data is available for all your plots'),
+                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                            color: Theme.of(context).colorScheme.primary,
+                            height: 1.1,
+                            letterSpacing: -1.0,
+                            fontSize: 25,
+                          ),
+                    ),
                   ),
-            ),
-          ),
-          DividerWidget(
-            verticalHeight: 1,
-            color: Theme.of(context).colorScheme.onSecondary,
-          ),
-          SizedBox(
-            width: 400,
-            child: Text(
-              shortSummary!,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontSize: 14,
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+                  DividerWidget(
+                    verticalHeight: 1,
+                    color: Theme.of(context).colorScheme.onSecondary,
+                  ),
+                  SizedBox(
+                    width: 400,
+                    child: Text(
+                      shortSummary!,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
+                    ),
+                  ),
+                ]),
           ),
         ],
       ),

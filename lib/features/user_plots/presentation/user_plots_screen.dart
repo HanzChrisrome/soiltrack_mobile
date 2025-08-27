@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:soiltrack_mobile/features/crops_registration/presentation/widgets/specific_details.dart';
+import 'package:soiltrack_mobile/features/home/provider/irrigation/irrigation_notifier.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/controller/user_plot_controller.dart';
 import 'package:soiltrack_mobile/features/user_plots/helper/user_plots_helper.dart';
@@ -37,10 +38,11 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final soilDashboard = ref.read(soilDashboardProvider.notifier);
-      final soilDashboardState = ref.read(soilDashboardProvider);
-      if (soilDashboardState.irrigationLogs.isEmpty) {
-        soilDashboard.fetchIrrigationLogs();
+      final irrigationState = ref.watch(irrigationNotifierProvider);
+      final irrigationNotifier = ref.read(irrigationNotifierProvider.notifier);
+
+      if (irrigationState.irrigationLogs.isEmpty) {
+        irrigationNotifier.fetchInitialLogs();
       }
     });
   }
@@ -59,6 +61,7 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
     final controller =
         UserPlotController(state: userPlot, plotHelper: plotHelper);
     final userPlotNotifier = ref.read(soilDashboardProvider.notifier);
+    final irrigationNotifier = ref.read(irrigationNotifierProvider.notifier);
     final isGeneratingAi = userPlot.isGeneratingAi;
     final polygonList = controller.selectedPolygon;
 
@@ -90,7 +93,7 @@ class _UserPlotScreenState extends ConsumerState<UserPlotScreen> {
         onRefresh: () async {
           await userPlotNotifier.fetchUserPlotData();
           await userPlotNotifier.fetchUserAnalytics();
-          await userPlotNotifier.fetchIrrigationLogs();
+          await irrigationNotifier.fetchInitialLogs();
         },
         child: Stack(
           children: [

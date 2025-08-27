@@ -304,6 +304,17 @@ class AuthNotifier extends Notifier<UserAuthState> {
     }
   }
 
+  Future<void> saveDeviceToken(String token) async {
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
+
+    await supabase.from("users").upsert({
+      'user_id': userId,
+      'device_token': token,
+      'updated_at': DateTime.now().toIso8601String(),
+    }, onConflict: 'user_id');
+  }
+
   void updateCurrentStep(int step) {
     state = state.copyWith(currentRegistrationStep: step);
   }

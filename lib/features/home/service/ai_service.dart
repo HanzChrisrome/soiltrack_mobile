@@ -185,7 +185,6 @@ class AiService {
         ? "Translate all your output into Filipino (Tagalog) please. Make it farmer-friendly, and conversational but still accurate. Don't change any of the content, just translate it. Especially if there is no crop assigned, please translate it to Filipino but keep the content the same."
         : "";
 
-    print('cropType: $cropType');
     final isCropEmpty = cropType.trim().isEmpty ||
         cropType.trim().toLowerCase() == 'no crop assigned';
 
@@ -233,14 +232,11 @@ class AiService {
     $cropInstruction
 
     ⚠️ **CRITICAL GUIDELINES**:
-    - Focus only on **weekly actionable tasks** (what should the farmer do over the next 7 days).
-    - Do **not** recommend tools, experts, or lab testing.
-    - DO NOT mention this prompt or refer to "you are an assistant".
-    - Use clear, plain language. Avoid technical jargon unless it's explained simply.
-    - Use `"text"` for string fields and real numbers for metrics.
-    - DO NOT recommend fertilizers if nutrient levels are already in the acceptable range.
-    - Compliment the farmer if values are stable or improving, especially if the variation is minor (e.g., <5% moisture or <10ppm NPK).
-    - Provide reassurance if any changes are still within safe thresholds.
+    - Base all values on the **actual soil data** provided.
+    - Do not copy the example values literally — they are only **illustrations** of structure.
+    - Show fertilizer amounts in **bags (50kg/bag) + kg if partial**.
+    - If no crop is assigned, only fill `"parameters"` and `"recommended_crops"`.
+    - If crop is assigned, include `"recommended_rate_for_crop"` and `"fertilizer_recommendation_per_ha"`.
     $recommendedCropsNote
 
     📊 **TREND ANALYSIS**:
@@ -259,11 +255,6 @@ class AiService {
         "date_range": "text",
         "headline": "text",
         "short_summary": "text",  // A brief summary of the weekly analysis
-        "weekly_focus": [
-          "text",  // Task 1
-          "text",  // Task 2
-          "... more tasks if needed"
-        ],
         "status": "text",  // e.g., good, bad, moderate, excellent
         "summary": {
           "findings": "text",  // In-depth analysis of current soil and crop conditions
@@ -294,26 +285,48 @@ class AiService {
             }
           }
         },
-        "predictive_insights": {
-          "moisture": "text",  // Predictive analysis of moisture levels
-          "nutrients": "text"  // Predictive insights on nutrient levels (N, P, K)
-        },
-        "recommended_fertilizers": {
-          "type_of_nutrient": "text": { 
-            "type": "text", 
-            "application_instructions": "text", 
-            "where_to_buy": "text" 
+        "fertilizer_recommendation_per_ha": [
+          {
+            "time_and_method": "Basal Application (at planting)",
+            "wet_season": [
+              "Example: 10-20 bags Organic Fertilizer"
+            ],
+            "dry_season": [
+              "Example: 10-20 bags Organic Fertilizer"
+            ]
           },
-          "... more if needed"
-        },
-        "warnings": {
-          "nutrient_imbalances": "text",  // Nutrient imbalances that need addressing
-          "drought_risks": "text"  // Drought risk based on weather forecast
-        },
-        "final_actionable_recommendations": [
-          "text",  // Concrete step to take today
-          "... more if needed"
-        ]
+          {
+            "time_and_method": "1st Topdressing (5-7 DAT)",
+            "wet_season": [
+              "Example: 2 bags and 43 kg Complete (14-14-14)",
+              "Example: 4 bags Ammonium Phosphate (16-20-0)"
+            ],
+            "dry_season": [
+              "Example: 2 bags and 43 kg Complete (14-14-14)",
+              "Example: 4 bags Ammonium Phosphate (16-20-0)"
+            ]
+          },
+          {
+            "time_and_method": "2nd Topdressing (20-24 DAT)",
+            "wet_season": [
+              "Example: 3 bags Ammonium Sulfate (21-0-0)"
+            ],
+            "dry_season": [
+              "Example: 3 bags and 17 kg Ammonium Sulfate (21-0-0)"
+            ]
+          },
+          {
+            "time_and_method": "3rd Topdressing (30-35 DAT)",
+            "wet_season": [
+              "Example: 3 bags Ammonium Sulfate (21-0-0)"
+            ],
+            "dry_season": [
+              "Example: 3 bags and 17 kg Ammonium Sulfate (21-0-0)"
+            ]
+          }
+        ],
+        "remarks": "All recommendations are per hectare basis. 1 bag = 50 kg. Adjust based on crop growth and soil condition.",
+        $recommendedCropsNote
       }
     }
 

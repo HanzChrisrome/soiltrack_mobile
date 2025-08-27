@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:day_night_time_picker/day_night_time_picker.dart'
     show Time, showPicker;
+import 'package:soiltrack_mobile/features/home/provider/irrigation/irrigation_notifier.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/features/user_plots/presentation/widgets/crop_threshold.dart';
 import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
@@ -154,6 +155,9 @@ class _IrrigationSettingsContentState
     final soilDashboardState = ref.watch(soilDashboardProvider);
     final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
 
+    final irrigationState = ref.watch(irrigationNotifierProvider);
+    final irrigationNotifier = ref.read(irrigationNotifierProvider.notifier);
+
     final selectedPlot = soilDashboardState.userPlots.firstWhere(
       (plot) => plot['plot_id'] == widget.plotId,
       orElse: () => {},
@@ -223,7 +227,7 @@ class _IrrigationSettingsContentState
                       buttonText: 'Continue',
                       onPressed: () async {
                         if (context.mounted) Navigator.of(context).pop();
-                        await soilDashboardNotifier.deleteSchedule(
+                        await irrigationNotifier.deleteSchedule(
                             context, schedule.id!);
                       },
                     );

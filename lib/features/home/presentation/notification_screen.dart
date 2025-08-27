@@ -145,7 +145,7 @@ class NotificationScreen extends ConsumerWidget {
                   'assets/elements/no-result.json',
                   width: 300,
                   height: 300,
-                  repeat: true, // keep looping
+                  repeat: true,
                 ),
               ],
             ),

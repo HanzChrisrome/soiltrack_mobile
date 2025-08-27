@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_links/app_links.dart';
 
 import 'package:soiltrack_mobile/core/config/supabase_config.dart';
+import 'package:soiltrack_mobile/features/auth/provider/auth_provider.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/provider/shared_preferences.dart';
 import 'package:soiltrack_mobile/theme/theme.dart';
@@ -105,7 +106,7 @@ class _MyAppState extends ConsumerState<MyApp> {
 
         if (token != null) {
           print('💾 Saving FCM token to Supabase');
-          await ref.read(soilDashboardProvider.notifier).saveDeviceToken(token);
+          await ref.read(authProvider.notifier).saveDeviceToken(token);
         }
       } else {
         print('❌ Notification permission denied');

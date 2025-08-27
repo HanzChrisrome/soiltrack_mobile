@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:soiltrack_mobile/features/home/provider/irrigation/irrigation_notifier.dart';
 import 'package:soiltrack_mobile/features/home/provider/soil_dashboard/plots_provider/soil_dashboard_provider.dart';
 import 'package:soiltrack_mobile/widgets/bottom_dialog.dart';
 import 'package:soiltrack_mobile/widgets/dynamic_container.dart';
@@ -39,9 +40,10 @@ class _IrrigationTypeToggleState extends ConsumerState<IrrigationTypeToggle> {
       icon: Icons.change_circle,
       buttonText: 'Continue',
       onPressed: () async {
-        final soilDashboardNotifier = ref.read(soilDashboardProvider.notifier);
+        final irrigationNotifier =
+            ref.read(irrigationNotifierProvider.notifier);
 
-        await soilDashboardNotifier.changeIrrigationStatus(
+        await irrigationNotifier.changeIrrigationStatus(
           context,
           widget.plotId,
           newType,

@@ -119,7 +119,7 @@ class PlotAnalyticsScreen extends ConsumerWidget {
                     ],
                   ),
                 ),
-              )
+              ),
             ],
           ),
         ],
